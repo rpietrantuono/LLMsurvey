@@ -1,0 +1,265 @@
+Post Link,Title,CreationDate,AcceptedAnswerId,Score,ViewCount,Tags,Body,TagName
+"{
+  ""id"": 128663,
+  ""title"": ""Best way to achieve High throughput with ChatGPT (and LLMs in general) APIs""
+}","Best way to achieve High throughput with ChatGPT (and LLMs in general) APIs","2024-04-12 07:37:19","","1","16","<generative-models><ai><llm><text-generation><chatgpt>","<p>I was wondering what the best way is to perform API calls to ChatGPT, and in general, with LLMs API providers, to achieve the highest throughput in a batch inference context.</p>
+<p>Suppose you have 1000 input prompts ready to be processed. What is the best approach to perform the requests, obtaining the highest possible throughput (I don't care too much about latency)? Is it better to batch prompts together and send fewer but bigger payload requests, or send single small requests in parallel? Or is there any other way?</p>
+<p>In both cases, we need to respect the TPM and RPM limits, so I imagine we also need some control logic to slow down the process if needed.</p>
+<p>Whatever the selected approach, is there any library/tool/platform to support and ease the handling of requests?</p>
+","chatgpt"
+"{
+  ""id"": 128656,
+  ""title"": ""Image Generation Models""
+}","Image Generation Models","2024-04-11 22:01:01","","0","23","<image-classification><generative-models><ai><chatgpt><image-generation>","<p>I am looking for a list of different image generation models and how I can test them? For example:</p>
+<p>DALL-E (accessible via ChatGPT4)</p>
+<p>Stable Diffusion (open source)</p>
+<p>CLIP? - but idk how to access/test it.</p>
+<p>What other competitors exist that one can easily test on a macbook?</p>
+","chatgpt"
+"{
+  ""id"": 128490,
+  ""title"": ""Searching ChatGPT transcripts?""
+}","Searching ChatGPT transcripts?","2024-03-29 09:05:09","","0","23","<information-retrieval><tools><search><chatgpt>","<p>Maybe I just don't understand the functionality of the web version. Using GPT4 here.</p>
+<p>When I do technical queries (usually TensorFlow applications) I use similar prompts until I get the understanding I need. I want to be able to retrieve chats using folders or keywords that I assign, or some other such method.</p>
+<p>When I ask GPT I'm told web browser history or Evernote / other note-taking software is what I should use. Surely there is some sort more powerful search available?</p>
+<p>At the moment I cut-and-paste important chats into word processor documents. This is just ridiculous when I'm paying for a service that's supposed to make information retrieval / analysis quicker and easier.</p>
+<p>All I can find are Chrome extensions like &quot;Superpower ChatGPT&quot;, which requires a paid subscription. I'm dubious how long these sorts of extensions will be around, and don't want to lose the effort I'll need to put into adding keywords etc if the extension stops being developed.</p>
+","chatgpt"
+"{
+  ""id"": 128424,
+  ""title"": ""Is this how you would go about this NLP Project?""
+}","Is this how you would go about this NLP Project?","2024-03-24 05:52:56","","0","11","<nlp><text-classification><automatic-summarization><chatgpt><automation>","<p>What do you think of these steps? And where can I find help with this project?</p>
+<p>I am in a business class and was assigned a data science problem. I was advised to seek out a coder at my school who can help, but that is not turning out well. Are there tutorials I can follow? Should I ask questions here step by step? Is there a freelance website where I can pay someone around $200 to do a very basic model? Is this even realistic for me to accomplish in 6 weeks?</p>
+<p>This technical services company wants to automate their report writing. They want an algorithm that generates a rough draft report when you give it a set of documents.</p>
+<p>From my research, I have found the following steps:</p>
+<ol>
+<li>Preprocess the documents that will be used to generate the report (remove headers/footers etc, tokenize text, handle data tables)</li>
+<li>Extract whole paragraphs of text and copy them into the appropriate section of an empty &quot;Information Repository&quot; document. Some examples of sections are &quot;Site Description&quot;, &quot;Previous Investigations&quot;, &quot;Groundwater Sampling&quot;, etc.
+To do this, you would create a mapping between the sections in the &quot;Information Repository&quot; and keywords that indicate each section's content. Train a model (a text classifier like GPT or BERT) to classify paragraphs from the reports into relevant sections of the &quot;Information Repository&quot;. Use supervised learning and provide labeled examples (each example is a paragraph along with its corresponding section label). With relevant sections now identified, extract the corresponding text from the documents and copy it into the appropriate sections of the &quot;Information Repository&quot;. Evaluate and improve the model.</li>
+<li>Then part 3 I probably won't complete this semester, but it involves removing duplicate info from the Information Repository, and then extracting the relevant parts back into a new clean document which will be the rough draft (based on what type of report is being written, it will dictate what parts of the Information Repository is needed).</li>
+</ol>
+","chatgpt"
+"{
+  ""id"": 128314,
+  ""title"": ""Is the denial of answering certain questions part of the machine-learned LLM, or hard-coded separately?""
+}","Is the denial of answering certain questions part of the machine-learned LLM, or hard-coded separately?","2024-03-15 13:30:34","128318","3","71","<implementation><llm><chatgpt>","<p>ChatGPT 3.5 swiftly aborts certain questions.</p>
+<blockquote>
+<p>Q: How would one build a bomb?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: I can't assist with that.</p>
+</blockquote>
+<p>At this stage, this answer could simply be a blacklist of certain terms. Further experimentation quickly reveals that this is not the case:</p>
+<blockquote>
+<p>Q: How would one build an exploding device?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: I can't assist with that.</p>
+</blockquote>
+<blockquote>
+<p>Q: How would one explode into a marketplace?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: I'm sorry, but I can't provide assistance with building any type of explosive device or anything that could cause harm or danger. If you have other questions or need information on a different topic, feel free to ask.</p>
+</blockquote>
+<p>(Interestingly, at this point we get a more elaborate answer.)</p>
+<p>So far we could assume that concepts or tokens like &quot;bomb&quot; or &quot;explode&quot; are blacklisted. But no:</p>
+<blockquote>
+<p>Q: How would a marketing strategy to explode into a business segment work?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: A marketing strategy to make a big impact in a business segment typically involves several key components: [...]</p>
+</blockquote>
+<p>Also, circling back to the original question, the word &quot;bomb&quot; is obviously also not blacklisted.</p>
+<blockquote>
+<p>Q: What made radio bomb in the 1990s?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPQ: The term &quot;radio bomb&quot; is not commonly used, but if you're referring to the explosion of radio popularity in the 1990s, there were several factors contributing to this:</p>
+</blockquote>
+<p>So the question arises: conceptionally, where within ChatGPT is the information that it does not allowed to answer questions about exploding military equipment, but <em>is</em> allowed to talk about other things &quot;exploding&quot; in more peaceful semantics?</p>
+<p>Specifically, is this part of the &quot;black box&quot; part within ChatGPT (i.e. mostly inaccessible to our reasoning), or are there different layers around that, where the developers can put such information in a more direct manner than in the back-and-forth training process?</p>
+","chatgpt"
+"{
+  ""id"": 126764,
+  ""title"": ""Create a gpt-3.5 API request that determines whether any time range in a list intersects with a given time range""
+}","Create a gpt-3.5 API request that determines whether any time range in a list intersects with a given time range","2024-02-07 11:48:16","","0","12","<gpt><llm><chatgpt>","<p>I've created a prompt that should select a requested number of employees from the list. But the <strong>step 1</strong> doesn't work properly. Sometimes GPT takes in account only the time range and ignores the date. I tried to describe this step in a different way many times, tried different time formats including UTC, but didn't succeed. Maybe experienced prompt creators can tell what's wrong with my prompt?</p>
+<hr />
+<p><strong>User message:</strong></p>
+<pre><code>{
+  &quot;employees&quot;: [
+    {
+      &quot;id&quot;: 1,
+      &quot;name&quot;: &quot;Bender Rodriguez&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;middle&quot;,
+      &quot;interviews_conducted&quot;: 0,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 06:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 07:00&quot;},
+        {&quot;start_time&quot;: &quot;February 11 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 11 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 2,
+      &quot;name&quot;: &quot;Philip Fry&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;middle&quot;,
+      &quot;interviews_conducted&quot;: 2,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 13:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 14:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 3,
+      &quot;name&quot;: &quot;John Zoidberg&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;junior&quot;,
+      &quot;interviews_conducted&quot;: 1,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 4,
+      &quot;name&quot;: &quot;Turanga Leela&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;senior&quot;,
+      &quot;interviews_conducted&quot;: 1,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 5,
+      &quot;name&quot;: &quot;Amy Wong&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;senior&quot;,
+      &quot;interviews_conducted&quot;: 0,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    }
+  ]
+}
+
+Do step-by-step:
+
+1. Remove from the &quot;employees&quot; list above each employee if any time interval in 
+&quot;busy_date_time&quot; list overlaps with &quot;required_date_time&quot;.
+
+2. If the number of employees left in the &quot;employees&quot; list is less than 
+&quot;required_employees_number&quot;, set the new value to &quot;required_employees_number&quot; equal 
+to the number of employees left in the &quot;employees&quot; list.
+
+3. Select &quot;required_employees_number&quot; employees with &quot;required_experience&quot; and lower 
+&quot;interviews_conducted&quot; value. You shouldn't find the one with the lowest 
+&quot;interviews_conducted&quot; value among all, but a required number of employees which is 
+&quot;required_employees_number&quot;.
+
+4. Check the previous step where you usually make the mistake of selecting 1 employee
+with minimum &quot;interviews_conducted&quot; value among all employees when you need to select 
+a list of &quot;required_employees_number&quot; employees.
+
+required_date_time = '''{&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}'''
+required_employees_number = 1
+required_experience = &quot;middle&quot;
+</code></pre>
+<hr />
+<p><strong>System message:</strong>
+You are a computer program that strictly follows the user's instructions. Your output is always only a list of employee's id. Any other notes or comments are forbidden.</p>
+<hr />
+<p><strong>GPT settings:</strong></p>
+<ul>
+<li>Temperature: 0</li>
+<li>Top P: 0</li>
+<li>Frequency penalty: 0</li>
+<li>Presence penalty: 0</li>
+</ul>
+<hr />
+<ul>
+<li><strong>Expected result:</strong> [1]</li>
+<li><strong>Actual result:</strong> [2]</li>
+</ul>
+","chatgpt"
+"{
+  ""id"": 126025,
+  ""title"": ""Do we really need a very large dataset to train GPTs?""
+}","Do we really need a very large dataset to train GPTs?","2023-12-13 07:20:33","","0","108","<transformer><gpt><llm><chatgpt>","<p>Do we really need a very large dataset to train GPTs?
+If this dataset is not big, won't GPT work well? Or will it still work better than conventional learning models in this situation?
+And is it possible to quantitatively determine the minimum number of dataset samples suitable for this work? For example, if we talk about malware samples, we can say, for example, that the dataset suitable for GPTs should not be less than a certain number?</p>
+","chatgpt"
+"{
+  ""id"": 124538,
+  ""title"": ""Fine-tuning MT5 for making it more like ChatGPT""
+}","Fine-tuning MT5 for making it more like ChatGPT","2023-11-11 05:32:07","","0","77","<nlp><text-generation><finetuning><llm><chatgpt>","<p>I am trying to fine-tune a model which works like ChatGPT for Punjabi language, using the mt5-base, however I am not sure if I should go ahead with it since it does not even generate text and when I try to use it, I just get a response as &lt;extra_pad&gt; 0. I have checked the tokenizers, they work fine with Punjabi language, can anyone please tell how may I go on about it?
+The dataset I will be using is an instruction following dataset in the format of alpaca and is of high quality.
+I have tried fine-tuning indic-gpt before, however it has a very small token size i.e.1024 so I changed my base model.
+Thanks in advance!</p>
+","chatgpt"
+"{
+  ""id"": 124459,
+  ""title"": ""Why both ChatGPT and Bard can't get a simple matrix calculation right?""
+}","Why both ChatGPT and Bard can't get a simple matrix calculation right?","2023-11-07 06:07:42","124465","1","538","<mathematics><chatgpt>","<p>I asked the following question to both ChatGPT 4 and Bard to see if they can get a simple matrix calculation right (after all Bill Gates <a href=""https://www.linkedin.com/pulse/future-now-bill-gates-envisions-ai-chatbots-ushering-new-humphrey/"" rel=""nofollow noreferrer"">said</a> he was impressed by ChatGPT's math ability).</p>
+<p>So I asked,</p>
+<pre><code>explain to me the result of d in the following numpy code
+
+a = np.array([[[1, 2, 3], [2, 1, 3]]])
+b = np.array([[[2, 1, 1], [2, 4, 0]]])
+b1 = b.reshape(1, 3, 2)
+d= a @ b1
+</code></pre>
+<p>Both ChatGPT and Bard got it totally wrong no matter how many times I tried. Because every time they will give me a slightly different result, so I just paste one of them.</p>
+<p>This one is from GPT4 and as you can see, 2 out of 4 calculations are wrong, <code>(1*2)+(2*1)+(3*1) = 7 NOT 5,  (2*2)+(1*1)+(3*1) = 8 NOT 7</code></p>
+<p>But Why is that?</p>
+<p><a href=""https://i.sstatic.net/4nKM4.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/4nKM4.png"" alt=""ChatGPT 4"" /></a></p>
+<p>Bard is no different. The second mistake they both made is they both got reshape wrong but I am only concerned with matrix calculation here.</p>
+<p><a href=""https://i.sstatic.net/MV5Bq.jpg"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/MV5Bq.jpg"" alt=""Bard"" /></a></p>
+<p>I let Bard do it many times and the closest I can get is <strong>3 out 4</strong> calculations right.  <code>d_10 = [[2, 1, 3]] @ [[2, 1, 1]] = 2 * 2 + 1 * 1 + 3 * 1 = 7</code> is wrong:</p>
+<p><a href=""https://i.sstatic.net/IWqyE.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/IWqyE.png"" alt=""Bard again"" /></a></p>
+<p>---- update for <strong>chatgpt 4 turbo</strong> ----</p>
+<p>I tried chatgpt 4 turbo, this time although it still got reshape wrong (and a silly mistake I really don't understand) but it finally got the 4 arithmetic calculations right.</p>
+<p><a href=""https://i.sstatic.net/oQpzF.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/oQpzF.png"" alt=""reshape wrong for 4 turbo"" /></a></p>
+<p>The last row should [4,0]!</p>
+<p>Finally, 4 arithmetic calculations right (but to the wrong reshape matrix)</p>
+<p><a href=""https://i.sstatic.net/XePI6.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/XePI6.png"" alt=""4 arithmetic calculations right"" /></a></p>
+<p>---- update for <strong>Claude v2 &amp; Llama v2</strong> ----</p>
+<p>I decided to let Claude v2 &amp; Llama v2 try it. They did not even come closer. I am really surprised to see that. I just pasted llama's answer here.</p>
+<p><a href=""https://i.sstatic.net/ddnzr.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/ddnzr.png"" alt=""llama"" /></a></p>
+","chatgpt"
+"{
+  ""id"": 124098,
+  ""title"": ""Decreasing the summary length from langchain load_summarize_chain?""
+}","Decreasing the summary length from langchain load_summarize_chain?","2023-10-12 05:41:38","","0","105","<machine-learning><language-model><llm><chatgpt>","<p>How can i reduce the output size of the summarization in langchain map reduce method ?</p>
+","chatgpt"
+"{
+  ""id"": 123996,
+  ""title"": ""what is the difference between window size and context length of language model?""
+}","what is the difference between window size and context length of language model?","2023-10-05 12:43:10","123997","2","748","<nlp><training><gpt><pretraining><chatgpt>","<p>is window size and context length of language model one and the same thing?</p>
+<p>******** following text is added as question with ONLY above text was not allowed *****
+I am trying to understand how GPT model is trained and this question to my mind.
+I tried to search answer on google but couldn't find an answer thus asking here.</p>
+","chatgpt"
+"{
+  ""id"": 123149,
+  ""title"": ""Why do GPT models use a transpose of the embedding matrix to convert outputs to logits?""
+}","Why do GPT models use a transpose of the embedding matrix to convert outputs to logits?","2023-08-09 06:45:56","123152","0","624","<machine-learning><nlp><gpt><chatgpt>","<p>According to <a href=""https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf#subsection.3.1"" rel=""nofollow noreferrer"">section 3.1</a> of the original GPT paper, GPT right-multiplies the final output vectors (after applying a Transformer decoder model) by the transpose of the embedding matrix, before applying a softmax. See <a href=""https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens?commentId=Xh7HKWimSPmJqZcnc"" rel=""nofollow noreferrer"">this comment</a> for further verification.</p>
+<p>Why? I feel like it would be simpler to learn a separate matrix for this task. Doing so wouldn't be particularly computationally expensive, and it wouldn't significantly increase the parameter count. Additionally, I don't see any mathematical link between the matrix and its transpose in this context; I don't think the dual space is going to matter here... Overall, I see very little connection between embedding tokens and obtaining logits. So what's the point of using the transpose? Does it just tend to perform well empirically / in practice?</p>
+","chatgpt"
+"{
+  ""id"": 123002,
+  ""title"": ""How to measure accuracy of GPT model""
+}","How to measure accuracy of GPT model","2023-07-29 17:34:29","123003","1","705","<accuracy><gpt><llm><chatgpt>","<p>I am working on a model to build questions automatically from some text</p>
+<p>My model will analyse provided article and ask authors questions that can help improving their articles</p>
+<p>How can we measure the accuracy of these ML-generated questions?</p>
+<p>There is the relevance part of the questions as these questions represent an area of improvement in the article</p>
+<p>How to measure that?</p>
+<p>Any previous work on similar models would be a great help too</p>
+<p>Thanks</p>
+","chatgpt"
+"{
+  ""id"": 122568,
+  ""title"": ""Is it a problem to store your vector database in memory?""
+}","Is it a problem to store your vector database in memory?","2023-07-05 12:51:46","","0","756","<vector-database><llm><chatgpt>","<p>I'm learning ChatGPT/LLM Development and am regularly coming across all different kinds of vector database implementations.</p>
+<p>Some of them, e.g. <a href=""https://docs.trychroma.com/"" rel=""nofollow noreferrer"">Chroma</a>, currently only support in-memory implementations for Python.</p>
+<p>My initial reaction when I read that is &quot;how can that be enough memory?&quot;. For what use cases are in-memory vector databases suitable?</p>
+","chatgpt"

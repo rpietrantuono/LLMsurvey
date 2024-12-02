@@ -1,0 +1,718 @@
+Post ID,CreationDate,CommentCount,AcceptedAnswerId,ParentId,Body,Tags
+"128117","2024-03-02 07:34:41","0","","128109","<p>If <code>top_p=0.75</code> we would select <code>t2</code> and <code>t3</code>, right? → <strong>YES.</strong></p>
+<p>If <code>top_p=0.001</code>? → <strong>We would select only <code>t2</code>.</strong></p>
+<p>This is the <a href=""https://openreview.net/forum?id=rygGQyrFvH"" rel=""nofollow noreferrer"">original definition</a>:</p>
+<blockquote>
+<p>The key idea is to use the shape of the probability distribution to determine the set of tokens to be sampled from. Given a distribution <span class=""math-container"">$P(x | x_{1:i-1})$</span>, we define its top-<span class=""math-container"">$p$</span> vocabulary <span class=""math-container"">$V^{(p)} \subset V$</span> as the smallest set such that
+<span class=""math-container"">\begin{equation}
+    \sum_{x \in V^{(p)}} P(x | x_{1:i-1}) \geq p.
+\end{equation}</span></p>
+</blockquote>
+<p>I would add something about the lines &quot;the result of the sum shall be maximal among all possible combinations&quot;.</p>
+<p>In practical terms, we can take a look at the <a href=""https://github.com/ari-holtzman/degen/blob/0acfd2d0ba8484e24e9c5241f75f34be15ef2609/gen.py#L127C1-L140C83"" rel=""nofollow noreferrer"">original implementation</a>:</p>
+<pre><code>sorted_probs, sorted_indices = torch.sort(samp_probs, descending=True)
+cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
+sorted_indices_to_remove = cumulative_probs &gt; p
+sorted_indices_to_remove[:, 1:] = sorted_indices_to_remove[:, :-1].clone()
+sorted_indices_to_remove[:, 0] = 0
+sorted_samp_probs = sorted_probs.clone()
+sorted_samp_probs[sorted_indices_to_remove] = 0
+
+...
+
+sorted_next_indices = sorted_samp_probs.multinomial(1).view(-1, 1)
+next_tokens = sorted_indices.gather(1, sorted_next_indices)
+next_logprobs = sorted_samp_probs.gather(1, sorted_next_indices).log()
+</code></pre>
+<p>There, we can see that the first thing they do is sorting and then they compute the cumulative probability distribution to find the cutting point.</p>
+",""
+"126494","2024-01-19 15:51:32","0","","126493","<p>There is a quick fix for this, and even though it will not change the work of the Trainer class itself, the error will still vanish.</p>
+<p>The error asks you to put your parameters on &quot;cuda:0&quot;, therefore I changed the setup and put <code>0</code> as the first entry in front of the list. And for that to match with the device that I put the model in, I changed any <code>'cuda:6'</code> to <code>'cuda:0'</code>. By this, GPU 0 / <code>'cuda:0'</code> steers the rest.</p>
+<pre class=""lang-py prettyprint-override""><code>!export CUDA_VISIBLE_DEVICES='0,6,3,7,2'
+...
+torch.device('cuda:0')
+...
+device_ids = [0,6,3,7,2]
+...
+        model=model.to('cuda:0'), # &quot;model=model&quot; should run through as well
+...
+    model.to('cuda:0')
+...
+</code></pre>
+<p>This works since it saves the parameters and buffers for both the main model and the trainer object (the fine-tuning model) on the same GPU (GPU 0), and it runs through.</p>
+<p>This is not a nice workaround, though, since GPU 0 needs the most memory for the run which would mean that it is the bottleneck. And sometimes, other projects or users might want to have GPU 0 as well, then GPU 0 will be the bottleneck that you want to avoid. But for now, this is better than nothing.</p>
+<p>You might also code <code>device_ids = [0,1,2,3,4]</code> (untested) since the <code>device_ids</code> are just the numbers you choose, see <a href=""https://discuss.pytorch.org/t/os-environ-cuda-visible-devices-does-not-work-well/132461/8"" rel=""nofollow noreferrer"">os.environ[CUDA_VISIBLE_DEVICES] does not work well</a>. But it does not harm taking the same as the ones in the code, as it runs through.</p>
+<p>PS: With this code, I also got rid of the error:</p>
+<blockquote>
+<p>RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:4! (when checking argument for argument index in method wrapper_CUDA__index_select)</p>
+</blockquote>
+<p>since I put the parameters and buffers on GPU 4 while the <code>ParallelData</code> class only saves to GPU 0 (as this answer shows). It is therefore the same problem as for the other error, I only lost the code step that threw this error.</p>
+",""
+"126400","2024-01-13 06:39:28","0","","126393","<p>The query is entered in question form because it is easy.</p>
+<p>There are different variations of what you embed to compute the similarity search. Another variation is to let a LLM hallucinate a few answers to the question and use them to compute similarity search to get the context for the actual answer to be computed by the LLM. This also poses problems, as the hallucinated answers may not be similar to the actual one, and may be appropriate by some more general domains but not so appropriate for others.
+With many queries, you get more potential pieces of context to pass in the limited LLM window, so you may have then to summarize or to rank them. Also, you are making the system slower and more expensive by using the LLM at least twice.</p>
+<p>So it's a trade off. Entering the question as-is is easy and does not complicate things further.</p>
+<p>Normally, when creating a RAG pipeline you test many different combinations taking into account the peculiarities of your domain and choose the best performing approach.</p>
+",""
+"125008","2023-12-11 13:11:21","0","","124995","<p>The answer is in your screenshot:</p>
+<blockquote>
+<p>For each of these (special tokens and sentences), we also specify the corresponding token type ID after a colon</p>
+</blockquote>
+<p>Therefore, the <code>:0</code> marks the associated tokens to have token ID 0, while <code>:1</code> marks the associated tokens to have token ID 1.</p>
+<p>Token IDs are a generic concept to mark &quot;something else&quot; apart from the tokens themselves. They are usually used to mark the tokens belonging to the first and second segments when the input is comprised of both of them. In the <a href=""https://aclanthology.org/N19-1423.pdf"" rel=""nofollow noreferrer"">original BERT article</a>, these are referred to as &quot;segment embeddings&quot;: (where Eᴀ equates to &quot;:0&quot; in huggingface output, and Eʙ equatest to &quot;:1&quot;)</p>
+<p><a href=""https://i.sstatic.net/D0hhW.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/D0hhW.png"" alt=""enter image description here"" /></a></p>
+",""
+"124735","2023-11-24 11:18:48","3","","124733","<p>You can prepend each line of the email with a line number and request the LLM to give you the initial and final line numbers of the most recent email, separated by &quot;-&quot;. Then, you can parse the output and extract the lines from the original email.</p>
+",""
+"123065","2023-08-03 13:31:07","3","","123062","<p>I found <a href=""https://kazemnejad.com/blog/transformer_architecture_positional_encoding/"" rel=""nofollow noreferrer"">this post</a> really helpful for understanding some of the nice properties behind positional embeddings. I'll give a short summary of the relevant portions of the post in my answer, but I highly recommend you check out the original.</p>
+<p>Although it's difficult to say whether or not your suggested representation would work, I can explain some nice properties of the cos and sine encodings, and why those properties aren't present in your suggested representation.</p>
+<h2>Implicit relative distance bias</h2>
+<p>You should keep in mind how such representations are used. Without positional embeddings, an attention head attending to a token directly next to it would be treated the same as that attention head attending to a token 1000 tokens away. So one important property is for <em>relative</em> attention to be encoded during the &quot;attending&quot; process. Importantly, this &quot;attending&quot; process is a <em>dot-product</em>. So, in other words, <span class=""math-container"">$K_i^\intercal Q_j$</span> should tell us something about <span class=""math-container"">$|i - j|$</span>.</p>
+<p><a href=""https://i.sstatic.net/BENAA.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/BENAA.png"" alt=""Dot product of position embeddings from https://kazemnejad.com/blog/transformer_architecture_positional_encoding/"" /></a></p>
+<p>This above plot is from the post I linked above. It shows the dot product between positional embeddings at different absolute positions. Notice how closer positions have a higher magnitude, and that such distances are symmetric (i.e., <span class=""math-container"">$i - j$</span> is represented equivalently as <span class=""math-container"">$j - i$</span>).</p>
+<p>I'm assuming that you're suggesting adding (or concatenating) a <span class=""math-container"">$d$</span> length vector consisting of all <span class=""math-container"">$\frac{p}{L}$</span>. In this case, you'd just have higher dot-products for positions later in the sequence, regardless of the relative position. Although, the network <em>could</em> learn a transformation for such dot-products to be useful (and there's a case to be made for not adding such inductive biases into the network), it would take extra &quot;effort&quot; for the model to learn such a transformation.</p>
+<h2>No dependence on absolute positions</h2>
+<p>You can see this in the above plot as well: the magnitude only depends on the relative distance between tokens, and the not the absolute distance of the tokens.</p>
+<p>The original papers states &quot;We chose this function because we hypothesized it would allow the model to easily learn to attend by <em>relative positions</em>, since for any fixed offset <span class=""math-container"">$k$</span>, <span class=""math-container"">$PE_{pos+k}$</span> can be represented as a linear function of <span class=""math-container"">$PE_{pos}$</span>&quot; (my emphasis). Consider your representation as a vector:</p>
+<p><span class=""math-container"">$$
+PE_{pos} = \begin{bmatrix}
+\frac{p}{L}\\
+\frac{p}{L}
+\end{bmatrix}
+$$</span></p>
+<p>We want to find some linear transformation <span class=""math-container"">$A \in \mathbb{R}^{2x2}$</span> such that <span class=""math-container"">$A \cdot PE_{pos} = PE_{pos + k}$</span>. Although you can find such a matrix, this matrix would depend on the absolute position <span class=""math-container"">$pos$</span>. If you wanted to learn such representation in e.g., the <span class=""math-container"">$W_k$</span> or <span class=""math-container"">$W_q$</span> matrices, which are applied to every position, then you'd like the transformation to only depend on the relative position. With the sin and cosine representation on the other hand, you can find such a transformation (see the blog post for how this is done).</p>
+<p>Of course, even if you had such a transformation, the resulting vector would not be much use to us (at least directly) as the dot-products do not encode distance information.</p>
+",""
+"123003","2023-07-29 18:03:55","4","","123002","<p>You can check the <a href=""https://paperswithcode.com/task/question-generation"" rel=""nofollow noreferrer"">Question Generation section</a> of <a href=""https://paperswithcode.com/"" rel=""nofollow noreferrer"">paperswithcode</a>. There, you can see for different datasets how the performance is measured and how different proposed approaches compare on them.</p>
+<p>Usually, you check how similar is the question to the reference text.  Some used measures are BLEU-1 (based on matching unigrams) and ROUGE-L (based on the longest common subsequence). This is &quot;unsupervised testing&quot; in the sense that you don't need labeled data. However, they may not be directly correlated with their actual quality (see <a href=""https://aclanthology.org/D18-1429/"" rel=""nofollow noreferrer""><em>Towards a
+better metric for evaluating question generation systems</em></a> and <a href=""https://aclanthology.org/D19-1253/"" rel=""nofollow noreferrer""><em>Addressing Semantic Drift in Question Generation for Semi-Supervised Question Answering</em></a>).</p>
+<p>In other cases, they use <a href=""https://aclanthology.org/D19-1253"" rel=""nofollow noreferrer"">QA-based Evaluation (QAE)</a>, which measures how
+similar the generated QA pairs are compared to some ground truth QA pairs. For this, you need a reference labeled QA dataset on which the model is to be evaluated.</p>
+",""
+"122499","2023-06-30 19:00:35","0","","122498","<p>ChatGPT uses byte-pair encoding (BPE) as tokenization strategy. This approach was first proposed in the scientific article <a href=""https://aclanthology.org/P16-1162/"" rel=""nofollow noreferrer""><em>Neural Machine Translation of Rare Words with Subword Units</em></a>. BPE uses subword-level tokens. To define the list of subwords, the BPE algorithm uses a text corpus and tries to find the most reusable word parts. Also, the BPE vocabulary keeps the individual characters as tokens, which grants it the ability to represent any word that is written in the same scripts it was trained on.</p>
+<p>The canonical implementation of BPE is <a href=""https://github.com/rsennrich/subword-nmt"" rel=""nofollow noreferrer"">this Python package</a> created and maintained by the first author of the scientific article. However, OpenAI created their own implementation, called <a href=""https://github.com/openai/tiktoken"" rel=""nofollow noreferrer"">Tiktoken</a>, which is faster.</p>
+<p>Other popular tokenization strategies include &quot;wordpieces&quot; (which is very similar to BPE)(see <a href=""https://stackoverflow.com/a/55416944/674487"">this answer</a> for details) and the unigram vocabulary (see <a href=""https://datascience.stackexchange.com/a/88831/14675"">this answer</a> for details).</p>
+",""
+"121787","2023-05-27 04:11:23","2","","121782","<p>The first model where the <code>f1_score</code> is around 61% can not be considered as a good model. You can achieve much better results than that. This can be seen in the second case (where you have downsampled the dataset), where the <code>f1_score</code> increases substantially.</p>
+<p>Since your problem statement is to detect hate speech, you would have to decrease both, the FP and the FN or in other words, increase the <code>precision</code> and <code>recall</code>.</p>
+<p>I would the say the metric in this case would be the <code>f1_score</code> which is a combination of <code>precision</code> and <code>recall</code>.</p>
+<p>Also instead of downsampling, try oversampling. Or better yet, do neither and instead use other techniques to counteract the imbalance (think cross validation particulary <code>RepeatedStratifiedCV</code>, or maybe get more data for the minority class not by oversampling but from the authentic sources. )</p>
+",""
+"120979","2023-04-17 14:29:40","2","","120726","<p>As commented by @Erwan, the start/end of sequence tokens are like any other token: they are part of the embedding table and they are identified by their index to that table.</p>
+<p>The vector values of the start/end tokens in the embedding table are learned during the training of the network, like the other tokens.</p>
+",""
+"119961","2023-03-04 18:50:48","0","","119952","<p>NLP neural networks don't use word tokens any more. It's been a while since the norm is using subwords. Usual approaches to define the subword vocabulary are <a href=""https://aclanthology.org/P16-1162/"" rel=""nofollow noreferrer"">byte-pair encoding (BPE)</a>, <a href=""https://huggingface.co/course/chapter6/6?fw=pt"" rel=""nofollow noreferrer"">word pieces</a> or <a href=""https://datascience.stackexchange.com/a/88831/14675"">unigram tokenization</a>.</p>
+<p><a href=""https://arxiv.org/abs/2005.14165"" rel=""nofollow noreferrer"">GPT-3 uses BPE tokenization</a>. According to the OpenAI's tokenizer tool website:</p>
+<blockquote>
+<p>Codex models use a different set of encodings that handle whitespace more efficiently</p>
+</blockquote>
+<p>From this, I understand that they use BPE but with a different vocabulary. This is supported by <a href=""https://github.com/botisan-ai/gpt3-tokenizer"" rel=""nofollow noreferrer"">this javascript tokenizer</a> that was created by extracting the BPE vocabulary from OpenAI's own online tokenizer tool.</p>
+",""
+"118875","2023-02-28 09:22:45","0","","117444","<p>Tldr; I’ve seen a good rule-of-thumb is about 14-18x times the model size for memory limits, so for a 10GB card, training your model would max out memory at roughly 540M parameters.</p>
+<p>There is some really good information here:
+<a href=""https://huggingface.co/docs/transformers/perf_train_gpu_one#anatomy-of-models-memory"" rel=""noreferrer"">https://huggingface.co/docs/transformers/perf_train_gpu_one#anatomy-of-models-memory</a></p>
+<p>Note that there are a ton of caveats, depending on framework, mixed precision, model size, batch sizes, gradient checkpointing, and so on.
+Just to summarize the above, rough memory requirements are:
+Model weights</p>
+<ul>
+<li>4 bytes * number of parameters for fp32 training</li>
+<li>6 bytes * number of params for mixed precision training.</li>
+</ul>
+<p>Optimizer States</p>
+<ul>
+<li>8 bytes * number of parameters for normal AdamW (maintains 2 states)</li>
+<li>2 bytes * number of parameters for 8-bit AdamW optimizers like</li>
+</ul>
+<p>bitsandbytes</p>
+<ul>
+<li>4 bytes * number of parameters for optimizers like SGD with momentum (maintains only 1 state)
+Gradients:</li>
+<li>4 bytes * number of parameters for either fp32 or mixed precision training (gradients are always kept in fp32)
+Other:
+Temporary memory, functionality specific memory, forward activations, and so on.</li>
+</ul>
+",""
+"116111","2022-11-12 11:45:50","1","","116101","<p>What you are referring to is called &quot;bucketing&quot;.  It consists of creating batches of sequences with similar length, to minimize the needed padding.</p>
+<p>In tensorflow, you can do it with <a href=""https://www.tensorflow.org/api_docs/python/tf/data/Dataset#bucket_by_sequence_length"" rel=""nofollow noreferrer""><code>tf.data.Dataset.bucket_by_sequence_length</code></a>. Take into account that previously it was in different python packages (<code>tf.data.experimental.bucket_by_sequence_length</code>, <code>tf.contrib.data.bucket_by_sequence_length</code>), so the examples online may containt the outdated name.</p>
+<p>To see some usage examples, you can check <a href=""https://github.com/wcarvalho/jupyter_notebooks/blob/ebe762436e2eea1dff34bbd034898b64e4465fe4/tf.bucket_by_sequence_length/bucketing%20practice.ipynb"" rel=""nofollow noreferrer"">this jupyter notebook</a>, or <a href=""https://stackoverflow.com/a/50608469/674487"">other answers</a> <a href=""https://stackoverflow.com/a/54129446/674487"">in stackoverflow</a>, or <a href=""https://medium.com/analytics-vidhya/tutorial-on-bucket-by-sequence-length-api-for-efficiently-batching-nlp-data-while-training-20d8ef5219d7"" rel=""nofollow noreferrer"">this tutorial</a>.</p>
+",""
+"115457","2022-10-21 15:35:52","2","","115440","<ul>
+<li>It's rare to represent sentences as sequences of characters, since most NLP tasks are related to the the <strong>semantics</strong> of the sentence, which is expressed by the sequence of words. A notable exception: stylometry tasks, i.e. tasks where the style of the text/author matters more than the topic/meaning, sometimes rely on sequences of characters.</li>
+<li>Yes, the question of tokenization can indeed have an impact of the performance of the target task. But modern methods use good word tokenizers trained on large corpora, not simplifed whitespace-based tokenizers. There can still be differences between tokenizers though.</li>
+<li>There are even more text representations methods than listed here (embeddings are an important one). And yes, these also have a huge impact on performance.</li>
+</ul>
+<p>For all these different options (and others), the reason why it's often worth testing different variants is clear: it affects performance and it's not always clear which one is the best without trying, so one must evaluate the different options. Btw it's crucial to precisely define how the target task is evaluated first, otherwise one just subjectively interprets results.</p>
+<p>Basically imho this is a matter of proper data-driven methodology. Of course experience and intuition also play a role, especially if there are time or resources constrains.</p>
+",""
+"114969","2022-10-06 16:32:22","2","","114958","<p>As general points:</p>
+<ol>
+<li>Multivariate RNN: You can use multiple sequential features as an input to your recurrent layers. Taking pytorch as a reference, you can see that the input of LSTM object is a tensor of shape <span class=""math-container"">$(L, H_{in})$</span> or <span class=""math-container"">$(L, N, H_{in})$</span> for batched, where <span class=""math-container"">$L$</span> is the length of your sequences whereas <span class=""math-container"">$H_{in}$</span> is the number of input features. In this approach, you can leave mapping tokens to a vocabulary as part of the standard procedure of a standard embedding being learnt.</li>
+<li>You may be able to use a multi-label approach (as opposed to multi-class), if I understand your question correctly.</li>
+<li>Multimodal learning: If features related to embeddings can be considered static/not evolving over time, you may want to add a second auxiliary port to your network, to specifically model this data type. This second part would consist of a feed-forward network with fully connected layers. The fixed-length vector representations / embeddings at the outputs of your RNN and FFN modules could get concatenated before passed to your classification layer. In this way you allow the model to reason from a joint representation of both data modalities.</li>
+</ol>
+<p>Hope it helps.</p>
+",""
+"114941","2022-10-05 16:58:46","1","","114932","<p>The problem is of text generation. I am assuming you are trying for chatbot etc where input is a natural lanugae and output is a natural language.</p>
+<p>Since input is a natural language, all punctuations,special characters are important. For eg: Triple dot also means &quot; to follow up&quot;  or &quot;waiting&quot;. A tokenizer based on &quot;.&quot; will remove this information.</p>
+<p>Next step is to choose tokenizer which preserves punctuations. Tokenizer based on white space will do.</p>
+",""
+"114519","2022-09-19 12:12:02","2","","114511","<p>I think that your misunderstanding comes from this:</p>
+<blockquote>
+<p>Then, once the weights have been trained, the inference/prediction works by placing  or start sentence tag in the beginning <strong>with padding</strong>.</p>
+</blockquote>
+<p>There is no padding at all. In the first iteration, the length of the input is only one token (i.e. for <code>&lt;/s&gt;</code>). Once the prediction for the first token is computed, it is appended to the input, getting a tensor of length 2, which is then used as input, and so on.  At each step, the length of the input increases by 1. Therefore, the prediction for the current step is always the last predicted token.</p>
+",""
+"113976","2022-08-31 09:35:47","0","","113573","<ol>
+<li><p>I did use DistributedDataParallel according to PyTorch documentation DataParallel is usually slower than DistributedDataParallel therefore it is recommended since DistributedDataParallel works for both single- and multi-machine training.</p>
+</li>
+<li><p>Tutorial <a href=""https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#comparison-between-dataparallel-and-distributeddataparallel"" rel=""nofollow noreferrer"">Comparison between DataParallel and DistributedDataParallel</a></p>
+</li>
+<li><p>Another Tutorial <a href=""https://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html"" rel=""nofollow noreferrer"">Multi-GPU Examples</a></p>
+</li>
+<li><p>Solution <a href=""https://stackoverflow.com/questions/72415800/how-to-find-the-nvidia-gpu-ids-for-pytorch-cuda-run-setup"">LITDataScience's answer - How to find the nvidia GPU IDs for pytorch cuda run setup?</a></p>
+</li>
+</ol>
+",""
+"112893","2022-07-23 08:36:51","1","","112877","<p>First, a clarification: tokenizers receive text and return <strong>tokens</strong>. These tokens may be words or not. Some tokenizers, for instance, return word pieces (i.e. subwords). This way, a single word may lead to multiple tokens (e.g. &quot;magnificently&quot; --&gt; [&quot;magn&quot;, &quot;ific&quot;, &quot;ently&quot;]). Some examples of subword tokenizers are <a href=""https://huggingface.co/course/chapter6/5?fw=pt"" rel=""nofollow noreferrer"">Byte-Pair Encoding (BPE)</a> and <a href=""https://huggingface.co/course/chapter6/7?fw=pt"" rel=""nofollow noreferrer"">Unigram</a>. Therefore, adding a &quot;word&quot; to a tokenizer may not make sense for a subword-level tokenizer; instead, I will refer to it as &quot;adding a token&quot;.</p>
+<p>Some simple tokenizers rely on pre-existing boundaries between tokens. For instance, it is very common to tokenize by relying on the white space between words (after a previous mild pre-processing to separate punctuation).</p>
+<p>Depending on the complexity of the separation of tokens from the text, the tokenization process can consist of just a lookup in a table to a complex computation of probabilities.</p>
+<p>For simple tokenizers that only consist of a lookup table, adding a token to it is simple: you just add an entry to the table.</p>
+<p>For more complex tokenizers, you need a training process that learns the needed information to later tokenize. In those cases, adding a token is simply not possible, because the information stored in the tokenizer is richer, not just a table with entries.</p>
+",""
+"112892","2022-07-23 08:06:48","16","","112891","<h3>New Answer</h3>
+<p>The loss of a text generation task like question generation is normally the average categorical cross-entropy of the output at every time step.</p>
+<p>Drastically reducing the number of tokens means that the number of classes of the output probability distribution is greatly reduced.</p>
+<p>The value of cross-entropy depends on the number of classes. Having more classes means that the output distribution must cover more options and it is more difficult to assign more probability to the ground truth class (i.e. the correct token).</p>
+<p>Therefore, it is to be expected that, if you drastically reduce the number of tokens, the value of the loss is lower.</p>
+<h3>Old answer</h3>
+<p>From your description, I understand that:</p>
+<ul>
+<li>What you had was a Transformer trained on multilingual data with word-level tokens (because if you had subword-level tokens like BPE or unigram then you would not be able to filter by language from the token list so easily).</li>
+<li>What you did was:
+<ul>
+<li>Removing the entries associated with words in other languages from the token list.</li>
+<li>Reduce the embedding size.</li>
+<li>Retrain your model on the data of a single language pair.</li>
+</ul>
+</li>
+</ul>
+<p>With those assumptions:</p>
+<p>When you &quot;converted your model from multilingual to single lingual&quot;, you simplified the task enormously. It seems that the gain in the simplicity of the task surpassed the loss of capacity of the model caused by the reduction of the embedding size.</p>
+",""
+"112838","2022-07-20 22:39:56","3","","112816","<p>The question is not precise enough, it depends on other factors: in general, a larger training set tends to lead to a better model. However it depends if the training set is really relevant and useful for the task. For example:</p>
+<ul>
+<li>adding the larger dataset contains data from a different domain than the target task, the additional data might be useless</li>
+<li>if the data contains a lot of errors or noise, it might cause the model to perform worse</li>
+<li>if the larger data contains mostly duplicates, it's likely not to perform better.</li>
+</ul>
+<p>So larger data is good for performance only if the additional data is actually of good quality.</p>
+",""
+"112405","2022-07-05 07:41:38","0","","112402","<p>There are two valid inputs to MPNet's tokenizer:</p>
+<blockquote>
+<p>Union[TextInputSequence, Tuple[InputSequence, InputSequence]]</p>
+</blockquote>
+<p>When you give a list of tuples as an input, from each tuple only the first two sentences, i.e. &quot;U.S. stock index futures&quot; and &quot;points to&quot; are used to encode, similar to BERT's next sentence prediction pre-training task.</p>
+<p>This is tokenized and converted to input_ids with special tokens as follows:</p>
+<blockquote>
+<p>['&lt;s&gt;', 'u', '.', 's', '.', 'stock', 'index', 'futures', '&lt;/s&gt;', '&lt;/s&gt;', 'points', 'to', '&lt;/s&gt;']</p>
+</blockquote>
+<p>&lt;s&gt; indicates start of sentence and &lt;/s&gt; indicates end of sentence. I'm not sure about the &lt;/s&gt; before 'points', but this is the output from the model's tokenizer. As such NLU models can work with one or two sentences together, these special tokens are added to identify how many sentences are in the model and they help to separate the sentences.</p>
+<p>Thus, you get two same vectors from</p>
+<pre><code>model.encode(t)
+</code></pre>
+<p>If you want the same vector without using a tuple, the encode function should contain the following input string:</p>
+<blockquote>
+<p>&quot;U.S. stock index futures &lt;/s&gt; &lt;/s&gt; points to&quot;</p>
+</blockquote>
+",""
+"111766","2022-06-13 07:30:59","5","","111735","<p>Using triples could lead to wrong results because some headlines could contain double negations or other complex structures that are difficult to classify with triples.</p>
+<p>However, you can apply directly on the headlines Bert sentiment analysis instead, which can process complex semantics correctly.</p>
+<p>Here is an example using <a href=""https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest?text=U.S.%20stock%20index%20futures%20points%20to%20higher%20start"" rel=""nofollow noreferrer"">Bert's twitter roberta sentiment analysis</a>:</p>
+<p><a href=""https://i.sstatic.net/Sv6gS.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/Sv6gS.png"" alt=""enter image description here"" /></a></p>
+<p>Note: in this specific case neutral and positive have almost the same value, and you will want to set some threshold to consider a headline as positive, like positive &gt; 0.4. It could also require some fine tuning because tweets are a bit different from headlines.</p>
+<p>You can even apply sentiment analysis levels (very negative, negative, neutral, positive, very positive) to get even better predictions.</p>
+",""
+"110879","2022-05-12 08:58:43","0","","110865","<p>As you pointed out in your comments, you pre-tokenized the data and kept in in tensors in GPU memory.</p>
+<p>Only the current batch should be loaded in GPU RAM, so you should not need to reduce your training data size (assuming your data loading and training routines are implemented properly). To keep you training data tensor in CPU, you can use <code>with tf.device(...):</code>.</p>
+<p>However, take into account that the size of the training data can also be huge for the size of the CPU memory. A typical approach for this is to save the token IDs on disk and then load them from there.</p>
+",""
+"109483","2022-03-30 05:10:54","0","","97630","<p>Tokenizer for GPT-3 is the same as GPT-2:</p>
+<p><a href=""https://huggingface.co/docs/transformers/model_doc/gpt2#gpt2tokenizerfast"" rel=""noreferrer"">https://huggingface.co/docs/transformers/model_doc/gpt2#gpt2tokenizerfast</a></p>
+<p>linked via:</p>
+<p><a href=""https://beta.openai.com/tokenizer"" rel=""noreferrer"">https://beta.openai.com/tokenizer</a></p>
+<hr />
+<p><strong>UPDATE</strong> March 2023</p>
+<p>For newer models, including GPT-3.5 (turbo), GPT-4, and latest embeddings, use <code>tiktoken</code> tokenizer with the <code>cl100k_base</code> encoding:</p>
+<p><a href=""https://github.com/openai/tiktoken"" rel=""noreferrer"">https://github.com/openai/tiktoken</a></p>
+<p>A full model-to-encoding mapping can be found <a href=""https://github.com/openai/tiktoken/blob/main/tiktoken/model.py"" rel=""noreferrer"">here</a></p>
+",""
+"107248","2022-01-19 23:09:28","3","","107190","<p>First, a tokenizer doesn't have a dictionary of predefined words, so anyway it doesn't make sense to &quot;add a new token&quot; to a tokenizer.</p>
+<p>Instead it uses indications in the text in order to separate the tokens. The most common indication is of course a whitespace character <code>&quot; &quot;</code>, but there are lots of cases where it's more complex than that. This is why there would be many cases where the second method with <code>sent.split(&quot; &quot;).index(word)</code> would not return the same tokens (punctuation marks, for example).</p>
+<p>Also the tokenizer doesn't change the text, so if the sentence contains the word <code>rattan</code> it cannot transform it into the word <code>rat</code>. Why are you testing this? Btw <a href=""https://en.wikipedia.org/wiki/Rattan"" rel=""nofollow noreferrer"">rattan</a> is a real word, in case this is the issue.</p>
+",""
+"106506","2021-12-29 00:42:39","1","","106463","<p>In my opinion this is a very difficult question, and it's not sure that this can be done.</p>
+<p>Symbolic methods and statistical methods are hard to combine. In fact, statistical ML methods became mainstream because they could solve most problems <em>better</em> than symbolic methods. This is especially true in NLP: the multiple attempts at rule-based representations of languages (in the 80s and 90s) were not only expensive to build but also they never proved capable of covering the full diversity of natural language.</p>
+<p>There have been various attempt at hybrid models in specific tasks, but to my knowledge none of these hybrid methods proved good enough compared to pure statistical methods. What can work however is to introduce knowledge represented by resources as some of the features used by a statistical model. In this case the model is not symbolic at all, but it uses information coming from symbolic resources.</p>
+<blockquote>
+<p>also get enhanced through a new commonsense understanding of our physical world</p>
+</blockquote>
+<p>Be careful not to assume that any of these models <em>understands</em> anything at all. Their result can be extremely convincing, but these are not <a href=""https://en.wikipedia.org/wiki/Artificial_general_intelligence"" rel=""nofollow noreferrer"">strong AI</a>. <a href=""https://en.wikipedia.org/wiki/Natural-language_understanding"" rel=""nofollow noreferrer"">Natural Language understanding</a> is far from achieved (and it may never be). You might be able to somehow use symbolic resources in order to enhance the output of a model, but making such a model perform some actual <em>reasoning</em> about what it's talking about is a whole other story (a sci-fi one, for now at least).</p>
+",""
+"106473","2021-12-27 21:36:48","0","","106469","<p>There is a subtle but important difference between &quot;semantic role&quot; and &quot;grammatical role&quot; (I think there's a specific term for the latter but I forgot it).</p>
+<p>Grammatical role is strictly about syntax. For example in the sentence &quot;John sent a letter to Mary&quot;:</p>
+<ul>
+<li>&quot;John&quot; is subject</li>
+<li>&quot;a letter&quot; is object</li>
+<li>&quot;Mary&quot; is  an indirect object</li>
+</ul>
+<p>This is what a syntactic parser (typically dependency parser) would normally identify.</p>
+<p>By contrast semantic role is mostly about the semantics. We could describe the semantic of the above sentence like this:</p>
+<ul>
+<li>The predicate is &quot;to send&quot;</li>
+<li>This predicate can have 3 arguments:
+<ul>
+<li>the sender is &quot;John&quot;</li>
+<li>the object is &quot;a letter&quot;</li>
+<li>the receiver is &quot;Mary&quot;.</li>
+</ul>
+</li>
+</ul>
+<p>Typically one needs a specific resource like PropBank in order to know what are the expected and optional arguments specific to a predicate.</p>
+<p>So far the difference might look thin, but it will become clearer with this new example: &quot;A letter was sent to Mary by John&quot;. The grammatical roles become:</p>
+<ul>
+<li><p>&quot;a letter&quot; is subject</p>
+</li>
+<li><p>&quot;Mary&quot; is indirect object</p>
+</li>
+<li><p>&quot;by John&quot; is some kind of dependent clause (I forgot what this is called but it's definitely not subject).</p>
+</li>
+</ul>
+<p>Whereas the semantic roles are exactly the same as previously, because the semantic didn't change.</p>
+<p>So in general semantic role labelling is harder than simple identification of syntactic roles. This is why specific resources and methods are developed for it.</p>
+<p>Disclaimer: my knowledge on the topic is from 10 years ago, I'm not aware of the recent developments in this domain. I'm under the impression that DL methods bypass this step for many applications by producing end to-end systems, but I'm not sure at all about this.</p>
+",""
+"106217","2021-12-17 12:20:06","2","","106214","<p>Each token position at each of the attention layers of <a href=""https://arxiv.org/abs/1810.04805"" rel=""nofollow noreferrer"">BERT</a> is computed taking into account all tokens of both sequences. This way, there is not a single element that depends on just the first sequence and therefore it is not possible to precompute anything to be reused for different second sequences.</p>
+<p><a href=""https://i.sstatic.net/M91NY.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/M91NY.png"" alt=""enter image description here"" /></a></p>
+<p>As you can see, the very nature of BERT's network architecture prevents you from factoring out the computations involving the first sequence.</p>
+<p>In other similar architectures like <a href=""https://arxiv.org/abs/1909.11942"" rel=""nofollow noreferrer"">ALBERT</a>, there are some parts that could be reused, as the embedding computation (because ALBERT's embeddings are factorized, making the embedding matrix smaller but adding a multiplication at runtime), but I am not sure that reusing this computation would save a lot.</p>
+<p>I don't know of any architecture made for sequence pairs that would let you do what you described, as most sequence pair approaches derive from BERT, which itself relies on computing attention between every token pair.</p>
+<p>One option would be to use a network that gives you a fixed-size representation (i.e. a vector) of a sentence: you would use it on each of the sentences in a pair, and then you would feed both vectors to a second network (e.g. a multilayer perceptron receiving the concatenation of both vectors) to compute the final output. Depending on the task, this may give you good results and allow you to do the mentioned precomputing. To obtain the sentence representation vector, you may use BERT itself (the output at the <code>[CLS]</code> position) or some other architecture like <a href=""https://github.com/facebookresearch/LASER"" rel=""nofollow noreferrer"">LASER</a>.</p>
+",""
+"106208","2021-12-17 07:47:34","1","","106191","<p>Let's take your example. If you have 2 classes A and B. The percentage of class A present in the data is less than B. So basically you have an <strong>imbalanced dataset</strong>. You have to ensure (and this goes for both balanced and imbalanced datasets) that both the <strong>train</strong> and <strong>test</strong> sets <strong>contain both A and B classes</strong>.</p>
+<p>You ask weather is it ok to not have any data of class B in the test set and I would say it is wrong. You have to have both the classes in the test and in the train/validation set. To achieve this, you can use <code>stratify = target</code> in the <code>train_test_split</code> function you use when splitting the data. Also you should use <strong>nested cross validation</strong> to ensure all your data is used.</p>
+<p>Keep in mind that <code>stratify = target</code> <strong>won't</strong> solve your class <strong>imbalance problem</strong> and you have to deal with it separately. It only ensures that the both the classes are distributed both in the train/valid and test sets and hence you get a fair distribution. Now how you deal with it depends on you.</p>
+<p><strong>EDIT 1:</strong> Based on the comment the SO is asking weather he can use the samples that were in the train set in the test set as well. Then the answer is pretty simple. <strong>A big NO! You cannot use the data that was in your train set into your test set as it will lead to data leakage!!</strong> This is a big mistake and would result in overly positive results. Google data leakage and you'll see how big of a problem it is. Basically you cannot use data that is present in the train set into your test set.</p>
+<p>Keep you test data completely and absolutely separate from your train/valid set. Only then you can get a generalizable result that would benefit you in the real world application.</p>
+<p>As I mentioned before, if you have a small dataset, use nested cross validation. It will select the best model and tune your Hyperparameters at the same time and ensure that all you data gets utilized.</p>
+",""
+"94000","2021-05-04 22:49:25","0","","86974","<p>One option is to call them synonyms, a word or phrase that means exactly or nearly the same as another word or phrase.</p>
+<p>Entity linking is mapping words of interest to corresponding unique entities in a knowledge base. It is useful to think of the unique entities in knowledge base as hashes and all surface forms as synonyms.</p>
+",""
+"89459","2021-02-16 18:30:44","1","","89435","<p>Note that I don't know nmslib and I'm not familiar with search optimization in general. However I know Okapi BM25 weighting.</p>
+<blockquote>
+<p>How do they both (bm25, nmslib) differ?</p>
+</blockquote>
+<p>These are two completely different things:</p>
+<ul>
+<li>Okapi BM25 is a weighting scheme which has a better theoretical basis than the well known TFIDF weighting scheme. Both methods are intended to score words according to how &quot;important&quot; they are in the context of a document collection, mostly by giving more weight to words which appear rarely. As a weighting scheme, Okapi BM25 only provides a representation of the documents/queries, what you do with it is up to you.</li>
+<li>nmslib is an optimized similarity search library. I assume that it takes as input any set of vectors for the documents and query. So one could provide them with vectors made of raw frequencies, TFIDF or anything else. What it does is just computing (as fast as possible) the most similar documents to a query, using whatever representation of documents is provided.</li>
+</ul>
+<blockquote>
+<p>How can I pass bm25 weights to nmslib to create a better and faster search engine?</p>
+</blockquote>
+<p>Since you mention that the results based on BM25 are satisfying, it means that the loss of quality is due to the nmslib search optimizations. There's no magic, the only way to make things fast is to do less comparisons, and sometimes that means discarding a potentially good candidate by mistake. So the problem is not about passing the BM25 weights, it's about understanding and tuning the parameters of nmslib: there are certainly parameters which allow the user to select an appropriate trade off between speed and quality.</p>
+",""
+"88962","2021-02-05 08:04:34","1","","88959","<p>I don't know any Georgian stemmer or lemmatizer. I think, however, that you have another option: to use unsupervised approaches to segment words into morphemes, and use your linguistic knowledge of Georgian to devise some heuristic rules to identify the stem among them.</p>
+<p>This kind of approach consists of a model trained to identify morphemes without any labels (i.e. unsupervisedly). The most relevant Python package for this is <a href=""https://github.com/aalto-speech/morfessor"" rel=""noreferrer"">Morfessor</a>. You can find its theoretical foundations in these publications: <a href=""https://www.aclweb.org/anthology/W02-0603.pdf"" rel=""noreferrer""><em>Unsupervised discovery of morphemes</em></a>; <a href=""https://www.aclweb.org/anthology/W10-2210.pdf"" rel=""noreferrer""><em>Semi-supervised learning of concatenative morphology</em></a>.</p>
+<p>Also, there is a Python package called <a href=""https://github.com/aboSamoor/polyglot"" rel=""noreferrer"">Polyglot</a> that offers pre-trained Morfessor models, <a href=""https://polyglot.readthedocs.io/en/latest/MorphologicalAnalysis.html#languages-coverage"" rel=""noreferrer"">including one for Georgian</a>. Therefore, my recommendation is for you to use Polyglot's Georgian model to segment words into morphemes and then write some rules by hand to pick the stem among them.</p>
+<p>You should be able to evaluate the feasibility of this idea by adapting <a href=""https://polyglot.readthedocs.io/en/latest/MorphologicalAnalysis.html#example"" rel=""noreferrer"">this example from Polyglot's documentation</a> from English to Georgian (by changing the language code <code>en</code> and the list of words):</p>
+<pre><code>from polyglot.text import Text, Word
+
+words = [&quot;preprocessing&quot;, &quot;processor&quot;, &quot;invaluable&quot;, &quot;thankful&quot;, &quot;crossed&quot;]
+for w in words:
+  w = Word(w, language=&quot;en&quot;)
+  print(&quot;{:&lt;20}{}&quot;.format(w, w.morphemes))
+</code></pre>
+",""
+"88831","2021-02-02 15:39:10","5","","88824","<p>The explanation in the <a href=""https://huggingface.co/transformers/tokenizer_summary.html#unigram"" rel=""noreferrer"">documentation of the Huggingface Transformers library</a> seems more approachable:</p>
+<blockquote>
+<p>Unigram is a subword tokenization algorithm introduced in Subword Regularization: <a href=""https://arxiv.org/abs/1804.10959"" rel=""noreferrer"">Improving Neural Network Translation Models with Multiple Subword Candidates (Kudo, 2018)</a>. In contrast to BPE or WordPiece, Unigram initializes its base vocabulary to a large number of symbols and progressively trims down each symbol to obtain a smaller vocabulary. The base vocabulary could for instance correspond to all pre-tokenized words and the most common substrings. Unigram is not used directly for any of the models in the transformers, but it’s used in conjunction with SentencePiece.</p>
+<p>At each training step, the Unigram algorithm defines a loss (often defined as the log-likelihood) over the training data given the current vocabulary and a unigram language model. Then, for each symbol in the vocabulary, the algorithm computes how much the overall loss would increase if the symbol was to be removed from the vocabulary. Unigram then removes p (with p usually being 10% or 20%) percent of the symbols whose loss increase is the lowest, i.e. those symbols that least affect the overall loss over the training data. This process is repeated until the vocabulary has reached the desired size. The Unigram algorithm always keeps the base characters so that any word can be tokenized.</p>
+<p>Because Unigram is not based on merge rules (in contrast to BPE and WordPiece), the algorithm has several ways of tokenizing new text after training. As an example, if a trained Unigram tokenizer exhibits the vocabulary:</p>
+<p><code>[&quot;b&quot;, &quot;g&quot;, &quot;h&quot;, &quot;n&quot;, &quot;p&quot;, &quot;s&quot;, &quot;u&quot;, &quot;ug&quot;, &quot;un&quot;, &quot;hug&quot;],</code></p>
+<p>&quot;hugs&quot; could be tokenized both as [&quot;hug&quot;, &quot;s&quot;], [&quot;h&quot;, &quot;ug&quot;, &quot;s&quot;] or [&quot;h&quot;, &quot;u&quot;, &quot;g&quot;, &quot;s&quot;]. So which one to choose? Unigram saves the probability of each token in the training corpus on top of saving the vocabulary so that the probability of each possible tokenization can be computed after training. The algorithm simply picks the most likely tokenization in practice, but also offers the possibility to sample a possible tokenization according to their probabilities.</p>
+<p>Those probabilities are defined by the loss the tokenizer is trained on. Assuming that the training data consists of the words 𝑥1,…,𝑥𝑁 and that the set of all possible tokenizations for a word 𝑥𝑖 is defined as 𝑆(𝑥𝑖), then the overall loss is defined as</p>
+<p><span class=""math-container"">$\mathcal{L} = -\sum_{i=1}^{N} \log \left ( \sum_{x \in S(x_{i})} p(x) \right )$</span></p>
+</blockquote>
+<p>There are some parts that are not very detailed, though, for instance, how it initializes the base (seed) vocabulary to a large number of symbols&quot;.
+This part is more clearly explained in the <a href=""https://arxiv.org/abs/1804.10959"" rel=""noreferrer"">original article</a> by the end of section 3.2:</p>
+<blockquote>
+<p>There are several ways to prepare the seed vocabulary. The natural choice is to use the union of all characters and the most frequent substrings in the corpus. Frequent substrings can be enumerated in <span class=""math-container"">$O(T)$</span> time and <span class=""math-container"">$O(20T)$</span> space with the Enhanced Suffix Array algorithm <a href=""https://ieeexplore.ieee.org/document/4976463"" rel=""noreferrer"">(Nong et al., 2009)</a>, where T is the size of the corpus.</p>
+</blockquote>
+<p>About the details of the expectation maximization algorithm used to compute probabilities, this is what happens:</p>
+<ol>
+<li>[Expectation] Estimate each subword probability by the corresponding frequency counts in the vocabulary</li>
+<li>[Maximization] Use the Viterbi algorithm to segment the corpus, returning the optimal segments.</li>
+</ol>
+<p>You can check the details, together with practical examples, in <a href=""https://everdark.github.io/k9/notebooks/ml/natural_language_understanding/subword_units/subword_units.nb.html#12_probablistic_subword_segmentation"" rel=""noreferrer"">this tutorial</a>.</p>
+",""
+"87797","2021-01-11 11:15:03","0","","87793","<p>Spacy's <code>Sentencizer</code> is very simple. However, Spacy 3.0 includes <code>Sentencerecognizer</code> which basically is a trainable sentence tagger and should behave better. <a href=""https://github.com/explosion/spaCy/issues/4168"" rel=""nofollow noreferrer"">Here is the issue</a> with the details of its inception. You can <a href=""https://github.com/explosion/spaCy/issues/6382"" rel=""nofollow noreferrer"">train it</a> if you have segmented sentence data.</p>
+<p>Another option is using <a href=""https://www.nltk.org/"" rel=""nofollow noreferrer"">NLTK</a>'s <a href=""https://www.nltk.org/api/nltk.tokenize.html#nltk.tokenize.sent_tokenize"" rel=""nofollow noreferrer""><code>sent_tokenize</code></a>, which should give better results than Spacy's Sentencizer. I have tested it with your example and it works well.</p>
+<pre><code>from nltk.tokenize import sent_tokenize
+sent_tokenize(&quot;A total....&quot;)
+</code></pre>
+<p>Finally, if for some abbreviations <code>sent_tokenize</code> does not work well and you have a list of abbreviations to be supported (like &quot;spp.&quot; in your examples), you could use NLTK's <a href=""https://stackoverflow.com/a/34806849/674487""><code>PunktSentenceTokenizer</code></a>:</p>
+<pre><code>from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters
+punkt_param = PunktParameters()
+abbreviation = ['spp.']
+punkt_param.abbrev_types = set(abbreviation)
+tokenizer = PunktSentenceTokenizer(punkt_param)
+tokenizer.tokenize(&quot;A total ....&quot;)
+</code></pre>
+",""
+"86573","2020-12-11 19:22:45","2","","86572","<p>BPE and word pieces are fairly equivalent, with only <a href=""https://stackoverflow.com/a/55416944/674487"">minimal differences</a>. In practical terms, their main difference is that BPE places the <code>@@</code> at the end of tokens while wordpieces place the <code>##</code> at the beginning.</p>
+<p>Therefore, I understand that the authors of RoBERTa take the liberty of using BPE and wordpieces interchangeably.</p>
+",""
+"86090","2020-11-29 13:34:32","0","","86077","<p>Although what you describe is correct, such online/real-time usage is far from being the only (or even the most frequent) use case for DL inference. The keyword here is &quot;<em>batch</em>&quot;; there are several applications where the inference can be also run in <em>batches</em> of incoming data instead of on single samples.</p>
+<p>Take the example mentioned by NVIDIA in their AI Inference Platform <a href=""https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/t4-inference-print-update-inference-tech-overview-final.pdf"" rel=""nofollow noreferrer"">technical overview</a> (p.3):</p>
+<blockquote>
+<p>Inference also batch hundreds of samples to achieve optimal throughput on jobs run overnight in data centers to process substantial amounts of stored data. These jobs tend to emphasize throughput over latency. However, for real-time usages, high batch sizes also carry a latency penalty. For these usages, lower batch sizes (as low as a single sample) are used, trading off throughput for lowest latency. A hybrid approach, sometimes referred to as “auto-batching,” sets a time threshold—say, 10 milliseconds (ms)—and batches as many samples as possible within those 10ms before sending them on for inference. This approach achieves better throughput while maintaining a set latency amount.</p>
+</blockquote>
+<p>Although, as correctly pointed out in another thread <a href=""https://datascience.stackexchange.com/questions/23341/should-i-use-gpu-or-cpu-for-inference#comment36629_23348"">comment</a>, it is on NVIDIA's best interest to convince you that you need GPUs for inference (which is indeed not always true), hopefully you can see the pattern: whenever we want to emphasize <em>throughput over latency</em>, GPUs will be useful for speeding up inference.</p>
+<p>Practically, any application that runs on existing archives of data (videos, audio, music, text, documents) instead of waiting for incoming streams in real-time can meaningfully rely on GPUs for inference. And here &quot;archives&quot; does not imply necessarily time spans of years or months (although it can be so, e.g. in astronomy applications); the archive consisting of the photos uploaded to Facebook in the last 3 minutes (or since I have started writing this...) is <em>huge</em>, and it, too, can benefit from GPU-accelerated inference.</p>
+<p>Videos, in specific, since they are usually broke up in frames to be processed, may benefit from sped up GPU inference even in near-real time applications.</p>
+<p>Bu if you want to just set up your web app that will process low-traffic incoming photos or tweets to respond in real-time, then indeed GPU may not offer anything substantial in performance.</p>
+",""
+"85524","2020-11-16 22:27:14","2","","85510","<p>There is a token vocabulary, that is, the set of all possible tokens that can be handled by BERT. You can find the vocabulary used by one of the variants of BERT (BERT-base-uncased) <a href=""https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt"" rel=""nofollow noreferrer"">here</a>.</p>
+<p>You can see that it contains one token per line, with a total of 30522 tokens. The softmax is computed over them.</p>
+<p>The token granularity in the BERT vocabulary is subwords. This means that each token does not represent a complete word, but just a piece of word. Before feeding text as input to BERT, it is needed to segment it into subwords according to the subword vocabulary mentioned before. Having a subword vocabulary instead of a word-level vocabulary is what makes it possible for BERT (and any other text generation subword model) to only need a &quot;small&quot; vocabulary to be able to represent any string (within the character set seen in the training data).</p>
+",""
+"85210","2020-11-10 15:45:14","1","","85208","<p>The simplest approach would be extracting the keywords from both documents and by using them as features you can compare the mutuality of the papers.</p>
+<p>A better approach would be, build building knowledge graphs for the documents then comparing them. <a href=""https://core.ac.uk/download/pdf/148683663.pdf"" rel=""nofollow noreferrer"">This paper</a> illustrates a way of doing that.</p>
+<p><a href=""https://medium.com/swlh/python-nlp-tutorial-information-extraction-and-knowledge-graphs-43a2a4c4556c"" rel=""nofollow noreferrer"">Another Source</a></p>
+<p><a href=""https://medium.com/heuritech/knowledge-extraction-from-unstructured-texts-c279e3b8f92f"" rel=""nofollow noreferrer"">Another Source</a></p>
+<p>However, if you want to build a deeper knowledge about the issue, for example how text-similarity, plagiarism or recommendation systems work, <strong>A. Rajaraman and J. D. Ullman, Mining of Massive Datasets, Cambridge University Press, 2011</strong> has very good content about the topic.</p>
+",""
+"84695","2020-10-30 08:14:12","0","","84692","<p>The sentence &quot;During pre-training, the model is trained on unlabeled data over different pre-training tasks.&quot; means that BERT was pre-trained on normal textual data on two tasks: masked language model (MLM) and next sentence prediction (NSP).  There were no other classification/tagging labels present in the data, as the MLM predicts the text itself and the NSP label is derived from the textual data itself. Both tasks were trained simultaneously from a single textual dataset that was prepared to feed the input text and the expected outputs for both tasks.</p>
+<p>Therefore &quot;different&quot; here refers to the two pre-training tasks I mentioned: MLM and NSP.</p>
+<p>When fine-tuning, you do not need to train again on the same sentence classification task, you just simply train it on the task you need. It is perfectly fine to fine-tune BERT on a sentence tagging task on your own dataset.</p>
+",""
+"82767","2020-10-09 09:00:12","5","","82765","<p>Subword tokenization is the norm nowadays in NLP models because:</p>
+<ul>
+<li><p>It mostly avoids the <strong>out-of-vocabulary (OOV) word problem</strong>. Word vocabularies cannot handle words that are not in the training data. This is a problem for morphologically-rich languages, proper nouns, etc. Subword vocabularies allow representing these words.  By having subword tokens (and ensuring the individual characters are part of the subword vocabulary), makes it possible to encode words that were not even in the training data. There's still the problem with characters not present in the training data, but that's tolerable in most of the cases.</p>
+</li>
+<li><p>It gives <strong>manageable vocabulary sizes</strong>. Current neural networks need a pre-defined closed discrete token vocabulary. The vocabulary size that a neural network can handle is far smaller than the number of different words (surface forms) in most normal languages, especially morphologically-rich ones (and especially agglutinative ones).</p>
+</li>
+<li><p><strong>Mitigates data sparsity</strong>. In a word-based vocabulary, low-frequency words may appear very few times in the training data. This is especially troublesome for agglutinative languages, where a surface form may be the result of concatenating multiple affixes. Using subword tokenization allows token reusing, and increases the frequency of their appearance.</p>
+</li>
+<li><p>Neural networks perform very well with them. In all sorts of tasks, they excel: neural machine translation, NER, etc, you name it, the <strong>state of the art</strong> models are subword-based: BERT, GPT-3, Electra,...</p>
+</li>
+</ul>
+",""
+"80704","2020-08-23 21:05:07","0","","80654","<p>I'm not aware of any standard representation which increases the importance of document-frequent words, but IDF can simply be reverted: instead of the usual</p>
+<p><span class=""math-container"">$$idf(w,D)=\log\left(\frac{N}{|d\in D\ |\ w \in d|}\right)$$</span></p>
+<p>you could use the following:</p>
+<p><span class=""math-container"">$$revidf(w,D)=\log\left(\frac{N}{|d\in D\ |\ w \notin d|}\right)$$</span></p>
+<p>However for the task you describe I would be tempted to try some more advanced feature engineering, typically by using features which represent how close the distribution of words in the current document is from the average distribution.</p>
+",""
+"71415","2020-03-29 19:28:09","1","","71385","<p>You can't fit <strong>X_train</strong> into <strong>y_train</strong> without encoding.
+Try something like this for features:</p>
+
+<pre><code>from sklearn.preprocessing import OneHotEncoder
+enc = OneHotEncoder(handle_unknown='ignore')
+enc.fit(X)
+</code></pre>
+
+<p>and <strong>label encoding</strong> for labels.</p>
+",""
+"69483","2020-03-11 01:28:17","4","","69338","<p>If I got your problem description correct, you are looking for a recommender system like for example used by Netflix or Amazon. State of the art solution would be to use Latent Dirichlet Allocation topic modeling to make recommendations based on topics (in your case, topics would be the tags). Here is a very good video tutorial on this topic: <a href=""https://youtu.be/3mHy4OSyRf0"" rel=""nofollow noreferrer"">https://youtu.be/3mHy4OSyRf0</a>  </p>
+
+<p>In the case of the standard version of LDA, you don't even have to define the tags, you just define a value of different tags among all your documents. If you have for example 10000 documents and you want to use 100 different tags, the method will transform your words/documents matrix into a topics/documents matrix.  </p>
+
+<p>The entries of the words/documents matrix are simply all documents as columns and all words (from all your documents) as rows, then for each document you have the counts of each word.  </p>
+
+<p>The entries of the topics/documents matrix are all documents as columns and all possible topics as rows, then for each document you have entries like 78% topic1, 12.5% topic95, 0% topic99 on each topic.</p>
+
+<p>Once you have this data and you want to recommend a new document to a user based on his interests(tags), or in other words you have a user_interests vector <span class=""math-container"">$\vec{u}$</span> with 100 entries which have values between 0 and 1, and you have topics/documents matrix <span class=""math-container"">$M_{{topics}\times{documents}}$</span> you calculate a new matrix by multiplaying <span class=""math-container"">$M_{{topics}\times{documents}}*\vec{u}$</span>, from this matrix you calculate the sum from each row and recommend those documents with the highest sum.  </p>
+
+<p>If you just want to use predefined tags, you can skip the step where you use the LDA method to calculate the topics/documents matrix and simply use your data to represent your documents as tags/documents matrix and your users as tag_vectors, proceeding from here the same as above: multiplying the matrix with a user_vector, calculating the sum from each row and recommending the documents with the highest sum.</p>
+",""
+"62545","2019-11-01 19:22:59","0","","62538","<p>Text data is at the same time:</p>
+
+<ul>
+<li>very structured, because swapping only a few words in a sentence can make it complete gibberish, </li>
+<li>and very flexible, because there are usually many ways to express the same idea in a sentence.</li>
+</ul>
+
+<p>As a consequence, it's very hard to have a text sample which is representative enough of a ""population"" text, i.e. which covers enough cases for all the possible inputs. But augmentation methods are practically sure to fail, because either they are going to make the text gibberish or just cover minor variations which don't improve the coverage significantly.</p>
+
+<p>That's why a lot of the work in NLP is about experimental design and preprocessing.</p>
+",""
+"60397","2019-09-18 15:33:33","0","","60369","<blockquote>
+  <p>could we invent an algorithm like BM25 to compute the relevance score of question-answer pair? </p>
+</blockquote>
+
+<p>It depends:</p>
+
+<ul>
+<li>BM25 (actually cosine with BM25 weighted vectors) is a simple similarity measure, ultimately based on counting words in common. Proposing a different similarity measure is easy, for instance there are various measures used for MT evaluation (including some quite sophisticated ones) which could be used as well. Of course, these measures don't actually measure the relevance, they just offer a crude approximation.</li>
+<li>However if there was such a rule-based algorithm which would be able to <em>actually measure the relevance of an answer in any context</em>, then for all means and purposes we would have solved AI: judging the <em>semantic</em> relevance is much more subtle than counting words in common. In particular if there is such an algorithm, then the problem of question answering is solved: you can just generate all the possible answers and loop until one is found relevant to the question.</li>
+</ul>
+
+<p>People have tried to do ""intelligent"" rule-based algorithms in NLP for decades, before realizing that ML is more efficient and performs much better in most tasks. So it's extremely unlikely that a rule-based algorithm would suddenly outperform ML on a non-trivial task like this.</p>
+",""
+"57392","2019-08-11 17:47:01","0","","57364","<blockquote>
+  <p>In other words, is hyperparameter tuning more affected by the task (which is constant) or by the input data?</p>
+</blockquote>
+
+<p>It's correct that the task is constant, but hyper-parameters are usually considered specific to a particular learning algorithm, or to a method in general. In a broad sense the method may include what type of algorithm, its hyper-parameters, which features are used (in your case which embeddings), etc. </p>
+
+<p>The performance depends on both the data and the method (in a broad sense), and since hyper-parameters are parts of the method, there's no guarantee that the optimal parameters stay the same when any part of the method is changed <em>even if the data doesn't change</em>.</p>
+
+<p>So for optimal results it's better to tune the hyper-parameters for every possible pair of ML model and words embeddings. You can confirm this experimentally: it's very likely that the selected hyper-parameters will be different when you change any part of the method.</p>
+",""
+"57051","2019-08-06 12:39:31","0","","57025","<p>The idea behind the two tasks is to explore how document length affects the effectiveness of the different retrieval models.</p>
+
+<p>Ellen Voorhees
+TREC project manager 
+NIST</p>
+",""
+"55738","2019-07-16 02:16:21","2","","54748","<p>Multiclass models in XGBoost consist of <code>n_classes</code> separate forests, one for each one-vs-rest binary problem.  At each iteration, an extra tree is added to each forest.  But it isn't actually a one-vs-rest approach (as I thought in the first version of this answer), because these trees are built to minimize a single loss function, the cross-entropy of the softmax probabilities.
+<a href=""https://discuss.xgboost.ai/t/multiclassification-training-process/29"" rel=""nofollow noreferrer"">https://discuss.xgboost.ai/t/multiclassification-training-process/29</a><br>
+<a href=""https://github.com/dmlc/xgboost/issues/806"" rel=""nofollow noreferrer"">https://github.com/dmlc/xgboost/issues/806</a><br>
+<a href=""https://github.com/dmlc/xgboost/issues/3655"" rel=""nofollow noreferrer"">https://github.com/dmlc/xgboost/issues/3655</a>  </p>
+
+<p>In general, the one-vs-rest models are very good at identifying the single class, whereas the multiclass model has to balance performance on all of them.  More specifically, I think that the softmax may be responsible for the phenomenon you're displaying.  <em>(I'm still thinking about it, but I thought I should post the above for now.)</em></p>
+
+<p>Suppose one of your documents is reasonably likely to be in either of two topics: the probability scores given by the forests are 0.9, 0.85, then &lt;0.1 in all the rest.  In your topic-1 model, you make a fairly confident judgement that this document is of topic 1 (score of 0.9).  But in the multiclass ensemble, you see things as much more uncertain; maybe the model applies softmax, so that the probability of topic 1 is only ~0.5.</p>
+
+<p>More extreme, suppose the individual topic model scores are all 0.9.  Now the multiclass ensemble applies softmax and produces equal 1/17 probabilities for each topic!</p>
+
+<p>In the other direction, suppose one of your documents is judged unlikely to fit <em>any</em> of the topics: all the individual topic model probability scores are 0.01.  In the multiclass ensemble, that gets scaled up to 1/17 (OK, 17 topics makes this a harder sell).</p>
+
+<hr>
+
+<p>Hrm, except how likely is it to get the 0.9 and 0.85, since a training sample in one of these two topics will be pushed toward 0 by the other model... ?  Especially when your scores are fairly high, so it's not like the models have huge blind spots.<br>
+<em>(This part still causes a problem with the correct understanding of how XGBoost works; the log-loss of the softmax probabilities still penalizes being confident about belonging to two different classes...)</em></p>
+",""
+"47682","2019-03-20 15:33:15","1","","47556","<p>You can check the exact input and output parameters of the <code>add_mwe</code> method in NLTK's documentation for the class <a href=""https://www.nltk.org/_modules/nltk/tokenize/mwe.html"" rel=""nofollow noreferrer"">here</a>.</p>
+
+<p>This is the expected input:</p>
+
+<pre><code>&gt;&gt;&gt; tokenizer.add_mwe(('in', 'spite', 'of'))
+</code></pre>
+
+<p>So, each phrase must simply be a tuple with the words in that phrase. If you provide that input, you should get the output you expect (<code>in_spite_of</code>). I've added a full snippet of working code below for convenience, there you can see how to use the class as intended.</p>
+
+<p>Regarding the output of <code>add_mwe</code>, every time you call the method it adds a new word to the dictionary,  and all the words are stored in the class's <code>_mwes</code> attribute. So, given <code>mwe = MWETokenizer()</code>, you can then inspect the contents of <code>mwe</code> (with e.g. <code>print mwe._mwes</code>) to see what the class actually stores.</p>
+
+<p>As stated in the documentation, it is actually a <code>Trie</code> with all the terms, so it won't look exactly as the words you added (it is a more efficient representation thereof). The link I mentioned earlier has more details on that.</p>
+
+<p>Hope this helps!</p>
+
+<pre><code>import nltk
+
+from nltk import (
+    sent_tokenize as splitter,
+    wordpunct_tokenize as tokenizer
+)
+
+from nltk.tokenize.mwe import MWETokenizer
+
+test = """"""Anyone know how to output the tokens produced using MWE Tokenizer?
+
+For a clearer explanation of what I am asking for those who did not understand my original brief question.
+
+The multi-word expression tokenizer (MWETokenizer) provides a method/function (add_mwe()) that allows the user to enter multiple word expressions prior to using the tokenizer on text. Currently I have a file consisting of phrases / multi-word expression I want to use with the tokenizer. My concern is that the manner in which I am presenting the phrases to the function correctly and so not resulting in the desired set of tokens to be used in tokenizing the incoming text. So this leads me to ask if anyone knows how to output the token generated by this method/function so that I can verify that I am correctly passing the phrase to the function (add_mwe()).?""""""
+
+mwe = MWETokenizer()
+
+phrases = [
+    ('multi', '-', 'word'),
+    ('expression', 'tokenizer'),
+    ('word', 'expressions'),
+    ('multi', '-', 'word', 'expression')
+]
+
+for phrase in phrases:
+    mwe.add_mwe(phrase)
+
+
+for sent in splitter(test):
+    tokens = tokenizer(sent)
+    print ' '.join(tokens)
+    print ' '.join(mwe.tokenize(tokens))
+    print '---'
+
+
+
+# Expected output:
+#
+# Anyone know how to output the tokens produced using MWE Tokenizer ?
+# Anyone know how to output the tokens produced using MWE Tokenizer ?
+# ---
+# For a clearer explanation of what I am asking for those who did not understand my original brief question .
+# For a clearer explanation of what I am asking for those who did not understand my original brief question .
+# ---
+# The multi - word expression tokenizer ( MWETokenizer ) provides a method / function ( add_mwe ()) that allows the user to enter multiple word expressions prior to using the tokenizer on text .
+# The multi_-_word_expression tokenizer ( MWETokenizer ) provides a method / function ( add_mwe ()) that allows the user to enter multiple word_expressions prior to using the tokenizer on text .
+# ---
+# Currently I have a file consisting of phrases / multi - word expression I want to use with the tokenizer .
+# Currently I have a file consisting of phrases / multi_-_word_expression I want to use with the tokenizer .
+# ---
+# ...
+</code></pre>
+",""
+"44931","2019-02-01 18:16:45","0","","44215","<p>I was able to solve it myself after some further research. 
+I will be briefly describing my approach here.
+Cheers!</p>
+
+<p>The idea is to find the <a href=""https://en.wikipedia.org/wiki/Confidence_interval"" rel=""nofollow noreferrer"">confidence interval</a> which was also same as finding the distance from the decision boundary / hyper-plane, in my case. </p>
+
+<p>If you are using the Scikit Learn API, there is a method called <strong>predict_proba()</strong> for several classification models like Logistic Regression, SVM, Random Forest, etc. If your classifier does not provide one, you can wrap it with the <em>CalibratedClassifierCV</em> which can be found in <em>sklearn.calibration</em>, then use the above method to calculate the distance from the decision boundary.</p>
+
+<p>If you are looking for custom in-depth implementation, here are some papers / references that might help.</p>
+
+<ul>
+<li><a href=""https://www2.stat.duke.edu/courses/Spring05/sta101.2/lectures/STA101lecture15.pdf"" rel=""nofollow noreferrer"">Ref - 1</a></li>
+<li><a href=""https://www.sciencedirect.com/science/article/pii/S0893608006000153"" rel=""nofollow noreferrer"">Ref - 2</a></li>
+</ul>
+",""
+"44290","2019-01-20 15:26:24","2","","44270","<p>Spacy can do this. Spacy's semantic parser is based on Language models trained on large corpus of text.</p>
+
+<p>This parser can break sentence into lower level components such as words / phrases. </p>
+
+<p>More details and examples : </p>
+
+<p><a href=""https://spacy.io/usage/linguistic-features"" rel=""nofollow noreferrer"">https://spacy.io/usage/linguistic-features</a></p>
+
+<p>Example with the first sentence from  questions: <a href=""https://explosion.ai/demos/displacy?text=I%20think%20you%27re%20cute%20and%20I%20want%20to%20know%20more%20about%20you&amp;model=en_core_web_sm&amp;cpu=0&amp;cph=0"" rel=""nofollow noreferrer"">https://explosion.ai/demos/displacy?text=I%20think%20you%27re%20cute%20and%20I%20want%20to%20know%20more%20about%20you&amp;model=en_core_web_sm&amp;cpu=0&amp;cph=0</a></p>
+
+<p><a href=""https://i.sstatic.net/Vc5wY.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/Vc5wY.png"" alt=""enter image description here""></a></p>
+
+<p><a href=""https://i.sstatic.net/z8Jjb.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/z8Jjb.png"" alt=""enter image description here""></a></p>
+",""
+"44212","2019-01-18 17:48:00","2","","44205","<p>Doc2Vec is on possible approach. With this, model learns to ""cluster"" similar sentences together. </p>
+
+<p><a href=""https://i.sstatic.net/6rgUD.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/6rgUD.png"" alt=""enter image description here""></a></p>
+
+<p>Most simplistic approach is to aggregate word vectors but that ignores order of words. Details on few of the approaches : </p>
+
+<p><a href=""https://towardsdatascience.com/sentence-embedding-3053db22ea77"" rel=""nofollow noreferrer"">https://towardsdatascience.com/sentence-embedding-3053db22ea77</a>
+<a href=""https://medium.com/explorations-in-language-and-learning/how-to-obtain-sentence-vectors-2a6d88bd3c8b"" rel=""nofollow noreferrer"">https://medium.com/explorations-in-language-and-learning/how-to-obtain-sentence-vectors-2a6d88bd3c8b</a></p>
+",""
+"40500","2018-10-31 12:06:20","0","","40492","<p>You have many options depending on the level of complexity and creativity you may have. Among all, I would suggest going through ""Natural Language Understanding"" techniques.</p>
+
+<h2>Introduction</h2>
+
+<p>Not so precise but practically so to speak, NLP is about processing text and taking each token/word/phrase as an object and learning different models based on appearance of these objects and answering different questions. Here you do not really work with what they mean. Even when you do sentiment analysis (which seems to be a semantic concept) what you really do is counting tokens and seeing their labels in training data and predict the sentiment of the new one. </p>
+
+<p>In NLU, you mainly deal with semantics, meanings and relation between words. For example imagine a Google search query. When I search <strong>""who was the president of US when Italy won the world cup last time?""</strong>. If Google wants to rank pages for me based on NLP then many things might come up including these words and their close words (which of course helps me find the answer in related webpages). But if google needs to deliver the precise answer (which is still not easy!), it needs to understand what I say <a href=""https://www.google.de/search?rlz=1C1CHBF_deDE713DE713&amp;ei=FZbZW4G_K5CdkgXt_pXYBA&amp;q=Who%20was%20the%20U.S.%20President%20when%20the%20Angels%20won%20the%20World%20Series%3F&amp;oq=Who%20was%20the%20U.S.%20President%20when%20the%20Angels%20won%20the%20World%20Series%3F&amp;gs_l=psy-ab.3...12101.12101.0.12880.0.0.0.0.0.0.0.0..0.0....0...1c.1.64.psy-ab..0.0.0....0.-W7xOCCL5_0"" rel=""nofollow noreferrer"">as you see an example here</a>. For this, they use a Knowledge Base (for Google, it's called <a href=""https://en.wikipedia.org/wiki/Knowledge_Graph"" rel=""nofollow noreferrer"">Knowledge Graph</a>) which is the answer I have to your question.</p>
+
+<h2>Suggested Idea</h2>
+
+<p>You can make a knowledge base for your corpus if there is enough text. For this, you can extract patterns of desired phrases manually and through this patterns search all occurrences of your desired sentences (e.g. <em>""|MEDICINE| is used for |DISEASE|""</em>) and all occurrences of your desired objects (e.g. <em>""Tumor""</em>). Hearst Patterns can be used for such purpose <a href=""https://www.microsoft.com/en-us/research/wp-content/uploads/2012/05/paper.pdf"" rel=""nofollow noreferrer"">as you see in this paper</a>. Then connecting <em>things</em> though a graph gives you an option for understanding that the similar pattern is happening. For synonyms and related words you can easily use <a href=""http://www.wangzhongyuan.com/tutorial/ACL2016/Understanding-Short-Texts/Slides/Understanding-Short-Texts-Part-II-Explicit-Representation.pdf"" rel=""nofollow noreferrer"">existing Knowledge Bases which are a lot</a>.</p>
+
+<p>Hope it helps :)</p>
+",""
+"37626","2018-08-30 20:10:59","0","","37406","<p>Your (basic) task is sentiment analysis, covered in many places.</p>
+<p>There is a number of algorithms proven good for that, including LSTM but you need a good deal of data to train that (and compute power). Others is fastText - <a href=""http://fasttext.cc"" rel=""nofollow noreferrer"">tool by Facebook</a> - where you have already embeddings for a number of languages including EN.</p>
+<p>But you need anyway 'ground truth' - samples of positive and negative posts / reviews - to train final classification model. Assuming you have standard EN reviews - meaning a lot of language typical to online reviews... - you can use some of existing datasets to train your model and boost results. Otherwise you would have to manually select representative (meaning the more the better...) samples and label them (pos/neg). E.g. there is yelp review dataset, actually a number of versions, <a href=""https://www.kaggle.com/yelp-dataset/yelp-dataset"" rel=""nofollow noreferrer"">one of them</a>.</p>
+<p>The other tasks - extracting product and complaint/appreciation part - are  entity extraction and topic modelling respectively, each a seprate story.</p>
+<p>For entity (product) extraction, possibly you can just search the post for the names from your inventory. Assuming again EN language, beware only of plural versions. And you will need a good data structure / indexes for it to get results fast.</p>
+<p>For topic modelling, there is <a href=""https://radimrehurek.com/gensim/models/ldamodel.html"" rel=""nofollow noreferrer"">LDA implementation in gensim</a>. You will have to manually go through the topics and process them, depending on the exact scenario you want to use them, e.g. assign each a meaningful name, selecting meanwhile those that make sense for you, merging some.</p>
+",""
+"37622","2018-08-30 18:49:55","1","","37489","<p>It's better to talk about x, q and R as (random) events - set of outcomes of the random experiment. x and q will be one element sets but R is an event denoting x is relevant to q and thus it is a subset of cartesian product X x Q (pair of a document and a query).</p>
+
+<p>Comma is then set conjunction and P(A,B) = P(A ^ B) which equals to P(A) * P(B) when A is independent of B.</p>
+
+<p>The wiki statement 'by using Bayesian rule' is a bit of a shortcut since you need to apply it several times. To derive the above formula for P(R|x,q), I would start with conditional probability definition (which is the root of Bayesian rule):</p>
+
+<p>P(A|B) = P(A ^ B) / P(B)</p>
+
+<p>Then:</p>
+
+<p>P(R|x,q) = P(R ^ x ^ q) / P(x,q) = P(x|R,q) * P(R,q) / [ P(x|q) * P(q) ] =</p>
+
+<p>= P(x|R,q) * P(R|q) / P(q) / [ P(x|q) * P(q) ]</p>
+
+<p>When you divide nominator and denominator by P(q), you obtain </p>
+
+<p>P(R|x,q) = P(x|R,q) * P(R|q) / P(x|q)</p>
+",""
+"35604","2018-07-17 15:23:51","2","","35602","<p>There are <strong>no</strong> unsupervised methods to train a POS-Tagger that have similar performance to human annotations or supervised methods.</p>
+
+<p><a href=""http://aclweb.org/anthology/D17-1076"" rel=""nofollow noreferrer"">The current state-of-the-art supervised methods for training POS-Tagger are Long short-term memory (LSTM) neural networks</a>.</p>
+",""
+"29167","2018-03-16 15:44:37","0","","29162","<p>The answer depends on what you want to do with the hashtags/words and also on what tokenizer you are using.</p>
+
+<p>Consider this example tweet: </p>
+
+<blockquote>
+  <p><code>Hi, we need you!</code></p>
+  
+  <p><code>#Hi #Weneedyou</code></p>
+</blockquote>
+
+<p>If you use <em>TreeBank</em> or <em>WordPunct</em> tokenizers the output will be:</p>
+
+<pre><code> ['Hi', 'we', 'need', 'you', '!', '#', 'Hi', '#', 'Weneedyou']
+</code></pre>
+
+<p>However if you use <em>Whitespace</em> Tokenizer, the result is:</p>
+
+<pre><code> ['Hi', 'we', 'need', 'you!', '#Hi', '#Weneedyou']
+</code></pre>
+
+<p>Similar discrepancies can be found in terms such as <code>can't</code> or <code>pre-order</code> for instance.</p>
+
+<p>Additionally, you need to consider what is a token for your task at hand. In my previous example <code>Hi</code> make sense either with or without <code>#</code>. However <code>Weneedyou</code> without the hash is just a poorly written word. Maybe you want to keep the hashtags in your corpus or maybe not, but this depends on what you want to do with it.</p>
+
+<p>So first you need to know how your tokenizer handles these cases and decide if you want to remove them beforehand or later to keep hashtags in your corpus or only (sometimes weird) words.</p>
+
+<p>In the case of the <code>@</code> is exactly the same, you can keep it, remove it or maybe delete the whole instance <code>@user</code> as you don't want to keep user names in your corpus. As I said, it all depends on your task.</p>
+
+<p>PS: In case you want to play around with different tokenizers, try <a href=""http://text-processing.com/demo/tokenize/"" rel=""nofollow noreferrer"">this</a>.</p>
+",""
+"25060","2017-11-23 18:39:56","0","","14805","<p>I you want some kind of data-sets like Google spell checking data I suggest you look into the <a href=""http://romang.home.amu.edu.pl/wiked/wiked.html"" rel=""nofollow noreferrer"">The WikEd Error Corpus</a> dataset. The corpus consists of more than 12 million sentences with a total of 14 million edits of various types, this edits include: spelling error corrections, grammatical error corrections, stylistic changes. All these from the Wikipedia correction history. The owners (authors) of the data-set describe the data mining process in this <a href=""https://pdfs.semanticscholar.org/51e5/8ac760a466dda48dfe470b44688277fe2d89.pdf"" rel=""nofollow noreferrer"">paper</a>. Also check this question in <a href=""https://www.quora.com/Where-can-I-find-data-sets-for-learning-autocorrection-or-spelling-correction"" rel=""nofollow noreferrer"">quora</a> it contains links to various data-sets with spelling errors. Finally this <a href=""http://www.dcs.bbk.ac.uk/~ROGER/corpora.html"" rel=""nofollow noreferrer"">page</a> can also be useful.</p>
+",""
+"24870","2017-11-17 20:41:40","1","","24868","<p>I suggest you take a look at the Python library <a href=""https://spacy.io/"" rel=""nofollow noreferrer"">Spacy</a> it has a model for <a href=""https://spacy.io/models/es"" rel=""nofollow noreferrer"">spanish language</a> that includes NER.</p>
+",""
+"23181","2017-09-20 16:59:06","0","","22306","<p><a href=""https://github.com/mre/receipt-parser"" rel=""nofollow noreferrer"">receipt-parser</a> is receipt parser package in Python built on tesseract.</p>
+",""
+"5998","2015-06-03 23:19:42","0","","5209","<p><a href=""http://en.wikipedia.org/wiki/Named-entity_recognition#Formal_evaluation"" rel=""nofollow"">http://en.wikipedia.org/wiki/Named-entity_recognition#Formal_evaluation</a> :</p>
+
+<blockquote>
+  <p>To evaluate the quality of a NER system's output, several measures
+  have been defined. While accuracy on the token level is one
+  possibility, it suffers from two problems: the vast majority of tokens
+  in real-world text are not part of entity names as usually defined, so
+  the baseline accuracy (always predict ""not an entity"") is
+  extravagantly high, typically >90%; and mispredicting the full span of
+  an entity name is not properly penalized (finding only a person's
+  first name when their last name follows is scored as ½ accuracy).</p>
+  
+  <p>In academic conferences such as CoNLL, a variant of the F1 score has
+  been defined as follows:</p>
+  
+  <ul>
+  <li>Precision is the number of predicted entity name spans that line up exactly with spans in the gold standard evaluation data. I.e. when
+  [Person Hans] [Person Blick] is predicted but [Person Hans Blick] was
+  required, precision for the predicted name is zero. Precision is then
+  averaged over all predicted entity names.</li>
+  <li>Recall is similarly the number of names in the gold standard that appear at exactly the same location in the predictions.</li>
+  <li>F1 score is the harmonic mean of these two.</li>
+  </ul>
+  
+  <p>It follows from the above definition that any prediction that misses a
+  single token, includes a spurious token, or has the wrong class,
+  ""scores no points"", i.e. does not contribute to either precision or
+  recall.</p>
+</blockquote>
+",""
+"5902","2015-05-25 15:19:21","2","","5893","<p>One approach would be to use <a href=""http://en.wikipedia.org/wiki/Tf%E2%80%93idf"" rel=""noreferrer"">tf-idf</a> score. The words which occur in most of the queries will be of little help in differentiating the good search queries from bad ones. But ones which occur very frequently (high tf or term-frequency) in only few queries (high idf or inverse document frequency) as likely to be more important in distinguishing the good queries from the bad ones.</p>
+",""
+"932","2014-08-07 03:15:09","0","","896","<p>I have managed to resolve this. There is an excellent and thorough explanation of the optimization steps in the following thesis: <a href=""http://cs.stanford.edu/~pliang/papers/meng-thesis.pdf"" rel=""nofollow"">Semi-Supervised Learning for Natural Language by Percy Liang</a>.</p>
+
+<p>My mistake was trying to update the quality for all potential clusters pairs. Instead, you should initialize a table with the quality changes of doing each merge. Use this table to find the best merge, and the update the relevant terms that make up the table entries.</p>
+",""

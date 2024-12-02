@@ -1,0 +1,1072 @@
+Post Link,Title,CreationDate,AcceptedAnswerId,Score,ViewCount,Tags,Body,TagName
+"46459","How can I change the tokens BERT uses so that each digit is a separate token?","2024-08-07 17:31:29","","0","30","<transformer><pytorch><bert><tokenization>","<p>Rather than have the tokenizer generate this sort of thing:</p>
+<pre><code>&quot;$1009 Dollars&quot; =&gt; [&quot;$&quot;, &quot;100#&quot;, &quot;9&quot;, &quot;Dollars&quot;]
+</code></pre>
+<p>I'd like to have:</p>
+<pre><code>&quot;$1009 Dollars&quot; =&gt; [&quot;$&quot;, &quot;1#&quot;, &quot;0#&quot;, &quot;0#&quot;, &quot;9&quot;, &quot;Dollars&quot;]
+</code></pre>
+<p>Is that possible? I know I'd need to add all the <code>n#</code> tokens, but I'd need to remove a lot of tokens as well. I'm guessing I'd need to build my transformer from scratch?</p>
+<p>For reference, here's some example code that tokenizes this string:</p>
+<pre><code>from transformers import AutoTokenizer, BertModel
+import torch
+
+tokenizer = AutoTokenizer.from_pretrained(&quot;bert-large-uncased&quot;)
+
+inputs = tokenizer(&quot;$1009 Dollars&quot;, return_tensors=&quot;pt&quot;)
+ids = inputs['input_ids']
+for token_id in ids:
+    token = tokenizer.convert_ids_to_tokens(token_id)
+    print(token)
+</code></pre>
+<p>Here's the result I get:</p>
+<pre><code>['[CLS]', '$', '100', '##9', 'dollars', '[SEP]']
+</code></pre>
+<p>How can I control what tokens go into my model?</p>
+","bert"
+"46067","How do transformer models handle negation in sentiment analysis","2024-06-25 00:58:21","","0","61","<transformer><attention><gpt><bert>","<p>I'm trying to understand how transformer models, such as BERT or GPT, handle negation in sentiment analysis. Specifically, I'm curious about how these models manage to correctly interpret sentences where negation changes the sentiment, such as &quot;The movie is not good.&quot;</p>
+<p>A simple model using word embeddings + global averaging fails to handle negation properly. Intuitively, for example, if &quot;good&quot; has a positive sentiment score and &quot;bad&quot; has a negative sentiment score, a model might misinterpret &quot;not good&quot; by simply averaging the scores of &quot;not&quot; and &quot;good&quot;.</p>
+<h3>Example Without Negation</h3>
+<p>Consider the following sentences with sentiment words:</p>
+<ul>
+<li>&quot;The movie is good.&quot;</li>
+<li>&quot;The movie is awesome.&quot;</li>
+<li>&quot;The movie is terrible.&quot;</li>
+</ul>
+<p>Suppose we have the following word embeddings representing sentiment scores:</p>
+<ul>
+<li>&quot;good&quot; = [10]</li>
+<li>&quot;awesome&quot; = [12]</li>
+<li>&quot;terrible&quot; = [-10]</li>
+</ul>
+<p>Neutral words (assuming embeddings around 0):</p>
+<ul>
+<li>&quot;the&quot; = [0]</li>
+<li>&quot;movie&quot; = [0]</li>
+<li>&quot;is&quot; = [0]</li>
+</ul>
+<p>For these sentences, a simple global average of the sentiment scores works well:</p>
+<ul>
+<li>&quot;The movie is good&quot; = average([0, 0, 0, 10]) = 10 / 4 = 2.5 (positive sentiment)</li>
+<li>&quot;The movie is awesome&quot; = average([0, 0, 0, 12]) = 12 / 4 = 3 (positive sentiment)</li>
+<li>&quot;The movie is terrible&quot; = average([0, 0, 0, -10]) = -10 / 4 = -2.5 (negative sentiment)</li>
+</ul>
+<h3>Example With Negation</h3>
+<p>Now, consider the sentence &quot;The movie is not good.&quot; In this case, the sentiment should be negative due to the presence of &quot;not.&quot; However, averaging the scores naively might not handle this correctly. For example:</p>
+<ul>
+<li>&quot;The movie is not good&quot; = average([0, 0, 0, -5 (for not), 10 (for good)]) = (0 + 0 + 0 - 5 + 10) / 5 = 5 / 5 = 1 (incorrectly positive)</li>
+<li>&quot;The movie is not bad&quot; = average([0, 0, 0, -5, -9]) = (0 + 0 + 0 - 5 - 9) / 5 = -14 / 5 = -2.8 (incorrectly negative)</li>
+</ul>
+<h3>How Transformers Handle Negation</h3>
+<p>Can someone explain, with a concrete example, how a transformer model like BERT or GPT can correctly understand and model negation in a sentence? Specifically, I'm interested in:</p>
+<ul>
+<li>How the self-attention mechanism captures the relationship between words like &quot;not&quot; and &quot;good&quot;.</li>
+<li>An example with numerical values to illustrate the process.</li>
+</ul>
+","bert"
+"46054","How is the bidirectional context achieved in BERT?","2024-06-23 11:11:39","46212","0","49","<transformer><attention><gpt><bert><language-model>","<p>I have read the paper &quot;BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding&quot; by Jacob Devlin et al. (2018) and &quot;Improving Language Understanding by Generative Pre-training&quot; by Alec Radford et al. (2018).</p>
+<p>I have understand that the largest difference between BERT and GPT is the direction of the context. BERT is bidirectional, while GPT is unidirectional. I have understand the difference visually thorugh Figure 3 of the BERT paper.
+However, I have question about how the difference is achieved in more detailed level, such as implementation level. I have understand that the shortest way is to look at the code, but I am wondering if there is any explanation in the paper.
+Especially, I am wondering how multiple outputs from previous transformer layers are combined as the input of the next layer in BERT (or so does GPT).</p>
+<p>I have also looked at the paper &quot;Attention is All You Need&quot; by Vaswani et al. (2017) and found the following equation
+<span class=""math-container"">$$ Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V $$</span>
+, but I am not sure about where does it implies the unidirectional context in the transformer architecture. (I think original transformer is unidirectional.)</p>
+<p>I would appreciate it if you could explain how the bidirectional context is achieved in BERT.</p>
+","bert"
+"45780","How does BERT know how to where to add segment embeddings (i.e. to differentiate between two sentences packed in a single token sequence)","2024-05-23 01:45:39","","0","19","<transformer><bert>","<p>In addition to using a special [SEP] token to distinguish between two sentences, I understand that BERT also adds special learned embeddings to each sentence:</p>
+<p>&quot;we add a learned embedding to every token indicating whether it belongs
+to sentence A or sentence B&quot; (from the BERT paper)</p>
+<p>To my understanding, BERT has no way of differentiating between the two sentences in the raw input apart from the [SEP] token between them, but the model architecture doesn't specifically recognize this as a special token; (from my understanding) the model learns to treat this as a separating token while pretraining (Is this correct? I'm not too sure about whether I understand this part correctly either). If this is true, how does the model know where to add the additional learned embedding to sentence A and B (i.e. how does it know which part of the input sequence is A and which part is B, so it can add the additional embeddings appropriately)?</p>
+<p>Just a quick note that I am not very familiar with these topics, so please correct me if there are any additional bugs in my understanding that you can pick out! This would be very appreciated--I am quite certain I'm missing some key understanding here.</p>
+","bert"
+"45508","Is token mask masked in attention of encoders of bert?","2024-04-23 03:53:05","","0","34","<transformer><attention><bert><padding>","<p>I have recently researched on Bert structure. And the paper says we will mask some token at the input in 80%, 10% input be changed and 10% left remained. But I wonder if the mask token in the input be masked in attention of encoders layer? In that case, the input token of padding token and mask token is the same (equal 0). is it fine?</p>
+","bert"
+"45398","why we use learnable positional encoding instead of Sinusoidal positional encoding","2024-04-09 08:59:00","","1","287","<machine-learning><deep-learning><natural-language-processing><transformer><bert>","<p>In the original paper of <a href=""https://arxiv.org/pdf/1706.03762.pdf"" rel=""nofollow noreferrer"">transformers</a> they using positional encoding to capture the position of each word in the sentence and for calculate that it using sin and cos ,like shom in the image.<a href=""https://i.sstatic.net/pFtun.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/pFtun.png"" alt=""Sinusoidal positional encoding"" /></a> In Bert and the author architecture that based on transformers ,they use learnable position encoding ,so they initialize the vectors of positional encoding randomly and then start to adjust them in training.<br>My question is why we use the learnable positional encoding, what is the objective?</p>
+","bert"
+"45198","Why are some of the weights not initialized from the pretrained model checkpoint (from hugging face)?","2024-03-22 11:41:34","","-1","529","<bert><huggingface>","<pre><code>import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+# Load tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(&quot;Maltehb/danish-bert-botxo&quot;)
+model = AutoModelForSequenceClassification.from_pretrained(&quot;Maltehb/danish-bert-botxo&quot;)
+
+# Text to classify
+text = &quot;Det er en god dag&quot;
+
+# Tokenize input text
+inputs = tokenizer(text, return_tensors=&quot;pt&quot;)
+
+# Forward pass through the model
+outputs = model(**inputs)
+
+# Get predicted probabilities for each class
+probs = torch.softmax(outputs.logits, dim=1).detach().numpy()
+
+print(probs)
+# Predicted label
+predicted_label = &quot;positive&quot; if probs[0][1] &gt; probs[0][0] else &quot;negative&quot;
+
+print(&quot;positive prob:&quot;, probs[0][1])
+print(&quot;negative prob:&quot;, probs[0][0])
+print(f&quot;The sentiment of the text '{text}' is {predicted_label}.&quot;)
+</code></pre>
+<p>output:</p>
+<pre><code>$ python temp.py 
+Some weights of BertForSequenceClassification were not init
+ialized from the model checkpoint at Maltehb/danish-bert-bo
+txo and are newly initialized: ['classifier.bias', 'classifier.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.        
+[[0.43838173 0.5616182 ]]
+positive prob: 0.5616182
+negative prob: 0.43838173
+The sentiment of the text 'Det er en god dag' is positive.
+</code></pre>
+<p>I am surprised to read that <code>Some weights of BertForSequenceClassification were not init ialized from the model checkpoint at Maltehb/danish-bert-bo txo and are newly initialized: ['classifier.bias', 'classifier.weight']</code>.</p>
+<p>If I understood it correctly, <a href=""https://huggingface.co/Maltehb/danish-bert-botxo?text=K%C3%B8benhavn+er+%5BMASK%5D+i+Danmark."" rel=""nofollow noreferrer"">Maltehb/danish-bert-bo
+txo</a> is an already trained model, so I shouldn't have to train it again. So why were some of the weights not initialized  from the model checkpoint?</p>
+","bert"
+"43624","What does Figure 3 in the BERT paper represent?","2024-01-31 10:44:33","","2","50","<deep-learning><transformer><bert>","<p>The <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer"">BERT paper</a> has the following diagram (Figure 3):</p>
+<p><a href=""https://i.sstatic.net/UA8hj.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/UA8hj.png"" alt=""enter image description here"" /></a></p>
+<p>It's captioned &quot;Differences in pre-training model architectures&quot;.
+However, I thought the BERT architecture was just a stack of attention blocks like this (from <a href=""https://huggingface.co/blog/bert-101"" rel=""nofollow noreferrer"">huggingface</a>):</p>
+<p><a href=""https://i.sstatic.net/LZja3.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/LZja3.png"" alt=""enter image description here"" /></a></p>
+<p>My question: <strong>What is the BERT diagram supposed to mean?</strong></p>
+<p>My best guess is that it represents the process of predicting an output sequence from a given input sequence. In other words, in the GPT model, one first samples with a sequence length of 1 to get next token T1, then we embed T1 via E2 and sample with a sequence of length 2 to get T2, and so on.</p>
+<p>In BERT, I assume we mask all input tokens but the first, then sample the whole thing.</p>
+<p>The problem is that I don't understand what the <code>Trm</code> blocks mean, or how this relates to the BERT architecture.</p>
+","bert"
+"43272","Is it possible to convert BERT embeddings to textual format?","2023-12-30 21:08:24","","1","75","<bert>","<p>There is a need of computation that needs to take place, although the person who is sending the raw data is concerned about privacy of such a data.
+<code>Is it possible to gain contextual information or any information just from BERT vector embeddings?</code></p>
+<p>If yes, how can one add <code>salt</code> to the BERT embeddings?</p>
+","bert"
+"43150","Which input embeddings are learned during pre-training in BERT? What about during fine-tuning?","2023-12-16 04:54:39","","0","80","<natural-language-processing><transformer><bert>","<p>I was reading the 2019 BERT paper and they mention how they use wordpieces that are then represented as the sum of token embeddings, segment embeddings, and positional embeddings. What is unclear to me is whether the token, segment and positional embeddings are all learned during pre-training AND whether they are modified during fine-tuning.</p>
+<h2>Pre-Training:</h2>
+<ul>
+<li><strong>Sentence Embeddings:</strong> The paper says that the sentence embeddings are learned during pre-training (&quot;we add a learned embedding to every token indicating whether it belongs to sentence A or sentence B&quot;). <strong>am pretty confident about this.</strong></li>
+<li><strong>Positional Embeddings:</strong> The paper does not say whether the positional embeddings are learned during pre-training. However, BERT relies on the transformer architecture from the &quot;Attention Is All You Need&quot; pa[er and I believe the positional embeddings in THAT paper are learned during what would pre-training for the BERT model. <strong>- Not so confident about this.</strong></li>
+<li><strong>Token Embeddings:</strong> I'm guessing the token embeddings aren't learned during pre-training but before pre-training. Specifically, I hypothesize that the authors simply use the word piece embeddings approach to break up sentences into word &quot;pieces&quot; AND map each of these pieces to numbers, but this mapping is not modified during pre-training. <strong>- I'm very uncertain about this.</strong></li>
+</ul>
+<p><strong>Are positional embeddings and token embeddings learned during pre-training?</strong></p>
+<h2>Fine-Tuning:</h2>
+<p>Essentially the same question but for fine-tuning: are these embeddings typically modified during fine-tuning?</p>
+","bert"
+"43149","What is the loss function used when pre-training BERT on MLM & NSP tasks?","2023-12-16 04:14:29","","0","335","<natural-language-processing><reference-request><objective-functions><bert>","<p>I'm new to NLP and was reading through the 2019 BERT paper and am confused about the loss function used during pre-training.</p>
+<p>As I understand it, the model is trained on the MLM and NSP tasks. The MLM task is trained by passing the final hidden vectors corresponding to the mask tokens into a softmax function and then minimizing the cross entropy loss function between the softmax output and truth.</p>
+<p>For the NSP task, I understand that the goal is to use the final hidden vector corresponding to the [CLS] token, and using that to  determine whether the two &quot;sentences&quot; follow each other or not. Now the paper doesn't exactly say what loss function they use for this is, so I'm assuming they're doing something similar to the MLM case.</p>
+<p>Now, in the appendix the authors mention that &quot;The training loss is the sum of the mean MLM likelihood and the mean NSP likelihood&quot;. Given the relationship between log likelihood and cross entropy, this makes it seem like both MLK and NSP are used simultaneously during pre-training through a combined loss function.</p>
+<p>I'm probably overthinking things, but I was wondering if any of you had a different interpretation of this. Specifically:</p>
+<p><strong>What is the loss function used when pre-training BERT on MLM &amp; NSP? Also, what's your source?</strong></p>
+<p>I've read the paper start to end, as well as the transformers paper, searched forums, videos, and blogs, and my next stop is to dig into the code. I feel most explanations are either hand-wavy and it's unclear whether they're just guessing (like me) or if they actually know the answer.</p>
+","bert"
+"41939","Fine Tuning a Bert Transformer. How to label for emotions and train large scripts?","2023-08-31 11:29:38","41969","0","155","<natural-language-processing><bert><data-labelling><emotion-recognition>","<p>From what I have seen you can fine tune a Bert model to detect emotions by labelling single sentences.
+But if the text you want to evaluate is a large script with many sentences, do I need to split the script into sentences and get a classification for each one? If I did it that way I could find the average score for each emotion for the the sentences in the script.
+The problem with doing it that way is the the context between sentences is lost. A context like sarcasm often means that sentences have to be connected in order to understand that it is sarcastic.
+I would be interested to get some advice on this.</p>
+","bert"
+"41858","How can BERT/Transformer models accept input batches of different sizes?","2023-08-23 23:22:40","","0","336","<neural-networks><natural-language-processing><transformer><bert>","<p>I understand that all inputs in a batch need to be of the same size. However, it seems BERT/Transformers models can accept batches with different sizes as input.</p>
+<p>How is that possible? I thought we needed to pad all examples in a batch to <code>model.max_input_size</code>, however, it seems HuggingFace does <code>Dynamic Padding</code> that allows sending batches of different lengths (till the time they are smaller than <code>max_input_size</code>)</p>
+<p><a href=""https://i.sstatic.net/zC1WS.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/zC1WS.png"" alt=""enter image description here"" /></a></p>
+<p>Link: <a href=""https://mccormickml.com/2020/07/29/smart-batching-tutorial/"" rel=""nofollow noreferrer"">https://mccormickml.com/2020/07/29/smart-batching-tutorial/</a><br />
+Link2: <a href=""https://huggingface.co/learn/nlp-course/en/chapter3/2?fw=pt#dynamic-padding"" rel=""nofollow noreferrer"">https://huggingface.co/learn/nlp-course/en/chapter3/2?fw=pt#dynamic-padding</a></p>
+","bert"
+"40749","How big the context can be using HuggingFace models?","2023-06-07 17:53:04","46011","0","727","<natural-language-processing><pytorch><bert><language-model><question-answering>","<p>I'm new on AI, Neural Networks, ChatBots and all this ecosystem. I'm trying to use a classical example of pre-trained models, more specifically <code>timpal0l/mdeberta-v3-base-squad2</code>.</p>
+<p>As I could see in the examples, it is necessary to provide a small text (context) and a question, which the model will respond to by extracting information from the context and using training on the structure of the language. This is my working code so far:</p>
+<pre><code>from transformers import AutoTokenizer, AutoModelForQuestionAnswering, AutoConfig, DefaultDataCollator
+import torch
+
+tokenizer = AutoTokenizer.from_pretrained(&quot;timpal0l/mdeberta-v3-base-squad2&quot;)
+model = AutoModelForQuestionAnswering.from_pretrained(&quot;timpal0l/mdeberta-v3-base-squad2&quot;, return_dict=False )
+
+# From portuguese: My cat is called Helena. She is fat and has spots all over her body.
+little_text = &quot;minha gata se chama helena. Ela é gorda e tem manchas pelo corpo.&quot;
+
+# From portuguese: who is helena?
+question = &quot;quem é helena?&quot;
+
+inputs = tokenizer.encode_plus(question, little_text, add_special_tokens=False, return_tensors=&quot;pt&quot;)
+
+input_ids = inputs[&quot;input_ids&quot;].tolist()[0]
+
+text_tokens = tokenizer.convert_ids_to_tokens(input_ids)
+answer_start_scores, answer_end_scores = model(**inputs)
+
+answer_start = torch.argmax(
+    answer_start_scores
+)  
+answer_end = torch.argmax(answer_end_scores) + 1
+
+answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
+
+print(f&quot;Question: {question}&quot;)
+print(f&quot;Answer: {answer}\n&quot;)
+
+------------------------------------------------
+Question: quem é helena?
+Answer: minha gata # From portuguese: My cat 
+</code></pre>
+<p>Everything went well. The model is able to perfectly answer questions about the small text provided as context.</p>
+<p>What I couldn't understand is: when I provide a much larger text to serve as context (from a file, for example) the time for the response increases considerably. So every time I go to ask a question about the given text I have to wait a long time to get the answer.</p>
+<p>So my question is: Am I doing this correctly? My intention is to create a chatbot to help answer questions about a specific system (a kind of help bot), so I simply copied all the text from the online help and pasted it into a single file but I believe that this method only works for small texts because at every question I must <code>tokenizer.encode_plus(question, little_text ... </code></p>
+<p>How big the context can be?</p>
+","bert"
+"40590","What is MLM & NSP loss function","2023-05-26 05:01:58","","1","876","<natural-language-processing><transformer><objective-functions><bert>","<p>Two objective functions are used during the BERT language
+model pretraining step.</p>
+<p>The first one is masked language
+model (MLM) that randomly masks
+15% of the
+input tokens and the objective is to predict the vocabulary</p>
+<p>The second objective
+is the next sentence prediction (NSP) task. This is a binary
+classification task for predicting whether two sentences are
+subsequent in the original text.</p>
+<p>I am looking for such objective function as mathematical definition.</p>
+","bert"
+"40572","How to generate a sentence containing a specific set of tokens using GPT2 or BERT?","2023-05-24 20:33:03","","0","126","<bert><gpt-2>","<p>I have different sets of words as inputs, e.g.,</p>
+<pre><code>{governor, John Gary Evans, office, 1894}
+</code></pre>
+<p>or</p>
+<pre><code>{cheetah, 80km/h, mammal}
+</code></pre>
+<p>I would like to construct a grammatically correct sentence that contains a full set, or a subset of these tokens. So the outputs could be:</p>
+<pre><code>&quot;Governor John Gary Evans took office in 1894.&quot; 
+</code></pre>
+<p>and</p>
+<pre><code>&quot;Cheetahs can run at speeds of about 80km/s.&quot; 
+</code></pre>
+<p>Output should be one sentence only. How to use GPT2 or BERT for this task? Which of the two models is appropriate for this task? I understand one is unidirectional and the other is bidirectional in the way they generate each word of the output. However, i do not know in advance what the grammatically correct order of the input tokens should be, and the missing words might need to be inserted after, in between, or at the beginning of the output sentence.</p>
+","bert"
+"39680","How can I not only classify an intent, but also identify slots and values in it?","2023-03-20 05:51:07","39715","0","79","<classification><transformer><attention><bert>","<p>I've been working on text -&gt; intent -&gt; command execution for a particular application and while I've found many papers and code that work well for intent classification (<a href=""https://paperswithcode.com/paper/generalized-intent-discovery-learning-from"" rel=""nofollow noreferrer"">1</a>, <a href=""https://paperswithcode.com/paper/z-bert-a-a-zero-shot-pipeline-for-unknown"" rel=""nofollow noreferrer"">2</a>, etc.), they stop there. For example, given a standard music intent &quot;<em>Play some music by U2</em>&quot; such classifiers return me an intent class <code>play_music</code>. But the information about the artist, track requested aren't part of it. Everytime I search for papers on text -&gt; intent, I end up with classifiers instead of any deep learning models that can not only classify, but maybe give me an importance vector to extract the key parameters from my intents to pass onto the intent class.</p>
+<p>Does anyone know of any papers or implementations like this?</p>
+<p>Note: I'm not looking to make a voice assistant but a text-&gt;command execution engine for a very specific purpose.</p>
+","bert"
+"38563","Multilabel text classification with highly imbalanced training data","2023-01-02 20:59:33","","0","498","<deep-learning><bert><loss><text-classification><multi-label-classification>","<p>I'm trying to train a multilabel text classification model using BERT. Each piece of text can belong to 0 or more of a total of 485 classes. My model consists of a dropout layer and a linear layer added on top of the pooled output from the bert-base-uncased model from Hugging Face. The loss function I'm using is the BCEWithLogitsLoss in PyTorch.</p>
+<p>I have millions of labeled observations to train on. But the training data are highly unbalanced, with some labels appearing in less than 10 observations and others appearing in more than 100K observations! I'd like to get a &quot;good&quot; recall.</p>
+<p>My first attempt at training without adjusting for data imbalance produced a micro recall rate of 70% (good enough) but a macro recall rate of 45% (not good enough). These numbers indicate that the model isn't performing well on underrepresented classes.</p>
+<p>How can I effectively adjust for the data imbalance during training to improve the macro recall rate? I see we can provide label weights to BCEWithLogitsLoss loss function. But given the very high imbalance in my data leading to weights in the range of 1 to 1M, can I actually get the model to converge? My initial experiments show that a weighted loss function is going up and down during training.</p>
+<p>Alternatively, is there a better approach than using BERT + dropout + linear layer for this type of task?</p>
+","bert"
+"38034","How are gradients backpropogated in ALBERT?","2022-11-26 06:20:51","38482","0","55","<deep-learning><natural-language-processing><bert>","<p>I was reading the <a href=""https://arxiv.org/abs/1909.11942"" rel=""nofollow noreferrer"">ALBERT</a> paper and saw that they use the same parameters in each layer hence reducing the number of unique parameters. From what I could gather it seems if the all the layers have say parameters W then parameters of different layers would be updated differently which would destroy the parameter sharing.</p>
+<p>So one way I can think of is say we have only one set of parameters W and after each layer completes it's weight update W changes to W' and the preceding layers now use W'.</p>
+<p>Is this the right way to think about it or does something else happen under the hood?</p>
+","bert"
+"37657","How to classify data into organised groups by using a resulting classification vector and a set of probabilities?","2022-10-27 14:58:19","37660","0","41","<natural-language-processing><classification><bert><probability>","<p>I am trying to figure out the best way to calculate the probability a sentence belongs to some category.
+For simplicity sake, lets assume that the sentence is &quot;yellow fruit&quot;.
+Next, I use the an BERT classifier to get a classification result [-5,1,2] with the categories [apple, orange, banana].</p>
+<p>The array simply tells us how strong is the signal that corresponds to a category. In this case -5 for apple, 1 for orange, and 2 for banana.
+The answer to this classification is &quot;banana&quot; since 2 is the max number in the [-5,1,2] array, and it position corresponds to the category &quot;banana&quot;.
+Therefore, we know that &quot;yellow fruit&quot; is most-likely a banana.</p>
+<p>Next, I have a table of likelihood of purchase for apples, oranges and bananas:</p>
+<p>Apple: 80%</p>
+<p>Orange: 10%</p>
+<p>Banana: 50%</p>
+<p>I need to calculate the likelihood of customer purchase for sentence &quot;yellow fruit&quot;.
+Therefore, I am given the sentence &quot;yellow fruit&quot;, the classification vector [-5,1,2] the classification categories [apple, orange, banana] and the likelihood table for purchase [0.8,0.1,0.5]</p>
+<p>How do I calculate the the likelihood of purchase for the sentence &quot;yellow fruit&quot; ?</p>
+","bert"
+"37148","Left-to-Right vs Encoder-decoder Models","2022-09-20 22:28:58","","1","391","<natural-language-processing><objective-functions><bert><gpt><encoder-decoder>","<p><a href=""https://arxiv.org/pdf/2202.13169.pdf"" rel=""nofollow noreferrer"">Xu et al. (2022)</a> distinguishes between popular pre-training methods for language modeling: (see Section 2.1 PRETRAINING METHODS)</p>
+<ul>
+<li>Left-to-Right:</li>
+</ul>
+<blockquote>
+<p>Auto-regressive, Left-to-right models, predict the probability of a
+token given the previous tokens.</p>
+</blockquote>
+<ul>
+<li>Encoder-Decoder:</li>
+</ul>
+<blockquote>
+<p>An encoder-decoder model first uses an encoder to encode an input
+sequence, and then uses a left-to-right LM to decode an output
+sequence conditioned on the input sequence.</p>
+</blockquote>
+<p>My question is, what are the differences between those two methods?
+Do they suggest that the first method is a decoder-only? If so, what is the input to this decoder?</p>
+<p>Based on what I know about auto-regressive models and the above definition, I understand that in Left-to-Right, we predict the <span class=""math-container"">$i$</span>-th token given the <span class=""math-container"">$1,...,i-1$</span> tokens (which could be our past predictions).</p>
+","bert"
+"37026","How to combine pretrained language models with additional feature set?","2022-09-08 12:06:55","","0","1108","<natural-language-processing><bert><fine-tuning><language-model>","<p>Are there any techniques to combine a feature set (other than the text itself) with pretrained language models.</p>
+<p>Let's say I have a random NLP task that tries to predict a binary class label based on e.g. Twitter data. One could easily utilize a pretrained language model such as BERT/GPT-3 etc. to fine-tune it on the text of the tweets. However the tweets come with a lot of useful metadata such as likes/retweets etc. or if I want to add additional syntactic features such as POS-Tags, dependency relation or any other generated feature. Is it possible to use additional features I extracted for the finetuning step of the pretrained language model? Or is the only way of doing so to use an ensemble classifier and basically write a classifier for each of the extracted features and combine all of their predictions with the finetuned LMs predictions?</p>
+","bert"
+"37021","Which positional encoding BERT use?","2022-09-08 06:04:31","","2","4292","<bert><positional-encoding>","<p>It is a little bit confusing that someone is explaining that BERT is using sinusoidal functions for BERT position encoding and someone is saying BERT just uses absolute position.</p>
+<p>I checked that Vaswani 2017 et al., used a sinusoidal function for position embedding, but not sure BERT used the same technique since the BERT paper does not mention it much.</p>
+<p>My question is</p>
+<ol>
+<li>Did BERT use absolute position embedding that is learnable, not with sinusoidal function?</li>
+<li>If so, is the absolute position the same dimension as the input embedding dimension for an addition?</li>
+</ol>
+","bert"
+"37007","What is the loss function and training task on which the original BERT model was trained","2022-09-07 09:02:10","37008","2","8286","<bert>","<p>I was checking on sentence embeddings and stumbled across the BERT model which employs transformers.</p>
+<p>I understand that BERT applies a WordPice tokenizer (e.g. working like <a href=""https://keras.io/api/keras_nlp/tokenizers/word_piece_tokenizer/"" rel=""nofollow noreferrer"">https://keras.io/api/keras_nlp/tokenizers/word_piece_tokenizer/</a>) and then passes the tokens through several (transformer) layers.
+If using the transformers library, the output of each hidden layer can be accessed easily as described here  <a href=""https://mccormickml.com/2019/05/14/BERT-word-embeddings-tutorial/"" rel=""nofollow noreferrer"">https://mccormickml.com/2019/05/14/BERT-word-embeddings-tutorial/</a> .
+For each token we can then obtain a word embedding and aggregate a sentence embedding by e.g. mean- or max-pooling over all word embeddings in a sentence.</p>
+<p>On <a href=""https://d2l.ai/chapter_natural-language-processing-pretraining/bert-pretraining.html"" rel=""nofollow noreferrer"">https://d2l.ai/chapter_natural-language-processing-pretraining/bert-pretraining.html</a> , I found that BERT can be trained on e.g. WikiText-2 (<a href=""https://blog.salesforceairesearch.com/the-wikitext-long-term-dependency-language-modeling-dataset/"" rel=""nofollow noreferrer"">https://blog.salesforceairesearch.com/the-wikitext-long-term-dependency-language-modeling-dataset/</a> ) but I do not see</p>
+<ol>
+<li>on which training task</li>
+<li>which loss function the original BERT model is trained?</li>
+</ol>
+<p>This is curcial, since it determines what pattern the model picks up.</p>
+<p>The last website states that the loss function is a cross-entropy loss. But I do not yet understand corss-entropy between what? What is the (X,y)-pairs used for training Bert?</p>
+","bert"
+"36949","How to Train a Decoder for Pre-trained BERT Transformer-Encoder?","2022-09-01 12:47:15","","1","597","<transformer><bert><pretrained-models><seq2seq><encoder-decoder>","<p><strong>Context:</strong>
+I am currently working on an encoder-decoder sequence to sequence model that uses a sequence of word embeddings as input and output, and then reduces the dimensionality of the word embeddings.</p>
+<p>The word embeddings are created using pre-trained models. I want to be able to decode the word embeddings returned by the decoder of the Sequence to Sequence model back to natural language.</p>
+<p><strong>Question:</strong> How can I train a Decoder that works with the sequence of word embeddings and the original sentence for this task?</p>
+<p>See below for the code that generates the word embeddings:</p>
+<pre><code>from typing import List
+
+import numpy as np
+import torch
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers import BertTokenizerFast, BertModel
+
+TOKENIZER = BertTokenizerFast.from_pretrained('bert-base-uncased')
+MODEL = BertModel.from_pretrained('bert-base-uncased')
+
+def get_word_indices(sentence: str, separator=&quot; &quot;) -&gt; List:
+    sent = sentence.split(sep=separator)
+    return list(range(len(sent)))
+
+def encode_sentence(sentence: str) -&gt; BatchEncoding:
+    encoded_sentence = TOKENIZER(sentence)
+    return encoded_sentence
+
+def get_hidden_states(encoded: BatchEncoding, layers: list = [-1, -2, -3, -4]) -&gt; torch.Tensor:
+    with torch.no_grad():
+        output = MODEL(**encoded)
+    hidden_states = output.hidden_states
+    output = torch.stack([hidden_states[i] for i in layers]).sum(0).squeeze()
+    return output
+
+def get_token_ids(word_index: int, encoded: BatchEncoding):
+    token_ids = np.where(np.array(encoded.word_ids()) == word_index)
+    return token_ids
+
+def embed_words(sentence: str) -&gt; torch.Tensor:
+    word_indices = get_word_indices(sentence)
+    encoded_sentence = encode_sentence(sentence)
+    hidden_states = get_hidden_states(encoded_sentence)
+    word_embeddings = []
+    for word_index in word_indices:
+        # Get the ids of the word in the sentence
+        # Important, because BERT sometimes splits words into subwords
+        token_ids = get_token_ids(word_index, encoded_sentence)
+        # Get all the hidden states for each word (or subwords belonging to one word)
+        # Average the hidden states in case of subwords to retrieve word embedding
+        word_embedding = hidden_states[token_ids].mean(dim=0)
+        word_embeddings.append(word_embedding)
+    return torch.stack(word_embeddings)
+<span class=""math-container"">```</span>
+</code></pre>
+","bert"
+"36517","fondamental question about regularization techniques to solve overfitting problem in neural networks","2022-07-28 23:46:38","36521","1","118","<neural-networks><overfitting><bert>","<p>I have a text classification neural network based on BERT that overfits. The accuracy on the training dataset is 95%, whereas it is 68% on the validation dataset.</p>
+<p>Using some classical regularization techniques (dropout=0.5) and weight_decay=0.7, I have an accuracy of 84% on the training dataset and 70% on the validation dataset.</p>
+<p>My question is: Do regularization techniques usually improve the validation accuracy? Or they will only reduce the training accuracy to a closer level to the validation accuracy?</p>
+<p>As my objective is improve the validation accuracy to 90%, and I am wondering if there is any hope that solving the overfitting problem would increase validation accuracy, so should I continue investigating on the regularization techniques or thinking about changing the whole model.</p>
+","bert"
+"36418","Hot to calculate Maximum Normalized log Probability for Active Learning with BERT","2022-07-20 07:06:37","","0","327","<neural-networks><deep-learning><natural-language-processing><definitions><bert>","<p>I have encountered difficulties understanding the calculation of Maximum Normalized Log Probabilities acording to <a href=""https://aclanthology.org/W17-2630.pdf"" rel=""nofollow noreferrer"">Shen et al.</a>.</p>
+<p><a href=""https://i.sstatic.net/jmIcm.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/jmIcm.png"" alt=""formular for MNLP"" /></a></p>
+<p>With n being the sequence length, yi the label of word i. Xij is the representation (the input).</p>
+<p>Let me describe my setting. I'm using the implementation of BERT provided by pytorch to finetune a BERT-Base model for sequence labeling. The goal is to determine a label for each word in the sequence. There are three possible labels for each word. The basic model is set up and runs no problem. Implementing Active Learning based on Maximum Normalized Log Probability is not the problem. Im just not sure if i understand the formular correcly. The Model output is a 128 long (since each sequence is 128 words. Overflow from wordPiece Tokenization is not relevant) list of Labels.</p>
+<p>So far i'm using the softmax-function to get the probability for each label instead of the logits the BERT-Model provides as i hand it the unlabeled data. Then i calculate the log probabilities for every label via the log10 function. In the end I sum up the maxima of the predictions  over all the words (=the probability of the predicted label for each word) and average them. This is my MNLP value i use to identify the most uncertain instances.</p>
+<p>Am i doing it right? My main problem is the max with lowered yi ... yn. As far as i understand it, its used to indicate that only the maximum of the label likelihoods per word is relevant, aka. the probability of the predicted label.</p>
+","bert"
+"35886","Can I use Sentence-Bert to embed event triples?","2022-06-12 08:08:36","","0","48","<natural-language-processing><bert><embeddings><information-retrieval>","<p>I extracted event triples from sentences using OpenIE. Can I concatenate the components in the event triple to make it a sentence and use Sentence-Bert to embed the event?
+It seems no one has done this way before so I am questioning my idea.</p>
+","bert"
+"35166","Does it make sense to add an additional attention layer while fine-tuning Bert?","2022-04-11 11:03:52","","0","856","<neural-networks><deep-learning><natural-language-processing><attention><bert>","<p>I'm fine tuning a Bert/Roberta model for a classification task.
+As I need to improve my results, I'm thinking about to add an additional attention layer after Bert model and before dense and dropout layers. Is this a good idea?</p>
+","bert"
+"34765","Next Sentence Prediction for 5 sentences using BERT","2022-03-09 01:25:58","","0","510","<natural-language-processing><recurrent-neural-networks><bert>","<p>I am given a dataset in which each instance consisting of 5 sentences. The goal is to predict the sequence of numbers which represent the order of these sentences.</p>
+<blockquote>
+<p>For example, given a story:</p>
+<p>He went to the store. He found a lamp he liked. He bought the lamp.
+Jan decided to get a new lamp. Jan's lamp broke.</p>
+<p>your system needs to provide an answer in the following form:</p>
+<p>2   3   4   1   0</p>
+<p>where the numbers correspond to the zero-based index of each sentence
+in the correctly ordered story. So &quot;2&quot; for &quot;He went to the store.&quot;
+means that this sentence should come 3rd in the correctly ordered
+target story. In This particular example, this order of indices
+corresponds to the following target story:</p>
+<p>Jan's lamp broke. Jan decided to get a new lamp. He went to the store.
+He found a lamp he liked. He bought the lamp.</p>
+</blockquote>
+<p>My initial idea is to extended the NSP algorithm used to train BERT, to 5 sentences somehow. I can't find an efficient way to go about doing so. All suggestions would be appreciated.</p>
+<p>Thank you!</p>
+","bert"
+"34739","How do we reduce the output dimensions of BERT?","2022-03-05 17:38:08","","0","2183","<machine-learning><natural-language-processing><transformer><bert>","<p>The output dimensions of BERT are 768-dimensional, is it possible to reduce them to a lower, custom number? For example, if there is another BERT-based transformer model which has a lower count of ouput dimensions, if it's possible to fine tune BERT on MLM to output lower dimension encodings etc.</p>
+<p>And if not, are there any possible workarounds for this issue?</p>
+","bert"
+"32667","Why is BERT/GPT capable of ""for-all"" generalization?","2021-12-07 11:30:31","","0","162","<transformer><bert><logic><gpt><reasoning>","<p>As shown in the figure:</p>
+<p><a href=""https://i.sstatic.net/P5U4w.jpg"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/P5U4w.jpg"" alt=""BERT for-all generalization"" /></a></p>
+<p>Why does token prediction work when &quot;Socrates&quot; is replaced with &quot;Plato&quot;?</p>
+<p>From the point of view of symbolic logic, the above example effectively performs the logic rule:</p>
+<pre><code>∀x. human(x) ⇒ mortal(x)
+</code></pre>
+<p>How might we explain this ability?  Moreover, how is this learned in just a few shots of examples?</p>
+<p>I think this question is key to understanding the Transformer's logical reasoning ability.</p>
+<p>Below are excerpts from 2 papers:</p>
+<p><a href=""https://i.sstatic.net/ifuUG.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/ifuUG.png"" alt=""excerpt 1"" /></a></p>
+<p><a href=""https://i.sstatic.net/AodI6.jpg"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/AodI6.jpg"" alt=""excerpt 2"" /></a></p>
+","bert"
+"32662","Fine tuning BERT for token level classification","2021-12-07 02:08:17","","0","250","<neural-networks><machine-learning><deep-learning><natural-language-processing><bert>","<p>I want to try self-supervised and semi-supervised learning for my task, which relates to token-wise classification for the 2 sequences of sentences (source and translated text). The labels would be just 0 and 1, determining if the word level translation is good or bad on both the source and target sides.</p>
+<p>To begin, I used XLMRoberta, as I thought it would be best suited for my problem. First, I just trained normally using nothing fancy, but the model overfits after just 1-2 epochs, as I have very little data to fine-tune on (approx 7k).</p>
+<p>I decided to freeze the BERT layers and just train the classifier weights, but it performed worse.</p>
+<p>I thought of adding a more dense network on top of BERT, but I am not sure if it would work well or not.</p>
+<p>One more thought that occurred to me was data augmentation, where I increased the size of my data by multiple factors, but that performed badly as well. (Also, I am not sure what should be the proper number to increase the data size with augmented data.)</p>
+<p>Can you please suggest which approach could be suitable here and if I am doing something wrong? Shall I just use all the layers for my data or freezing is actually a good option? Or you suspect I am ruining somewhere in the code and this is not what is expected.</p>
+","bert"
+"32184","What is the Intermediate (dense) layer in between attention-output and encoder-output dense layers within transformer block in PyTorch implementation?","2021-10-25 20:05:50","","5","1843","<natural-language-processing><pytorch><transformer><bert>","<p>In PyTorch, transformer (BERT) models have an intermediate dense layer in between attention and output layers whereas the BERT and Transformer papers just mention the attention connected directly to output fully connected layer for the encoder just after adding the residual connection.</p>
+<p>Why is there an intermediate layer within an encoder block?</p>
+<p>For example,</p>
+<blockquote>
+<p>encoder.layer.11.attention.self.query.weight<br />
+encoder.layer.11.attention.self.query.bias<br />
+encoder.layer.11.attention.self.key.weight<br />
+encoder.layer.11.attention.self.key.bias<br />
+encoder.layer.11.attention.self.value.weight<br />
+encoder.layer.11.attention.self.value.bias<br />
+encoder.layer.11.attention.output.dense.weight<br />
+encoder.layer.11.attention.output.dense.bias<br />
+encoder.layer.11.attention.output.LayerNorm.weight<br />
+encoder.layer.11.attention.output.LayerNorm.bias<br />
+<strong>encoder.layer.11.intermediate.dense.weight<br />
+encoder.layer.11.intermediate.dense.bias</strong><br />
+encoder.layer.11.output.dense.weight<br />
+encoder.layer.11.output.dense.bias<br />
+encoder.layer.11.output.LayerNorm.weight<br />
+encoder.layer.11.output.LayerNorm.bias</p>
+</blockquote>
+<p>I am confused by this third (intermediate dense layer) in between attention output and encoder output dense layers</p>
+","bert"
+"31684","How to fine-tune a model which was pre-trained on a corpus that contains words with different meanings than the meanings of those words on my corpus?","2021-09-14 06:35:49","","1","126","<bert><fine-tuning>","<p>I have a scenario in which we should leverage previously asked questions (not questions pairs, <strong>single question in a column</strong>) to locate similar questions within those questions.</p>
+<p>How can I fine-tune my model to manage out of vocabulary, as my data includes domain-specific questions (3300 questions)?.</p>
+<p>Right now, I'm using <a href=""https://huggingface.co/sentence-transformers"" rel=""nofollow noreferrer"">hugging face sentence transformers</a>, which is already pre-trained on huge data.</p>
+<p>For example, BERT knows that <strong>gold</strong> is a metal, but, in our domain corpus, it's a platform. We have some terminologies which were not exposed openly, how can I fine-tune the model to get related sentences (handling OOV).</p>
+","bert"
+"30049","Training and Evaluating BERT and XLNET","2021-08-06 11:35:30","","0","196","<deep-learning><natural-language-processing><bert><text-classification>","<p>I am thinking about a project and have a few questions before I accept it. Would be grateful I anyone experienced of you could give me some advice.</p>
+<p>In the project, I have been given a data set with (rather small) 30.000 text documents, which are labeled with 0 and 1. I want to train and evaluate (with respect to accuracy) a BERT and XLNet model.</p>
+<p>Can you give me some rough estimates for the following questions?:</p>
+<ol>
+<li>How much computing power do I need for this task, i.e. can I simply use my private laptop for this or do I need a special CPU/GPU for it?</li>
+<li>So far, I just worked with classical machine learning models (e.g. random forests, SVMs, etc.). I am not experienced deep learning architectures yet. How difficult would it be to implement a BERT oder XLNet model with my own data set, having no experience with BERT oder XLNet yet? I.e. how much code would it be that I have to develop by myself? And would I need a deep understanding for it or would be sufficient to follow an online tutorial and basically copy the code from there?
+Many thanks.</li>
+</ol>
+","bert"
+"28833","Isn't attention mask for BERT model useless?","2021-07-25 17:46:51","","3","8471","<deep-learning><natural-language-processing><attention><bert>","<p>I have just dived into deep learning for NLP, and now I'm learning how the BERT model works. What I found odd is why the BERT model needs to have an attention mask. As clearly shown in this tutorial <a href=""https://huggingface.co/transformers/glossary.html"" rel=""nofollow noreferrer"">https://huggingface.co/transformers/glossary.html</a>:</p>
+<pre><code>from transformers import BertTokenizer
+tokenizer = BertTokenizer.from_pretrained(&quot;bert-base-cased&quot;)
+
+sequence_a = &quot;This is a short sequence.&quot;
+sequence_b = &quot;This is a rather long sequence. It is at least longer than the sequence A.&quot;
+
+encoded_sequence_a = tokenizer(sequence_a)[&quot;input_ids&quot;]
+encoded_sequence_b = tokenizer(sequence_b)[&quot;input_ids&quot;]
+
+padded_sequences = tokenizer([sequence_a, sequence_b], padding=True)
+</code></pre>
+<p>Output of padded sequences input ids:</p>
+<pre><code>padded_sequences[&quot;input_ids&quot;]
+
+[[101, 1188, 1110, 170, 1603, 4954, 119, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [101, 1188, 1110, 170, 1897, 1263, 4954, 119, 1135, 1110, 1120, 1655, 2039, 1190, 1103, 4954, 138, 119, 102]]
+</code></pre>
+<p>Output of padded sequence attention mask:</p>
+<pre><code>padded_sequences[&quot;attention_mask&quot;]
+[[1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+</code></pre>
+<p>In the tutorial, it clearly states that an attention mask is needed to tell the model (BERT) which input ids need to be attended and which not (if an element in attention mask is 1 then the model will pay attention to that index, if it is 0 then model will not pay attention).</p>
+<p>The thing I don't get is: why does BERT have an attention mask in the first place? Doesn't model need only input ids because you can clearly see that attention_mask has zeros on the same indices as the input_ids. Why does the model need to have an additional layer of difficulty added?</p>
+<p>I know that BERT was created in google's &quot;super duper laboratories&quot;, so I think the creators had something in their minds and had a strong reason for creating an attention mask as a part of the input.</p>
+","bert"
+"28559","Does BERT freeze the entire model body when it does fine-tuning?","2021-07-07 08:50:49","28682","2","3080","<bert><pretrained-models><fine-tuning><named-entity-recognition>","<p>Recently, I came across the BERT model. I did some research and tried some implementations.</p>
+<p>I wanted to tackle a NER task, so I chose the BertForSequenceClassifications provided by HuggingFace.</p>
+<pre><code>for epoch in range(1, args.epochs + 1):
+    total_loss = 0
+    model.train()
+    for step, batch in enumerate(train_loader):
+        b_input_ids = batch[0].to(device)
+        b_input_mask = batch[1].to(device)
+        b_labels = batch[2].to(device)
+        model.zero_grad()
+
+        outputs = model(b_input_ids, token_type_ids=None, attention_mask=b_input_mask, labels=b_labels)
+        loss = outputs[0]
+
+        total_loss += loss.item()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        # modified based on their gradients, the learning rate, etc.
+        optimizer.step()
+</code></pre>
+<p>The main part of my fine-tuning follows as above.</p>
+<p>I am curious about to what extent the fine-tuning alters the model. Does it freeze the weights that have been provided by the pre-trained model and only alter the top classification layer, or does it change the hidden layers that are contained in the already pre-trained BERT model?</p>
+","bert"
+"28065","Why are BERT embeddings interpreted as representations of the corresponding words?","2021-06-02 14:59:59","","2","102","<natural-language-processing><word-embedding><bert><embeddings>","<p>It's often assumed in literature that BERT embeddings are contextual representations of the corresponding word. That is, if the 5th word is &quot;cold&quot;, then the 5th BERT embedding is a representation of that word, using context to disambiguate the word (e.g. determine whether it's to do with the illness or temperature).</p>
+<p>However, because of the self-attention encoder layers, this embedding can in theory incorporate information from any of the other words in the text. BERT is trained using masked language modelling (MLM), which would encourage each embedding to learn enough to predict the corresponding word. But why wouldn't it contain additional information from other words? In other words, is there any reason to believe the BERT embeddings for different words contain well-separated information?</p>
+","bert"
+"27471","Embedding from Transformer-based model from paragraph or documnet (like Doc2Vec)","2021-04-22 18:50:17","","2","27","<natural-language-processing><transformer><bert><embeddings>","<p>I have a set of data that contains the different lengths of sequences. On average the sequence length is 600. The dataset is like this:</p>
+<pre><code>S1 = ['Walk','Eat','Going school','Eat','Watching movie','Walk'......,'Sleep']
+S2 = ['Eat','Eat','Going school','Walk','Walk','Watching movie'.......,'Eat']
+.........................................
+.........................................
+S50 = ['Walk','Going school','Eat','Eat','Watching movie','Sleep',.......,'Walk']
+</code></pre>
+<p>The number of unique actions in the dataset are fixed. That means some sentences may not contain all of the actions.</p>
+<p>By using Doc2Vec (Gensim library particularly), I was able to extract embedding for each of the sequences and used that for later task (i.e., clustering or similarity measure)</p>
+<p>As transformer is the state-of-the-art method for NLP task. I am thinking if Transformer-based model can be used for similar task. While searching for this technique I came across the &quot;sentence-Transformer&quot;-
+<a href=""https://github.com/UKPLab/sentence-transformers"" rel=""nofollow noreferrer"">https://github.com/UKPLab/sentence-transformers</a>. But it uses a pretrained BERT model (which is probably for language but my case is not related to language) to encode the sentences. Is there any way I can get embedding from my dataset using Transformer-based model?</p>
+","bert"
+"27415","What's new in LaBSE v2?","2021-04-19 16:33:04","","2","109","<tensorflow><bert>","<p>I can't find what's new in LaBSE v2 (<a href=""https://tfhub.dev/google/LaBSE/2"" rel=""nofollow noreferrer"">https://tfhub.dev/google/LaBSE/2</a>). What are the main highlights of v2 versus v1? And how did you find out?</p>
+","bert"
+"27044","Can an existing transformer model be modified to estimate the next most probable number in a sequence of numbers?","2021-03-28 03:17:29","","1","315","<transformer><attention><bert><gpt><forecasting>","<p>Models based on the transformer architectures (GPT, BERT, etc.) work awesome for NLP tasks including taking an input generated from words and producing probability estimates of the next word as the output.</p>
+<p>Can an existing transformer model, such as GPT-2, be modified to perform the same task on a sequence of numbers and estimate the next most probable number? If so, what modifications do we need to perform (do we still train a tokenizer to tokenize integers/floats into token IDs?)?</p>
+","bert"
+"27038","Why does GPT-2 Exclude the Transformer Encoder?","2021-03-27 19:55:30","","20","13588","<natural-language-processing><transformer><attention><bert><gpt>","<p>After looking into transformers, BERT, and GPT-2, from what I understand, GPT-2 essentially uses only the decoder part of the original transformer architecture and uses masked self-attention that can only look at prior tokens.</p>
+<p>Why does GPT-2 not require the encoder part of the original transformer architecture?</p>
+<p><strong>GPT-2 architecture with only decoder layers</strong></p>
+<p><a href=""https://i.sstatic.net/Kb8Gq.png"" rel=""noreferrer""><img src=""https://i.sstatic.net/Kb8Gq.png"" alt=""enter image description here"" /></a></p>
+","bert"
+"26794","Should I need to use BERT embeddings while tokenizing using BERT tokenizer?","2021-03-13 10:12:54","","2","1657","<natural-language-processing><word-embedding><bert><word2vec>","<p>I am new to BERT and NLP and I am a little confused with tokenization and word embedding.
+My doubt is if I use the BertTokenizer for tokenizing a sentence then do I have to compulsorily use BertEmbedding for generating its corresponding word vectors of the tokens or I can train my own word2vec model to generate my word embedding while using BertTokenizer?</p>
+<p>Pardon me if this question doesn't make any sense.</p>
+","bert"
+"26629","How do I calculate the probabilities of the BERT model prediction logits?","2021-03-02 10:58:51","26639","2","9074","<classification><python><bert><probability><multiclass-classification>","<p>I might be getting this completely wrong, but please let me first try to explain what I need, and then what's wrong.</p>
+<p>I have a classification task. The training data has 50 different labels. The customer wants to differentiate the low probability predictions, meaning that, I have to classify some test data as &quot;Unclassified / Other&quot; depending on the probability (certainty?) of the model.</p>
+<p>When I test my code, the prediction result is a numpy array. One example is:</p>
+<pre><code>[[-1.7862008  -0.7037363   0.09885322  1.5318055   2.1137428  -0.2216074
+   0.18905772 -0.32575375  1.0748093  -0.06001111  0.01083148  0.47495762
+   0.27160102  0.13852511 -0.68440574  0.6773654  -2.2712054  -0.2864312
+  -0.8428862  -2.1132915  -1.0157436  -1.0340284  -0.35126117 -1.0333195
+   9.149789   -0.21288703  0.11455813 -0.32903734  0.10503325 -0.3004114
+  -1.3854568  -0.01692022 -0.4388664  -0.42163098 -0.09182278 -0.28269592
+  -0.33082992 -1.147654   -0.6703184   0.33038092 -0.50087476  1.1643585
+   0.96983343  1.3400391   1.0692116  -0.7623776  -0.6083422  -0.91371405
+   0.10002492]]
+</code></pre>
+<p>I'm then using <code>numpy.argmax()</code> to identify the correct label.</p>
+<p>My question is, is it possible to define a threshold (say, 0.6), and then compare the probability of the argmax() element so that I can classify the prediction as &quot;other&quot; if the probability is less than the threshold value?</p>
+<hr />
+<p><strong>Edit 1:</strong></p>
+<p>We are using 2 different models. One is Keras, and the other is BertTransformer. We have no problem in Keras since it gives the probabilities so I'm skipping Keras model.</p>
+<p>The Bert model is pretrained. Here is how it is generated:</p>
+<pre><code>def model(self, data):
+        number_of_categories = len(data['encoded_categories'].unique())
+        model = BertForSequenceClassification.from_pretrained(
+            &quot;dbmdz/bert-base-turkish-128k-uncased&quot;,
+            num_labels=number_of_categories,
+            output_attentions=False,
+            output_hidden_states=False,
+        )
+
+        # model.cuda()
+
+        return model
+</code></pre>
+<p>The output given above is the result of <code>model.predict()</code> method. We compare both models, Bert is slightly ahead, therefore we know that the prediction works just fine. However, we are not sure what those numbers signify or represent.</p>
+<p>Here is the <a href=""https://huggingface.co/transformers/model_doc/bert.html#bertforsequenceclassification"" rel=""nofollow noreferrer"">Bert documentation</a>.</p>
+","bert"
+"26511","Adding corpus to BERT for QA","2021-02-22 14:41:40","","2","39","<natural-language-processing><bert><fine-tuning>","<p>I was wondering about <strong>SciBERT</strong>'s QA abilities using SQuAD. I have a scarce textual dataset consisting of less than 100 files where doctors are discussing cancer in dialogues. I want to add it to SciBERT to see if the QA abilities will improve in the cancer disease domain.</p>
+<p>After concatenating them into one large file which will be our vocab, I then clean the file (all char to lower, white space splitting, char filtering, punctuation, stopword filtering, short tokens and etc) which leaves me with a list of 3000 unique tokens</p>
+<p>If I wanted to add these tokens, do I just do <code>scibert_tokenizer.add_tokens(myList)</code> where myList is the 3k tokens?</p>
+<p>I can confirm that more tokens are added doing <code>print(len(scibert_tokenizer))</code> and I can see that embeddings do change such as <code>corona</code> and <code>##virus</code> changes to <code>coronavirus</code> and <code>##virus</code>.</p>
+<p>Does the model need to be trained from scratch again?</p>
+","bert"
+"26413","Sentiment analysis does not handle neturals","2021-02-17 01:15:00","26414","0","86","<python><transformer><bert><sentiment-analysis>","<p>I'm writing some financial tools,  I've found highly performant models for question and answering but when it comes to sentiment analysis I haven't found anything that good.  I'm trying to use huggingface:</p>
+<pre><code>from transformers import pipeline
+classifier = pipeline('sentiment-analysis')
+print(classifier(&quot;i'm good&quot;))
+print(classifier(&quot;i'm bad&quot;)) 
+print(classifier(&quot;i'm neutral&quot;))
+print(classifier(&quot;i'm okay&quot;)) 
+print(classifier(&quot;i'm indifferent&quot;)) 
+</code></pre>
+<p>Which returns results</p>
+<blockquote>
+<p>[{'label': 'POSITIVE', 'score': 0.999841034412384}]</p>
+</blockquote>
+<blockquote>
+<p>[{'label': 'NEGATIVE', 'score': 0.9997877478599548}]</p>
+</blockquote>
+<blockquote>
+<p>[{'label': 'NEGATIVE', 'score': 0.999396026134491}]</p>
+</blockquote>
+<blockquote>
+<p>[{'label': 'POSITIVE', 'score': 0.9998164772987366}]</p>
+</blockquote>
+<blockquote>
+<p>[{'label': 'NEGATIVE', 'score': 0.9997762441635132}]</p>
+</blockquote>
+<p>The scores for all of the neutral words come up very high in a positive or negative direction,  I would of figured the model would put the score lower.</p>
+<p>I've looked at some of the more <a href=""https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english"" rel=""nofollow noreferrer"">fine-tuned models</a> yet they seem to perform the same.</p>
+<p>I would assume there would be some pretrained models which could handle these use cases.  If not, How can I find neutral sentiments?</p>
+","bert"
+"26346","How to keep track of the subject/entity in a sentence?","2021-02-11 23:41:50","26347","1","379","<natural-language-processing><bert><sentiment-analysis>","<p>I'm working on Sentiment Analysis, using HuggingFace to perform sentiment analysis on articles</p>
+<pre><code> classifier = pipeline('sentiment-analysis', model=&quot;nlptown/bert-base-multilingual-uncased-sentiment&quot;)
+ classifier(['We are very happy to show you the 🤗 Transformers library.',  &quot;We hope you don't hate it.&quot;])
+</code></pre>
+<p>This returns</p>
+<blockquote>
+<p>label: POSITIVE, with score: 0.9998</p>
+</blockquote>
+<blockquote>
+<p>label: NEGATIVE, with score: 0.5309</p>
+</blockquote>
+<p>Now I'm trying to understand how to keep track of a subject when performing the sentiment analysis.</p>
+<p>Suppose I'm given a sentence like this.</p>
+<blockquote>
+<p>StackExchange is a great website. It helps users answer questions.  Hopefully, someone will help answer this question.</p>
+</blockquote>
+<p>I would like to keep track of the subject when performing sentiment analysis. In the example above, in the 2nd sentence 'it' refers to 'StackExchange'. I would like to be able to do track a subject between sentences.</p>
+<p>Now, I could try to manually try to parse this by finding the verb and trying to figure find the phrase that comes before it. However, it doesn't sound like a very safe or accurate way to find the subject.</p>
+<p>Alternatively, I could train similar to a Named Entity Recognition. However, finding a dataset for this is very hard, and training it would be very time-consuming.</p>
+<p>How can I keep track of an entity within an article?</p>
+","bert"
+"26284","What does the outputlayer of BERT for masked language modelling look like?","2021-02-08 19:16:14","","1","623","<natural-language-processing><transformer><attention><word-embedding><bert>","<p>In the tutorial <a href=""https://www.lyrn.ai/2018/11/07/explained-bert-state-of-the-art-language-model-for-nlp/"" rel=""nofollow noreferrer"">BERT – State of the Art Language Model for NLP</a> the masked language modeling pre-training steps are described as follows:</p>
+<blockquote>
+<p>In technical terms, the prediction of the output words requires:</p>
+<ol>
+<li>Adding a classification layer on top of the encoder output.</li>
+</ol>
+<p>2.Multiplying the output vectors by the embedding matrix, transforming them into the vocabulary dimension.</p>
+<p>3.Calculating the probability of each word in the vocabulary with softmax.</p>
+</blockquote>
+<p>In the Figure below this process is visualized and also from the tutorial.</p>
+<p>I am confused about what exactly is done. Does it mean that each output vector O is fed into a fully connected layer with embedding_size neurons and then multiplied by the embedding matrix from the input layer?</p>
+<p>Update:</p>
+<p>In the tutorial <a href=""http://jalammar.github.io/illustrated-gpt2/"" rel=""nofollow noreferrer"">The Illustrated GPT-2 (Visualizing Transformer Language Models)</a> I found an explanation for GPT-2 which seems to be similar to my question.</p>
+<p>In the tutorial is said that each output vector is multiplied by the input embedding matrix to get the final output.</p>
+<p>Does the same mechanic apply to BERT?</p>
+<p><img src=""https://miro.medium.com/max/698/0*ViwaI3Vvbnd-CJSQ.png"" alt=""Text"" /></p>
+","bert"
+"25616","T5 or BERT for sentence correction/generation task?","2021-01-07 10:11:26","","3","483","<natural-language-processing><bert><text-generation>","<p>I have sentences with some grammatical errors , with no punctuations and digits written in words... something like below:</p>
+<p><a href=""https://i.sstatic.net/TAQkT.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/TAQkT.png"" alt=""enter image description here"" /></a></p>
+<p>As you can observe, a proper noun , <strong>winston</strong> isnt highlighted with capital in Sample column. 'People' is spelled wrong and there are no punctuations in Sample column. The date in the first row isnt in right format. I have millions of rows like this and want to train a model to learn punctuations and corrections. Can a single BERT or T5 handle this task? or only option is to try 1 model for each task?
+Thanks in advance</p>
+","bert"
+"25315","What is MNLI-(m/mm)?","2020-12-20 21:44:30","30245","1","2772","<terminology><transformer><bert><natural-language-understanding>","<p>I came across the term <strong>MNLI-(m/mm)</strong> in Table 1 of the paper <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer"">BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</a>. I know what MNLI stands for, i.e. Multi-Genre Natural Language Inference, but I'm just unsure about the <strong>-(m/mm)</strong> part.</p>
+<p>I tried to find some information about this in the paper <a href=""https://arxiv.org/pdf/1804.07461.pdf"" rel=""nofollow noreferrer"">GLUE: A Multi-Task Benchmark and Analysis Platform for Natural Language Understanding</a>, but this explained only the basic Multi-Genre Language Inference concept. I assume that the <strong>m/mm</strong> part was introduced later, but this doesn't make any sense because the BERT paper appeared earlier.</p>
+<p>It would be nice if someone knows this or has a paper that explains this.</p>
+","bert"
+"25015","Transformers: how to get the output (keys and values) of the encoder?","2020-12-06 09:23:08","25030","2","726","<natural-language-processing><transformer><bert><attention>","<p>I was reading the paper <a href=""https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf"" rel=""nofollow noreferrer"">Attention Is All You Need</a>.</p>
+<p>It seems like the last step of the encoder is a LayerNorm(relu(WX + B) + X), i.e. an add + normalization. This should result in a <span class=""math-container"">$n$</span> x <span class=""math-container"">$d^{model}$</span> matrix, where <span class=""math-container"">$n$</span> is the length of the input to the encoder.</p>
+<p>How do we convert this <span class=""math-container"">$n$</span> x <span class=""math-container"">$d^{model}$</span> matrix into the keys <span class=""math-container"">$K$</span> and values <span class=""math-container"">$V$</span> that are fed into the decoder's encoder-decoder attention step?</p>
+<p>Note that, if <span class=""math-container"">$h$</span> is the number of attention heads in the model, the dimensions of <span class=""math-container"">$K$</span> and <span class=""math-container"">$V$</span> should both be <span class=""math-container"">$n$</span> x <span class=""math-container"">$\frac{d^{model}}{h}$</span>. For <span class=""math-container"">$h=8$</span>, this means we need a <span class=""math-container"">$n$</span> x <span class=""math-container"">$\frac{d^{model}}{4}$</span> matrix.</p>
+<p>Do we simply add an extra linear layer that learns a <span class=""math-container"">$d^{model}$</span> x <span class=""math-container"">$\frac{d^{model}}{4}$</span> weight matrix?</p>
+<p>Or do we use the output of the final Add &amp; Norm layer, and simply use the first <span class=""math-container"">$\frac{d^{model}}{4}$</span> columns of the matrix and discard the rest?</p>
+","bert"
+"25013","Transformers: how does the decoder final layer output the desired token?","2020-12-06 08:25:45","25026","5","1073","<natural-language-processing><transformer><bert><attention>","<p>In the paper <a href=""https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf"" rel=""nofollow noreferrer"">Attention Is All You Need</a>, this section confuses me:</p>
+<blockquote>
+<p>In our model, we share the same weight matrix between the two embedding layers [in the encoding section] and the pre-softmax linear transformation [output of the decoding section]</p>
+</blockquote>
+<p>Shouldn't the weights be different, and not the same? Here is my understanding:</p>
+<p>For simplicity, let us use the English-to-French translation task where we have <span class=""math-container"">$n^e$</span> number of English words in our dictionary and <span class=""math-container"">$n^f$</span> number of French words.</p>
+<ul>
+<li><p>In the encoding layer, the input tokens are <span class=""math-container"">$1$</span> x <span class=""math-container"">$n^e$</span> one-hot vectors, and are embedded with a <span class=""math-container"">$n^e$</span> x <span class=""math-container"">$d^{model}$</span> learned embedding matrix.</p>
+</li>
+<li><p>In the output of the decoding layer, the final step is a linear transformation with weight matrix <span class=""math-container"">$d^{model}$</span> x <span class=""math-container"">$n^f$</span>, and then applying softmax to get the probability of each french word, and choosing the french word with the highest probability.</p>
+</li>
+</ul>
+<p>How is it that the <span class=""math-container"">$n^e$</span> x <span class=""math-container"">$n^{model}$</span> input embedding matrix share the same weights as the <span class=""math-container"">$d^{model}$</span> x <span class=""math-container"">$n^f$</span> decoding output linear matrix? To me, it seems more natural for both these matrices to be learned independently from each other via the training data, right? Or am I misinterpreting the paper?</p>
+","bert"
+"24409","Is there a pretrained (NLP) transformer that uses subword n-gram embeddings for tokenization like fasttext?","2020-11-03 22:44:04","","4","447","<transformer><word-embedding><bert>","<p>I know that several tokenization methods that are used for tranformer models like WordPiece for Bert and BPE for Roberta and others. What I was wondering if there is also a transformer which uses a method for tokenization similarly to the embeddings that are used in the fasttext library, so based on the summations of embeddings for the n-grams the words are made of.</p>
+<p>To me it seems weird that this way of creating word(piece) embeddings that can function as the input of a transformer isn't used in these new transformer architectures. Is there a reason why this is not tried yet? Or is this question just an result of my inability to find the right papers/repo's.</p>
+","bert"
+"24332","Is there a way to provide multiple masks to BERT in MLM task?","2020-10-31 06:23:52","24384","1","1482","<natural-language-processing><bert><language-model>","<p>I'm facing a situation where I've to fetch probabilities from BERT MLM for multiple words in a single sentence.</p>
+<pre><code>Original : &quot;Mountain Dew is an energetic drink&quot;
+Masked : &quot;[MASK] is an energetic drink&quot;
+</code></pre>
+<p>But BERT MLM task doesn't consider two tokens at a time for the MASK. I strongly think that there should be some sort of work around that I'm unable to find other than fine-tuning.</p>
+","bert"
+"23884","Why aren't the BERT layers frozen during fine-tuning tasks?","2020-10-03 11:03:30","","4","1931","<natural-language-processing><computer-vision><bert><transfer-learning><fine-tuning>","<p>During transfer learning in computer vision, I've seen that the layers of the base model are frozen if the images aren't too different from the model on which the base model is trained on.</p>
+<p>However, on the NLP side, I see that the layers of the BERT model aren't ever frozen. What is the reason for this?</p>
+","bert"
+"23611","Are there transformer-based architectures that can produce fixed-length vector encodings given arbitrary-length text documents?","2020-09-15 16:16:37","","8","932","<natural-language-processing><reference-request><autoencoders><transformer><bert>","<p><a href=""https://arxiv.org/abs/1810.04805"" rel=""nofollow noreferrer"">BERT</a> encodes a piece of text such that each token (usually words) in the input text map to a vector in the encoding of the text. However, this makes the length of the encoding vary as a function of the input length of the text, which makes it more cumbersome to use as input to downstream neural networks that take only fixed-size inputs.</p>
+<p>Are there any transformer-based neural network architectures that can encode a piece of text into a fixed-size feature vector more suitable for downstream tasks?</p>
+<p><strong>Edit:</strong> To illustrate my question, I’m wondering whether there is some framework that allows the input to be either a sentence, a paragraph, an article, or a book, and produce an output encoding on the same, fixed-sized format for all of them.</p>
+","bert"
+"23517","BERT: After pretraining 880000 step, why fine-tune not work?","2020-09-11 06:22:39","23519","0","67","<transformer><bert><transfer-learning><pretrained-models><fine-tuning>","<p>I am using pretraining code from <a href=""https://github.com/NVIDIA/DeepLearningExamples"" rel=""nofollow noreferrer"">https://github.com/NVIDIA/DeepLearningExamples</a></p>
+<p>Pretrain parameters:</p>
+<pre><code> 15:47:02,534: INFO tensorflow 140678508230464   init_checkpoint: bertbase3layer-extract-from-google
+ 15:47:02,534: INFO tensorflow 140678508230464   optimizer_type: lamb
+ 15:47:02,534: INFO tensorflow 140678508230464   max_seq_length: 64
+ 15:47:02,534: INFO tensorflow 140678508230464   max_predictions_per_seq: 5
+ 15:47:02,534: INFO tensorflow 140678508230464   do_train: True
+ 15:47:02,535: INFO tensorflow 140678508230464   do_eval: False
+ 15:47:02,535: INFO tensorflow 140678508230464   train_batch_size: 32
+ 15:47:02,535: INFO tensorflow 140678508230464   eval_batch_size: 8
+ 15:47:02,535: INFO tensorflow 140678508230464   learning_rate: 5e-05
+ 15:47:02,535: INFO tensorflow 140678508230464   num_train_steps: 10000000
+ 15:47:02,535: INFO tensorflow 140678508230464   num_warmup_steps: 10000
+ 15:47:02,535: INFO tensorflow 140678508230464   save_checkpoints_steps: 1000
+ 15:47:02,535: INFO tensorflow 140678508230464   display_loss_steps: 10
+ 15:47:02,535: INFO tensorflow 140678508230464   iterations_per_loop: 1000
+ 15:47:02,535: INFO tensorflow 140678508230464   max_eval_steps: 100
+ 15:47:02,535: INFO tensorflow 140678508230464   num_accumulation_steps: 1
+ 15:47:02,535: INFO tensorflow 140678508230464   allreduce_post_accumulation: False
+ 15:47:02,535: INFO tensorflow 140678508230464   verbose_logging: False
+ 15:47:02,535: INFO tensorflow 140678508230464   horovod: True
+ 15:47:02,536: INFO tensorflow 140678508230464   report_loss: True
+ 15:47:02,536: INFO tensorflow 140678508230464   manual_fp16: False
+ 15:47:02,536: INFO tensorflow 140678508230464   amp: False
+ 15:47:02,536: INFO tensorflow 140678508230464   use_xla: True
+ 15:47:02,536: INFO tensorflow 140678508230464   init_loss_scale: 4294967296
+ 15:47:02,536: INFO tensorflow 140678508230464   ?: False
+ 15:47:02,536: INFO tensorflow 140678508230464   help: False
+ 15:47:02,536: INFO tensorflow 140678508230464   helpshort: False
+ 15:47:02,536: INFO tensorflow 140678508230464   helpfull: False
+ 15:47:02,536: INFO tensorflow 140678508230464   helpxml: False
+ 15:47:02,536: INFO tensorflow 140678508230464 **************************
+</code></pre>
+<p>Pretrain loss: (I remove nsp_loss)</p>
+<pre><code>{'throughput_train': 1196.9646684552622, 'mlm_loss': 0.9837073683738708, 'nsp_loss': 0.0, 'total_loss': 0.9837073683738708, 'avg_loss_step': 1.200513333082199, 'learning_rate': '0.00038143058'}
+{'throughput_train': 1230.5063662500734, 'mlm_loss': 1.3001925945281982, 'nsp_loss': 0.0, 'total_loss': 1.3001925945281982, 'avg_loss_step': 1.299936044216156, 'learning_rate': '0.00038143038'}
+{'throughput_train': 1236.4348949169155, 'mlm_loss': 1.473339319229126, 'nsp_loss': 0.0, 'total_loss': 1.473339319229126, 'avg_loss_step': 1.2444063007831574, 'learning_rate': '0.00038143017'}
+{'throughput_train': 1221.2668264552692, 'mlm_loss': 0.9924975633621216, 'nsp_loss': 0.0, 'total_loss': 0.9924975633621216, 'avg_loss_step': 1.1603020071983337, 'learning_rate': '0.00038142994'}
+</code></pre>
+<p>Fine-tune code:</p>
+<pre><code>self.train_op = tf.train.AdamOptimizer(0.00001).minimize(self.loss, global_step=self.global_step)
+</code></pre>
+<p>Fine-tune accuracy: (restore from my ckpt pretrained from <a href=""https://github.com/NVIDIA/DeepLearningExamples"" rel=""nofollow noreferrer"">https://github.com/NVIDIA/DeepLearningExamples</a>)</p>
+<pre><code>epoch 1:
+training step 895429, loss 4.98, acc 0.079
+dev loss 4.853, acc 0.092
+
+epoch 2:
+training step 895429, loss 4.97, acc 0.080
+dev loss 4.823, acc 0.092
+
+epoch 3:
+training step 895429, loss 4.96, acc 0.081
+dev loss 4.849, acc 0.092
+
+epoch 4:
+training step 895429, loss 4.95, acc 0.082
+dev loss 4.843, acc 0.092
+</code></pre>
+<p>Without restore the pretrained ckpt:</p>
+<pre><code>epoch 1:
+training step 10429, loss 2.48, acc 0.606
+dev loss 1.604, acc 0.8036
+</code></pre>
+<p>Restore the google's BERT-Base pretrained ckpt. Or restore from a pretrained ckpt pretrained from <a href=""https://github.com/guotong1988/BERT-GPU"" rel=""nofollow noreferrer"">https://github.com/guotong1988/BERT-GPU</a></p>
+<pre><code>epoch 1:
+training loss 1.89, acc 0.761
+dev loss 1.351, acc 0.869
+</code></pre>
+","bert"
+"23428","Bert for Sentiment Analysis - Connecting final output back to the input","2020-09-04 21:47:59","","2","43","<bert><sentiment-analysis>","<p>I have not found a lot of information on this, but I am wondering if there is a standard way to apply the outputs of a Bert model being used for sentiment analysis, and connect them back to the initial tokenized string of words, to gain an understanding of which words impacted the outcome of the sentiment most.</p>
+<p>For example, the string &quot;this coffee tastes bad&quot; outputs a negative sentiment.  Is it possible to analyze the output of the hidden layers to then tie those results back to each token to gain an understanding of which words in the sentence had the most influence on the negative sentiment?</p>
+<p>The below chart is a result at my attempt to explore this, however I am not sure it makes sense and I do not think I am interpreting it correctly. I am basically taking the outputs of the last hidden layer, which in this case has shape (1, 7, 768), [CLS] + 5 word tokens + [SEP], and looping through each token summing up their values (768) and computing the average. The resulting totals are outputted in the below graph.</p>
+<p><a href=""https://i.sstatic.net/wSYIU.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/wSYIU.png"" alt=""enter image description here"" /></a></p>
+<p>Any thoughts around if there is any meaning to this or if i am way off on approach, would be appreciated.  Might be my misunderstanding around the actual output values themselves.</p>
+<p>Hopefully this is enough to give someone the idea of what i am trying to do and how each word can be connected to positive or negative associations that contributed to the final classification.</p>
+","bert"
+"23221","How is BERT different from the original transformer architecture?","2020-08-24 14:56:35","23683","30","17305","<natural-language-processing><comparison><transformer><bert>","<p>As far as I can tell, BERT is a type of Transformer architecture. What I do not understand is:</p>
+<ol>
+<li><p>How is Bert different from the original transformer architecture?</p>
+</li>
+<li><p>What tasks are better suited for BERT, and what tasks are better suited for the original architecture?</p>
+</li>
+</ol>
+","bert"
+"22358","How to fine tune BERT for question answering?","2020-07-06 09:53:56","","4","4124","<natural-language-processing><bert><fine-tuning><question-answering>","<p>I wish to train two domain-specific models:</p>
+<ul>
+<li>Domain 1: Constitution and related Legal Documents</li>
+<li>Domain 2: Technical and related documents.</li>
+</ul>
+<p>For Domain 1, I've access to a text-corpus with texts from the constitution and no question-context-answer tuples. For Domain 2, I've access to Question-Answer pairs.</p>
+<p>Is it possible to fine-tune a light-weight BERT model for Question-Answering using just the data mentioned above?</p>
+<p>If yes, what are the resources to achieve this task?</p>
+<p>Some examples, from the huggingface/models library would be mrm8488/bert-tiny-5-finetuned-squadv2, sshleifer/tiny-distilbert-base-cased-distilled-squad, /twmkn9/albert-base-v2-squad2.</p>
+","bert"
+"21928","How to use speaker's information as well as text for fine-tuning BERT?","2020-06-16 08:04:09","","1","342","<natural-language-processing><classification><bert>","<p>I want to classify my corporate chat messages into a few categories such as question, answer, and report. I used a fine-tuned BERT model, and the result wasn't bad. Now, I started thinking about ways to improve it, and a rough idea came up, but I don't know what to do it exactly.</p>
+
+<p>Currently, I simply put chat text into the model, but don't use the speaker's information (who said the text, the speaker's ID in our DB). The idea is if I can use the speaker's information, the model might better understand the text and classify it better.</p>
+
+<p>The question is, are there any examples or prior researches similar to what I want to achieve? I googled for a few hours, but couldn't find anything useful. (Maybe the keywords weren't good.)</p>
+
+<p>Any advice would be appreciated.</p>
+","bert"
+"21811","Can we use a pre trained Encoder (BERT, XLM ) with a Decoder (GPT, Transformer-XL) to build a Chatbot instead of Language Translation?","2020-06-12 03:26:21","","2","680","<machine-learning><deep-learning><natural-language-processing><deep-neural-networks><bert>","<p>I was wondering if the <code>BERT</code> or <code>T5</code> models can do the task of generating sentences in English. Most of the models I have mentioned are trained to translate from English to German or French. Is it possible that I can use the output of <code>BERT</code> as an input to my Decoder? My theory is that when I already have the trained <code>Embeddings</code>, I do not need to train the Encoder part. I can just add the outputs of sentences to the decoder to generate the sentences.</p>
+<p>In place of finding the loss value from the translated version, Can I compute loss on the reply of a sentence?</p>
+<p>Can someone point me toward a tutorial where I can use the <code>BERT</code> output for the decoder part? I have a data of conversation with me. I want to build a <code>Chatbot</code> from that data.</p>
+<p>I have already implemented <code>LSTM</code> based <code>Sequence2sequence</code> model but it is not providing me satisfactory answer.</p>
+<p>After some research, 2 such models are there as <code>T5</code> and <code>BART</code> which are based on the same idea.</p>
+<p>If possible, can someone tell me how can I use <code>BART</code> or <code>T5</code> to make a conversational bot?</p>
+","bert"
+"21536","Why does the BERT NSP head linear layer have two outputs?","2020-05-30 23:50:37","22113","1","329","<machine-learning><natural-language-processing><transformer><bert>","<p>Here's the code in question. </p>
+
+<p><a href=""https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_bert.py#L491"" rel=""nofollow noreferrer"">https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_bert.py#L491</a></p>
+
+<pre><code>class BertOnlyNSPHead(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.seq_relationship = nn.Linear(config.hidden_size, 2)
+
+    def forward(self, pooled_output):
+        seq_relationship_score = self.seq_relationship(pooled_output)
+        return seq_relationship_score
+</code></pre>
+
+<p>I think it was just ranking how likely one sentence would follow another? Wouldn't it be one score?</p>
+","bert"
+"21448","Two questions about the architecture of Google Bert model (in particular about parameters)","2020-05-24 12:37:55","","1","42","<natural-language-processing><bert>","<p>I'm looking for someone who can help me clarify a few details regarding the architecture of Bert model. Those details are necessary for me to come with a full understanding of Bert model, so your help would be really helpful. Here are the questions:</p>
+
+<ul>
+<li><p>Does the self-attention layer of Bert model have parameters? Do the embeddings of words change ONLY according to the actual embeddings of other words when the sentence is passed through the self-attention layer?</p></li>
+<li><p>Are the parameters of the embedding layer of the model (the layer which transforms the sequence of indexes passed as input into a sequence of embeddings of size=size of the model) trainable or not?</p></li>
+</ul>
+","bert"
+"21383","Is the number of bidirectional LSTMs in seq2seq model equal to the maximum length of input text/characters?","2020-05-21 16:13:27","","1","75","<neural-networks><recurrent-neural-networks><long-short-term-memory><bert><text-generation>","<p>I'm confused about this aspect of RNNs while trying to learn how seq2seq encoder-decoder works at <a href=""https://machinelearningmastery.com/configure-encoder-decoder-model-neural-machine-translation/"" rel=""nofollow noreferrer"">https://machinelearningmastery.com/configure-encoder-decoder-model-neural-machine-translation/</a>.</p>
+
+<p>It seems to me that the number of LSTMs in the encoder would have to be the same as number of words in the text (if word embeddings are being used) or characters in the text (if char embeddings are being used). For char embeddings, each embedding would correspond to 1 LSTM in 1 direction and 1 encoder hidden state. </p>
+
+<ol>
+<li><p>Is this understanding correct? 
+E.g. If we have another model that uses encoder-decoder for a different application (say text-to-speech synthesis described here <a href=""https://ai.googleblog.com/2017/12/tacotron-2-generating-human-like-speech.html"" rel=""nofollow noreferrer"">https://ai.googleblog.com/2017/12/tacotron-2-generating-human-like-speech.html</a>) tha uses 256 LSTMs in each direction of the bidirectional-encoder, does it mean the input to this encoder is limited to 256 characters of text?</p></li>
+<li><p>Can the decoder output has to be same length as the encoder input or can it be different? If different what factor describes what the decoder output length should be?</p></li>
+</ol>
+","bert"
+"21347","How to add a pretrained model to my layers to get embeddings?","2020-05-20 15:23:57","","0","224","<neural-networks><word-embedding><bert><text-summarization><pretrained-models>","<p>I want to use a pretrained model found in [BERT Embeddings] <a href=""https://github.com/UKPLab/sentence-transformers"" rel=""nofollow noreferrer"">https://github.com/UKPLab/sentence-transformers</a> and I want to add a layer to get the sentence embeddings from the model and pass on to the next layer. How do I approach this?</p>
+
+<p>The inputs would be an array of documents and each document containing an array of sentences.</p>
+
+<p>The input to the model itself is a list of sentences where it will return a list of embeddings. </p>
+
+<p>This is what I've tried but couldn't solve the errors:</p>
+
+<pre><code>def get_embeddings(input_data):
+
+    input_embed = []
+    for doc in input_data:
+      doc = tf.unstack(doc)
+      doc_arr = asarray(doc)
+      doc = [el.decode('UTF-8') for el in doc_arr]
+      doc = list(doc)
+      assert(type(doc)== list)
+
+      new_doc = []
+      for sent in doc:
+        sent = tf.unstack(sent)
+        new_doc.append(str(sent))
+        assert(type(sent)== str)
+
+      embedding= model.encode(new_doc)  # Accepts lists of strings to return BERT sentence embeddings
+      input_embed.append(np.array(embedding))
+
+    return tf.convert_to_tensor(input_embed, dtype=float)
+
+
+sentences = tf.keras.layers.Input(shape=(3,5)) #test shape
+sent_embed = tf.keras.layers.Lambda(get_embeddings)
+
+
+x = sent_embed(sentences)
+</code></pre>
+
+<p><a href=""https://i.sstatic.net/1O8sY.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/1O8sY.png"" alt=""Errors""></a></p>
+","bert"
+"20783","Similarity score between 2 words using Pre-trained BERT using Pytorch","2020-04-30 04:23:46","22886","2","1173","<natural-language-processing><bert><similarity>","<p>I'm trying to compare Glove, Fasttext, Bert on the basis of similarity between 2 words using Pre-trained Models. Glove and Fasttext had pre-trained models that could easily be used with gensim word2vec in python.</p>
+<blockquote>
+<p><strong>Does BERT have any such models?</strong></p>
+<p><strong>Is it possible to check the similarity between two words using BERT?</strong></p>
+</blockquote>
+","bert"
+"20681","How to use pre-trained BERT to extract the vectors from sentences?","2020-04-27 13:55:43","21079","2","5619","<natural-language-processing><bert><pretrained-models>","<p>I'm trying to extract the vectors from the sentences. Spent soo much time searching for the pre-trained BERT models but found nothing.</p>
+<blockquote>
+<p><strong>Is it possible to get the vectors using pre-trained BERT from the data?</strong></p>
+</blockquote>
+","bert"
+"20176","What is the intuition behind the dot product attention?","2020-04-11 12:53:21","","22","11744","<natural-language-processing><papers><transformer><attention><bert>","<p>I am watching the video <a href=""https://www.youtube.com/watch?v=iDulhoQ2pro&amp;t=6s"" rel=""noreferrer"">Attention Is All You Need</a> by Yannic Kilcher.</p>
+<p>My question is: what is the intuition behind the dot product attention?</p>
+<p><span class=""math-container"">$$A(q,K, V) = \sum_i\frac{e^{q.k_i}}{\sum_j e^{q.k_j}} v_i$$</span></p>
+<p>becomes:</p>
+<p><span class=""math-container"">$$A(Q,K, V) = \text{softmax}(QK^T)V$$</span></p>
+","bert"
+"19901","Will structured knowledge bases continue to be used in question answering with the likes of BERT gaining popularity?","2020-03-31 19:32:13","","2","34","<reference-request><datasets><bert><question-answering><knowledge-base>","<p>This may come across as an open and opinion-based question, I definitely want to hear expert opinions on the subject, but I am also looking for references to materials that I can read deeply.</p>
+<p>One of the ways question answering systems can be classified is by the type of data source that they use:</p>
+<ol>
+<li><p>Structured knowledge bases with ontologies (DBPedia, WikiData, Yago, etc.).</p>
+</li>
+<li><p>Unstructured text corpora that contain the answer in natural language (Wikipedia).</p>
+</li>
+<li><p>Hybrid systems that search for candidate answers in both structured and unstructured data sources.</p>
+</li>
+</ol>
+<p>From my reading, it appears as though structured knowledge bases/knowledge graphs were much more popular back in the days of the semantic web and when the first personal assistants (Siri, Alexa, Google Assistant) came onto the scene.</p>
+<p>Are they dying out now in favor of training a deep learning model over a vast text corpus like Bert and/or Meena? Do they have a future in question answering?</p>
+","bert"
+"19853","Building a template based NLG system to generate a report from data","2020-03-29 09:20:58","","1","361","<natural-language-processing><long-short-term-memory><bert>","<p>I am a newbie to NLP and NLG. I am tasked to develop a system to generate a report based on a given data table. The structure of the report and the flow is predefined. I have researched on several existing python libraries like BERT, SimpleNLG but they don't seem to fit my need. </p>
+
+<p>For example:
+input_data(country = 'USA', industry = 'Coal', profit = '4m', trend = 'decline')
+output: The coal industry in USA declined by 4m. </p>
+
+<p>The input data array can be different combinations (and dynamic) based on a data table. I would like to know if  there is any python package available, or any resource discussing a practical approach for this. </p>
+","bert"
+"18441","How does one continue the pre-training in BERT?","2020-03-05 15:02:46","","3","699","<training><python><bert><fine-tuning><training-datasets>","<p>I need some help with continuing pre-training on Bert. I have a very specific vocabulary and lots of specific abbreviations at hand. I want to do an STS task. Let me specify my task: I have domain-specific sentences and want to pair them in terms of their semantic similarity. But as very uncommon language is used here, I need to train Bert on it.</p>
+<ul>
+<li>How does one continue the pre-training (I read the GitHub release from google about it, but don't really understand it) Any examples?</li>
+<li>What structure does my training data need to have, so that BERT can understand it?</li>
+<li>Maybe training BERT from scratch would be even better. I guess it's the same process as continuing the pretraining just the starting checkpoint would be different. Is that correct?</li>
+</ul>
+<p>Also, very happy about all other tips from you guys.</p>
+","bert"
+"18234","Why is my loss (binary cross entropy) converging on ~0.6? (Task: Natural Language Inference)","2020-02-25 08:46:47","18243","2","3239","<deep-learning><natural-language-processing><tensorflow><training><bert>","<p>I’m trying to debug my neural network (BERT fine-tuning) trained for natural language inference with binary classification of either entailment or contradiction. I've trained it for 80 epochs and its converging on ~0.68. Why isn't it getting any lower?</p>
+
+<p>Thanks in advance!</p>
+
+<hr>
+
+<p>Neural Network Architecture:</p>
+
+<p><a href=""https://i.sstatic.net/3VAyw.jpg"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/3VAyw.jpg"" alt=""Architecture""></a></p>
+
+<p>Training details:</p>
+
+<ul>
+<li>Loss function: Binary cross entropy</li>
+<li>Batch size: 8</li>
+<li>Optimizer: Adam (learning rate = 0.001)</li>
+<li>Framework: Tensorflow 2.0.1</li>
+<li>Pooled embeddings used from BERT output.</li>
+<li>BERT parameters are not frozen.</li>
+</ul>
+
+<p>Dataset:</p>
+
+<ul>
+<li>10,000 samples</li>
+<li>balanced dataset (5k each for entailment and contradiction)</li>
+<li>dataset is a subset of data mined from wikipedia.</li>
+<li>Claim example: <em>""'History of art includes architecture, dance, sculpture, music, painting, poetry literature, theatre, narrative, film, photography and graphic arts.'""</em></li>
+<li>Evidence example: <em>""The subsequent expansion of the list of principal arts in the 20th century reached to nine : architecture , dance , sculpture , music , painting , poetry -LRB- described broadly as a form of literature with aesthetic purpose or function , which also includes the distinct genres of theatre and narrative -RRB- , film , photography and graphic arts .""</em></li>
+</ul>
+
+<p>Dataset preprocessing: </p>
+
+<ul>
+<li>Used [SEP] to separate the two sentences instead of using separate embeddings via 2 BERT layers. (Hence, segment ids are computed as such)</li>
+<li>BERT's <a href=""https://github.com/google-research/bert/blob/master/tokenization.py"" rel=""nofollow noreferrer"">FullTokenizer</a> for tokenization.</li>
+<li>Truncated to a maximum sequence length of 64.</li>
+</ul>
+
+<p>See below for a graph of the training history. (Red = train_loss, Blue = val_loss)</p>
+
+<p><a href=""https://i.sstatic.net/h8Hlr.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/h8Hlr.png"" alt=""0.68 convergence""></a></p>
+","bert"
+"17576","Can Bert be used to extract embedding for large categorical features?","2020-01-19 00:25:42","","3","568","<neural-networks><machine-learning><deep-learning><natural-language-processing><bert>","<p>I've lot of training data points (i.e in millions) and I've around few features but the issue with that is all the features are categorical data with 1 million+ categories in each.</p>
+
+<p>So, I couldn't use one hot encoding because it's not efficient so I went with the other option which is embedding of fixed length. I've just used neural nets to compute embedding.</p>
+
+<p>My question is can we use advanced NLP models like bert to extract embeddings for categorical data from my corpus? Is it possible? I've only asked it because I've only heard that bert is good for sentence embeddings.</p>
+
+<p>Thank you.</p>
+","bert"
+"17102","How to use BERT as a multi-purpose conversational AI?","2019-12-14 13:55:05","","7","1355","<natural-language-processing><classification><bert><language-model>","<p>I'm looking to make an NLP model that can achieve a dual purpose. One purpose is that it can hold interesting conversations (conversational AI), and another being that it can do <em>intent classification</em> and even accomplish the classified task. </p>
+
+<p>To accomplish this, would I need to use multimodal machine learning, where you combine the signal from two models into one? Or can it be done with a single model?</p>
+
+<p>In my internet searches, I found <a href=""https://github.com/google-research/bert"" rel=""nofollow noreferrer"">BERT</a>, developed by Google engineers (although apparently not a Google product), which is an NLP model trained in an unsupervised fashion on 3.3 billion words or more and seems very capable. </p>
+
+<p>How can I leverage BERT to make my own conversational AI that can also carry out tasks? Is it as simple as copying the weights from BERT to your own model?</p>
+
+<p>Any guidance is appreciated.</p>
+","bert"
+"13917","How to use pretrained checkpoints of BERT model on semantic text similarity task?","2019-08-12 13:38:44","","1","230","<natural-language-processing><bert>","<p>I am unaware to use the derived checkpoints from pre-trained BERT model for the task of semantic text similarity.</p>
+
+<pre><code>!python create_pretraining_data.py \
+          --input_file=/input_path/input_file.txt \
+          --output_file=/tf_path/tf_examples.tfrecord \
+          --vocab_file=/vocab_path/uncased_L-12_H-768_A-12/vocab.txt \
+          --do_lower_case=True \
+          --max_seq_length=128 \
+          --max_predictions_per_seq=20 \
+          --masked_lm_prob=0.15 \
+          --random_seed=12345 \
+          --dupe_factor=5
+
+!python run_pretraining.py \
+      --input_file=/tf_path/tf_examples.tfrecord \
+      --output_dir=pretraining_output \
+      --do_train=True \
+      --do_eval=True \
+      --bert_config_file=/bert_path/uncased_L-12_H-768_A-12/bert_config.json \
+      --init_checkpoint=/bert_path/uncased_L-12_H-768_A-12/bert_model.ckpt\
+      --train_batch_size=32 \
+      --max_seq_length=128 \
+      --max_predictions_per_seq=20 \
+      --num_train_steps=20 \
+      --num_warmup_steps=10 \
+      --learning_rate=2e-5
+</code></pre>
+
+<p>I have run a pre-trained BERT model with some domain of corpora from scratch. I have got the checkpoints and graph.pbtxt file from the code above. But I am unaware on how to use those files for evaluating semantic text similarity test file.</p>
+","bert"
+"12896","Adding BERT embeddings in LSTM embedding layer","2019-06-17 13:15:43","","2","8570","<deep-learning><keras><word-embedding><long-short-term-memory><bert>","<p>I am planning to use BERT embeddings in the LSTM embedding layer instead of the usual Word2vec/Glove Embeddings. What are the possible ways to do that? </p>
+","bert"
+"12656","Will BERT embedding be always same for a given document when used as a feature extractor","2019-06-03 10:45:37","","5","722","<machine-learning><natural-language-processing><word-embedding><bert>","<p>When we use BERT embeddings for a classification task, would we get different embeddings every time we pass the same text through the BERT architecture? If yes, is it the right way to use the embeddings as features? Ideally, while using any feature extraction technique, features values should be consistent. How do I handle this if we want BERT to be used as a feature extractor?</p>
+","bert"
+"12468","How are the attention weights normalised in the transformer?","2019-05-22 09:07:58","","1","469","<tensorflow><machine-translation><bert><transformer>","<p>In the <a href=""https://arxiv.org/pdf/1706.03762.pdf"" rel=""nofollow noreferrer"">Transformer</a> (adopted in <a href=""https://arxiv.org/abs/1810.04805"" rel=""nofollow noreferrer"">BERT</a>), we normalize the attention weights (dot product of keys and queries) using a softmax in the Scaled Dot-Product mechanism. It is unclear to me whether this normalization is performed on each row of the weight matrix or on the entire matrix. In <a href=""https://www.tensorflow.org/alpha/tutorials/text/transformer"" rel=""nofollow noreferrer"">the TensorFlow tutorial</a>, it is performed on each row (axis=-1), and in the <a href=""https://github.com/tensorflow/models/blob/master/official/transformer/model/attention_layer.py"" rel=""nofollow noreferrer"">official TensorFlow code</a>, it is performed on the entire matrix (axis=None). The paper doesn't give many details. </p>
+
+<p>To me, both methods can make sense, but they have a strong impact. If on each row, then each value will have a roughly similar norm, because the sum of its weights is 1. If on the entire matrix, some values might be ""extinguished"" because all of its weights can be very close to zero. </p>
+","bert"
+"11900","Understanding how the loss was calculated for the SQuAD task in BERT paper","2019-04-20 01:13:46","11947","3","2035","<natural-language-processing><objective-functions><papers><bert>","<p>In the <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer"">BERT paper</a>, section 4.2 covers the SQuAD training. </p>
+
+<p>From my understanding, there are two extra parameters trained, they are two vectors with the same dimension as the hidden size, so the same dimensions as the contextualized embeddings in BERT. They are S (for start) and E (for End). For each, a softmax is taken with S and each of the final contextualized embeddings to get a score for the correct Start position. And the same thing is done for E and the correct end position.</p>
+
+<p>I get up to this part. But I am having trouble figuring out how the did the labeling and final loss calculations, which is described in this paragraph</p>
+
+<blockquote>
+  <p>and the maximum scoring span is used as the prediction. The training objective is the loglikelihood of the correct start and end positions.</p>
+</blockquote>
+
+<p>What do they mean by ""maximum scoring span is used as the prediction""?</p>
+
+<p>Furthermore, how does that play into </p>
+
+<blockquote>
+  <p>The training objective is the loglikelihood of the correct start and end positions</p>
+</blockquote>
+
+<p>From this source: <a href=""https://ljvmiranda921.github.io/notebook/2017/08/13/softmax-and-the-negative-log-likelihood/"" rel=""nofollow noreferrer"">https://ljvmiranda921.github.io/notebook/2017/08/13/softmax-and-the-negative-log-likelihood/</a></p>
+
+<p>It says the log-likelihood is only applied to the correct classes. So, we are only calculating the softmax for the correct positions only, not any of the incorrect positions.</p>
+
+<p>If this interpretation is correct, then the loss will be</p>
+
+<pre><code>Loss = -Log( Softmax(S*T(predictedStart) / Sum(S*Ti) ) -Log( Softmax(E*T(predictedEnd) / Sum(S*Ti) )
+</code></pre>
+","bert"
+"11755","How does bidirectional encoding allow the predicted word to indirectly ""see itself""?","2019-04-10 10:02:36","","3","269","<deep-learning><natural-language-processing><recurrent-neural-networks><bert>","<p>Before the release of BERT, we used to say that it is not possible to train bidirectional models by simply conditioning each word on its previous and next words, since this would allow the word that's being predicted to indirectly ""see itself"" in a multi-layer model. How does this happen? </p>
+","bert"
+"11621","How can I generate a document from a single word using GPT or BERT?","2019-04-03 13:15:15","","2","80","<natural-language-processing><bert><language-model><gpt>","<p>I have a dataset of 100000 documents each labelled with a topic to it. I want to create a model such that, given a topic, the model can generate a document from it. </p>
+
+<p>I came across language models <a href=""https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf"" rel=""nofollow noreferrer"">GPT</a>, GPT-2 and <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer"">BERT</a>. I learned that they can be used for generation purposes. But I did not find anywhere whether they can generate sentences given only a word.</p>
+
+<p>I am inclined to use GPT for my task, but I am not sure how to proceed with it. I wanted to know whether it is possible or not? It would be helpful if anyone can help me give a start in the right direction.</p>
+","bert"
+"11438","Is it a good idea to use BERT to answer a FAQ with semantic similarity?","2019-03-25 09:55:07","","2","728","<deep-learning><natural-language-processing><ai-design><applications><bert>","<p>I have been looking for BERT for many tasks. I would like to compare the performance to answer an FAQ, using BERT semantic similarity and BERT Q/A. 
+However, I'm not sure it is a good idea to use semantic similarity for this task. If it is, do you think it is possible to find a dataset to fine-tune my algorithm? </p>
+","bert"
+"11235","Why does the BERT encoder have an intermediate layer between the attention and neural network layers with a bigger output?","2019-03-14 14:15:54","","4","1418","<deep-learning><natural-language-processing><papers><attention><bert>","<p>I am reading the BERT paper <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer"">BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</a>.</p>
+
+<p>As I look at the attention mechanism, I don't understand why in the BERT encoder we have an intermediate layer between the attention and neural network layers with a bigger output (<span class=""math-container"">$4*H$</span>, where <span class=""math-container"">$H$</span> is the hidden size).
+Perhaps it is the layer normalization, but, by looking at the code, I'm not certain. </p>
+","bert"
+"10133","What are the segment embeddings and position embeddings in BERT?","2019-01-22 11:01:17","10630","11","13027","<machine-learning><deep-learning><natural-language-processing><bert>","<p><a href=""https://i.sstatic.net/thmqC.png"" rel=""noreferrer""><img src=""https://i.sstatic.net/thmqC.png"" alt=""enter image description here""></a></p>
+
+<p>They only reference in the paper that the position embeddings are learned, which is different from what was done in ELMo.</p>
+
+<p>ELMo paper - <a href=""https://arxiv.org/pdf/1802.05365.pdf"" rel=""noreferrer"">https://arxiv.org/pdf/1802.05365.pdf</a></p>
+
+<p>BERT paper - <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""noreferrer"">https://arxiv.org/pdf/1810.04805.pdf</a></p>
+","bert"
+"9141","Can BERT be used for sentence generating tasks?","2018-11-24 13:44:39","10628","32","43109","<neural-networks><deep-learning><natural-language-processing><bert><text-generation>","<p>I am a new learner in NLP. I am interested in the sentence generating task. As far as I am concerned, one state-of-the-art method is the <a href=""https://github.com/karpathy/char-rnn"" rel=""noreferrer"">CharRNN</a>, which uses RNN to generate a sequence of words.</p>
+
+<p>However, <a href=""https://arxiv.org/abs/1810.04805"" rel=""noreferrer"">BERT</a> has come out several weeks ago and is very powerful. Therefore, I am wondering whether this task can also be done with the help of BERT? I am a new learner in this field, and thank you for any advice!</p>
+","bert"
+"7684","Where can I find pre-trained language models in English and German?","2018-08-23 07:17:27","7754","5","1948","<neural-networks><natural-language-processing><bert><gpt><language-model>","<p>Where can I find (more) pre-trained <a href=""https://en.wikipedia.org/wiki/Language_model"" rel=""nofollow noreferrer"">language models</a>? I am especially interested in <strong>neural network-based</strong> models for <strong>English and German</strong>.</p>
+
+<p>I am aware only of <a href=""https://github.com/tensorflow/models/tree/master/research/lm_1b"" rel=""nofollow noreferrer"">Language Model on One Billion Word Benchmark</a> and <a href=""https://github.com/lverwimp/tf-lm"" rel=""nofollow noreferrer"">TF-LM: TensorFlow-based Language Modeling Toolkit</a>.</p>
+
+<p>I am surprised not to find a greater wealth of models for different frameworks and languages.</p>
+","bert"

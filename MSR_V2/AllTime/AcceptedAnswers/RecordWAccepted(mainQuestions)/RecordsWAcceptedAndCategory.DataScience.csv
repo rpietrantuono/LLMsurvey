@@ -1,0 +1,904 @@
+Post ID,Title,CreationDate,Score,ViewCount,CommentCount,AnswerCount,FavoriteCount,AcceptedAnswerId,Body
+"128109","Top_p parameter in langchain","2024-03-01 16:16:59","1","135","0","1","","128117","<p>I am trying to understand the <code>top_p</code> parameter in langchain (nucleus sampling) but I can't seem to grasp it.
+Based on <a href=""https://www.linkedin.com/pulse/science-control-how-temperature-topp-topk-shape-large-puente-viejo-u88yf/"" rel=""nofollow noreferrer"">this</a> we sort the probabilities and select a subset that exceeds p and concurrently has the fewer members possible.<br />
+For example for:</p>
+<pre><code>t1 =0.05
+t2 = 0.5
+t3 = 0.3
+t4 = 0.15
+</code></pre>
+<p>and <code>top_p=0.75</code> we would select <code>t2</code> and <code>t3</code>, right?</p>
+<p>If this is the case what happens if <code>top_p=0.001</code>?<br />
+We just need one token and any one of these is enough.<br />
+Do we select the biggest one (<code>t2</code>)? (based on my experience this makes sense, since i tested <code>top_p=0.001</code> on an LLM and the output was coherent, so since we select only one token if it was a random token with <code>probability &gt;0.001</code> the output should be garbage).</p>
+"
+"126493","Transformers Trainer: ""RuntimeError: module must have its parameters ... on device cuda:6 (device_ids[0]) but found one of them on device: cuda:0""","2024-01-19 15:25:08","0","677","0","1","","126494","<p>I ask this since I could not fix it with the help of:</p>
+<ul>
+<li>Stack Overflow <a href=""https://stackoverflow.com/q/59249563/11154841"">RuntimeError: module must have its parameters and buffers on device cuda:1 (device_ids[0]) but found one of them on device: cuda:2</a> or</li>
+<li>Stack Overflow <a href=""https://stackoverflow.com/q/71278607/11154841"">Pytorch : Expected all tensors on same device</a>.</li>
+</ul>
+<h3>Juypter Notebook server</h3>
+<p>I am on a Jupyter Notebook server, therefore, bash code starts with &quot;!&quot;.</p>
+<p>You have to <em>begin</em> with the following line in the <em>same</em> Jupyter Notebook cell in which you build the model. Mind that it does not seem to work if you change the environment variable with
+<code>import os</code> and then <code>os.environ['CUDA_VISIBLE_DEVICES'] = '6,3,7,2'</code>, and others ran into the same, see <a href=""https://github.com/pytorch/pytorch/issues/9158#issuecomment-665513010"" rel=""nofollow noreferrer"">setting CUDA_VISIBLE_DEVICES just has no effect #9158</a>.</p>
+<pre class=""lang-py prettyprint-override""><code>!export CUDA_VISIBLE_DEVICES='6,3,7,2'
+</code></pre>
+<p>After changing the model to a DataParallel model, memory should then be spread among GPUs 4,5,6,7. If you ask why the code lists 6,3,7,2 even though it will then work on 4,5,6,7, see <a href=""https://datascience.stackexchange.com/q/126490/97556"">&quot;model.to('cuda:6')&quot; becomes (nvidia-smi) GPU 4, same with any other &quot;cuda:MY_GPU&quot;, only &quot;cuda:0&quot; becomes GPU 0. How do I get rid of this mapping?</a>.</p>
+<p>*The outcome is also without GPU 7 (just 4,5,6), perhaps since it was not needed, and it is not the question since my main aim is to avoid the GPUs 1,2,3 since these are needed for another project.
+I would also like to spare GPU 0 so that I have only 4,5,6,7, but that is not an urgent need. In short: if you do not face the same mapping problem (6,3,7,2 -&gt; 4,5,6,7), go on with your working setup, but if you have it, check the other link. The right mapping is not the question here.</p>
+<h3>Code</h3>
+<h4>Main model (run on some chosen GPUs)</h4>
+<p>Here is how I build the model.</p>
+<pre><code>!export CUDA_VISIBLE_DEVICES='6,3,7,2'
+
+from transformers import (AutoTokenizer, AutoModelForCausalLM, AutoConfig, TextDataset, 
+    DataCollatorForLanguageModeling, Trainer, TrainingArguments)
+
+def get_model(model_name):
+
+    #### from transformers import GPT2LMHeadModel, GPT2Tokenizer
+    # Load pre-trained model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name)
+    return tokenizer, model
+
+import torch
+device = torch.device('cuda:6')
+print(torch.cuda.device_count())
+torch.cuda.set_device(device)
+
+model_name = &quot;dbmdz/german-gpt2&quot;
+tokenizer, model = get_model(model_name)
+config = model.config
+print(next(model.parameters()).device)
+device_ids = [6,3,7,2]
+model = torch.nn.DataParallel(model, device_ids=device_ids)
+print(model.device_ids)
+print(next(model.parameters()).device)
+</code></pre>
+<p>Out:</p>
+<pre class=""lang-py prettyprint-override""><code>8
+cpu
+[6, 3, 7, 2]
+cuda:0
+cpu
+</code></pre>
+<h4>Fine-tuning model with the Transformers Trainer class</h4>
+<pre class=""lang-py prettyprint-override""><code>def make_finetuned_model(tokenizer, model, file_path='myfile.txt', model_name=&quot;fine-tuned-model&quot;, bln_truncation=True,
+                        num_train_epochs=1, per_device_train_batch_size=1, save_steps=10_000):
+        
+    train_dataset = TextDataset(
+        tokenizer=tokenizer,
+        file_path=file_path,
+        block_size=512,
+        overwrite_cache=True,
+    )
+    
+    print(next(model.parameters()).device)
+    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+    
+    print(next(model.parameters()).device)
+
+    model_folder = f&quot;./{model_name}&quot;
+    
+    # Define the Trainer
+    trainer = Trainer(
+        model=model.to('cuda:6'), # &quot;model=model&quot; should run through as well
+        args=TrainingArguments(
+            output_dir=model_folder,
+            overwrite_output_dir=True,
+            num_train_epochs=num_train_epochs,
+            per_device_train_batch_size=per_device_train_batch_size,
+            save_steps=save_steps,
+        ),
+        data_collator=data_collator,
+        train_dataset=train_dataset,
+    )
+    model.to('cuda:6')
+    print(next(model.parameters()).device)
+
+    # Fine-tune the model
+    trainer.train()
+    
+    # Save the model and tokenizer to the fine-tuned model directory
+    # This is needed since the model config and tokenizer need to be loaded at any load
+    # Since the fine-tuned model wrapped with DataParallel, save the underlying model with:
+    model.module.save_pretrained(model_folder)
+    tokenizer.save_pretrained(model_folder)
+
+make_finetuned_model(tokenizer, model, file_path='myfile.txt', 
+                     model_name=&quot;fine_tuned_model&quot;, bln_truncation=True,
+                        num_train_epochs=1, per_device_train_batch_size=1, save_steps=10_000)
+</code></pre>
+<p>Out:</p>
+<pre class=""lang-py prettyprint-override""><code>cuda:6
+cuda:6
+cuda:0
+cuda:0
+</code></pre>
+<p>Thus, building the trainer object resets the device to &quot;cuda:0&quot; no matter what you wrote, see the third printout <code>cuda:0</code> after it has been <code>cuda:6</code> before. I checked the Huggingface thread <a href=""https://discuss.huggingface.co/t/setting-specific-device-for-trainer/784/22"" rel=""nofollow noreferrer"">Setting specific device for Trainer</a> which is open and busy since August 2022 (!).</p>
+<p>Since I chose four other GPUs and GPU 0 comes on top, the error is thrown.</p>
+<h3>Question</h3>
+<p>The Transformers Trainer class will always set the device to &quot;cuda:0&quot;. How do I get rid of the errors:</p>
+<blockquote>
+<p>RuntimeError: module must have its parameters and buffers on device cuda:6 (device_ids[0]) but found one of them on device: cuda:0</p>
+</blockquote>
+<p>and during the same code work, but more seldomly, and I do not know how to get this error back, code is lost:</p>
+<blockquote>
+<p>RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:4! (when checking argument for argument index in method wrapper_CUDA__index_select)</p>
+</blockquote>
+"
+"126393","How does RAG query affect the similarity search?","2024-01-12 20:26:47","0","133","0","1","","126400","<p>I have a RAG pipeline where I want to extract a piece of information called <code>&quot;X&quot;</code> In a regular RAG pipeline, there is a query entered by the user. Then, this query will be embedded, and the resulting embedding vector will be compared by some metric (cosine similarity) to other embeddings of the saved documents.</p>
+<p>If I write the query like this: <code>&quot;What information does this document contain about X?&quot;</code>. The result from the similarity search should be worse than using a query containing just <code>&quot;X&quot;</code></p>
+<p>My question is: why is the entered query in a question form? And if it is not in question form, will it produce better or worse results, and why?</p>
+"
+"124995","Understanding processors in huggingface tokenizer library","2023-12-10 20:59:51","1","50","0","1","","125008","<p>tl;dr
+What are the <code>:0</code> and <code>:1</code> in the following huggingface processors reference usage given on their <a href=""https://huggingface.co/learn/nlp-course/chapter6/8?fw=pt#:%7E:text=and%20overflowing.-,The,-last%20step%20in"" rel=""nofollow noreferrer"">page</a>:</p>
+<pre><code>tokenizer.post_processor = processors.TemplateProcessing(
+    single=f&quot;[CLS]:0 $A:0 [SEP]:0&quot;,
+    pair=f&quot;[CLS]:0 $A:0 [SEP]:0 $B:1 [SEP]:1&quot;,
+    special_tokens=[(&quot;[CLS]&quot;, cls_token_id), (&quot;[SEP]&quot;, sep_token_id)],
+)
+</code></pre>
+<p>Here the <code>cls_token_id</code> is 2 and <code>sep_token_id</code> is 3</p>
+<p>Description:
+Post you train a tokenizer using the huggingface library you have to then add a postprocessr for things like adding the [CLS] token at the beginning of every sentence.</p>
+<p>The following is an example from their documentation</p>
+<p><a href=""https://i.sstatic.net/7KxGT.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/7KxGT.png"" alt=""enter image description here"" /></a></p>
+<p>Can you help me understand what purpose are the <code>:0</code> and <code>:1</code> serving?</p>
+"
+"124733","Purely extractive Language Model","2023-11-24 11:00:36","0","142","1","1","","124735","<p>Given an email thread, I am trying to extract the body of the most recent email.</p>
+<p>I used to do that with rules. Now I am testing Large Language Models (LLM) to see if I they provide a less ad hoc solution.</p>
+<p>Mistral-7B-Instruct, for instance, seems to understand the task and provides acceptable outputs most of the time.</p>
+<p>However, in some cases, it explains the email rather than just copy/paste the relevant chunk.</p>
+<p>I have tried dozens of prompts, for instance:</p>
+<pre><code>instruction = 'Given the email thread bellow the dotted line, extract verbatim the body of the most recent (top) message. Remove all headers, footers and disclaimers. In your response, do not add any text that was not present in the original message'
+</code></pre>
+<p>And tried to prevent hallucinations by setting the following:</p>
+<pre><code>    generation_output = model.generate(
+        model_inputs,
+        do_sample=True,
+        temperature=0.0000001,
+        top_p=0.0000001,
+        top_k=1,
+        max_new_tokens=words
+        )
+</code></pre>
+<p>However, in a few cases, the model still adds explanations and/or hallucinates a bit.</p>
+<p>My questions are the following:</p>
+<ol>
+<li><p>Are you aware of any models that could do a better job without fine-tuning? For instance, purely extractive models (as opposed to generative ones).</p>
+</li>
+<li><p>If generative models are the way to go, is there a way to force the model to just copy/paste?</p>
+</li>
+</ol>
+<p>Best,</p>
+<p>Ed</p>
+"
+"123062","Why cant we use normalise position encodings instead of the cos and sine encodings used in the Transformer paper?","2023-08-03 09:14:56","2","1072","2","2","","123065","<p>I'm working with Transformer models for sequence-to-sequence tasks and I'm trying to fully understand the use of positional encodings in these models.</p>
+<p>In the original &quot;Attention is All You Need&quot; paper by Vaswani et al., positional encodings are implemented using a mix of sine and cosine functions of different frequencies. I understand that these sinusoidal functions provide a unique encoding for each position and that they allow the model to learn to attend to relative positions in a way that is translation invariant.</p>
+<p>While going through this <a href=""https://towardsdatascience.com/master-positional-encoding-part-i-63c05d90a0c3"" rel=""nofollow noreferrer"">blog</a>.</p>
+<p>However, I'm wondering why we couldn't simply use normalized positional encodings instead. For example, we could divide the position of each word in the sequence by the maximum sequence length to get a unique positional encoding for each word that falls within a range from 0 to 1. We could handle sequences shorter than the maximum length with padding.</p>
+<p>This approach seems more straightforward and it might make training faster or more stable due to the normalized range of the encodings.</p>
+<p>Mathematically, for a given position p in a sequence, and a maximum sequence length L, the normalized positional encoding E would be:</p>
+<p>E(p) = p / L</p>
+<p>The encodings would be unique for each index position and we can easily map the relation positions since the relationship would be linear.</p>
+<p>One of the main arguments against this is that we wont be able to handle different sequence lengths since 4/5 and 16/20 would have same ratio but while training we set a max length and the ratios would be the same since padding is incorporated if the sequence is small so the ratios would be the same in all instances and I think that argument doesn't hold.</p>
+"
+"123002","How to measure accuracy of GPT model","2023-07-29 17:34:29","1","705","0","1","","123003","<p>I am working on a model to build questions automatically from some text</p>
+<p>My model will analyse provided article and ask authors questions that can help improving their articles</p>
+<p>How can we measure the accuracy of these ML-generated questions?</p>
+<p>There is the relevance part of the questions as these questions represent an area of improvement in the article</p>
+<p>How to measure that?</p>
+<p>Any previous work on similar models would be a great help too</p>
+<p>Thanks</p>
+"
+"122498","How was the token library constructed for ChatGPT / other GPT systems?","2023-06-30 18:27:29","2","166","0","1","","122499","<p>I have found literally hundreds of articles on Google with titles like 'What are tokens and how to use them,' but haven't been able to find any information at all on how the token libraries themselves were made. OpenAI state that GPT-3.5 uses a token library of 50,257 tokens, which presumably can represent any string in their training library. But how were these tokens selected? I assume there was some kind of optimization algorithm that found the most common strings in the training library? Was the tokenizer trained alongside the GPT models to optimize both for one another? There are a lot of strange cases, particularly around how spaces are handled (see below for a few examples I made of closely related words represented by different tokens), so I'm really curious what the methodology of making a token set is. Obviously how tokens are made will have a huge impact on how the system as a whole performs, yet unlike the attention mechanism very little seems to have been written about it.</p>
+<p><a href=""https://i.sstatic.net/fbIF7.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/fbIF7.png"" alt=""enter image description here"" /></a></p>
+"
+"121782","Some simple questions about confusion matrix and metrics in general","2023-05-26 16:07:54","2","1139","2","2","","121787","<p>I will first tell you about the context then ask my questions.</p>
+<p>The model detects hate speech and the training and testing datasets are imbalanced (NLP).</p>
+<p>My questions:</p>
+<ol>
+<li>Is this considered a good model?</li>
+<li>Is the False negative really bad and it indicates that my model will predict a lot of ones to be zeros on new data?</li>
+<li>Is it common for AUC to be higher than the recall and precision when the data is imbalanced?</li>
+<li>Is the ROC-AUC misleading in this case because it depends on the True Negative and it is really big? (FPR depends on TN)</li>
+<li>For my use case, what is the best metric to use?</li>
+<li>I passed the probabilities to create ROC, is that the right way?</li>
+</ol>
+<p><a href=""https://i.sstatic.net/59Z1Z.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/59Z1Z.png"" alt=""enter image description here"" /></a></p>
+<p><strong>Edit:
+I did under-sampling and got the following results from the same model parameters:</strong>
+<a href=""https://i.sstatic.net/kebJh.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/kebJh.png"" alt=""enter image description here"" /></a></p>
+<p><strong>Does this show that the model is good? or can it be misleading too?</strong></p>
+"
+"120726","What should the numerical values of the <startofsentence> and <endofsentence> token vectors be?","2023-04-05 11:53:38","1","154","1","1","","120979","<p>I'm trying to build GPT2 from scratch. I understand how to convert each word in a sentence to its respective token index and each token is then converted to its respective word embedding vector. I also understand there needs to be a fixed length for each input vector e.g. the max length of all sentences input into the transformer are 50 tokens, and for all sentences shorter than that padding token vectors consisting of nothing but zeroes fill the space where the additional word vectors would be.</p>
+<p>I get that each input vector needs to have a start token at the beginning of the input vector, as well as a stop token after the last word and before the padding vectors. The integer values corresponding to the start and stop token indexes are somewhat arbitrary, but I still don't understand what the actual values of the start and stop token embeddings should be. Should they just also be vectors of zeroes? Are these values also arbitrary?</p>
+"
+"119952","What does Codex take as tokens?","2023-03-04 14:47:45","0","194","1","1","","119961","<p>The typical default for neural networks in natural language processing has been to take words as tokens.</p>
+<p>OpenAI Codex is based on GPT-3, but also deals with source code. For source code in general, there is no corresponding obvious choice of tokens, because each programming language has different rules for tokenizing. I don't get the impression Codex uses a separate tokenizer for each language.</p>
+<p>What does it take as tokens?</p>
+"
+"117444","What size language model can you train on a GPU with x GB of memory?","2023-01-02 01:14:52","8","10155","0","1","","118875","<p>I'm trying to figure out what size language model I will be able to train on a GPU with a certain amount of memory. Let's for simplicity say that 1 GB = 10<sup>9</sup> bytes; that means that, for example, on a GPU with 12 GB memory, I can theoretically fit 6 billion parameters, given that I store all parameters as 16-bit floats. However, in order to use a language model, you typically also need space for storing the input text and the activations of the current layer (and maybe also of the previous layer), and if you are going to train the model, you will typically need space to store the activations of all layers in order to be able to do backpropagation, and if you use an optimizer like Adam, you need space to store the running mean of the partial derivatives (of the loss function with respect to the various parameters, or in other words, the gradient), as well as the running mean of the squares of the partial derivatives.</p>
+<p>So, given this complication, could someone tell me what size language models (that is, how many parameters) I will be able to train on a GPU with</p>
+<ol>
+<li>10 GB of memory (RTX 3080 10 GB)?</li>
+<li>12 GB of memory (RTX 3080 12 GB and RTX 3080 Ti)?</li>
+<li>16 GB of memory (RTX 4080)?</li>
+<li>24 GB of memory (RTX 3090 and RTX 3090 Ti)?</li>
+</ol>
+<p>For example, Tim Dettmers mentions in <a href=""https://timdettmers.com/2020/09/07/which-gpu-for-deep-learning/#When_do_I_need_11_GB_of_Memory"" rel=""nofollow noreferrer"">his blog</a> that you should have at least 24 GB of memory if you do research on transformers. I'm guessing this translates roughly to a language model of a certain size.</p>
+"
+"116101","Ordering training text data by length","2022-11-12 04:34:21","0","131","0","1","","116111","<p>If I have text data where the length of documents greatly varies and I'd like to use it for training where I use batching, there is a great chance that long strings will be mixed with short strings and the average time to process each batch will increase because of padding within the batches.
+I imagine sorting documents naively by length would create a bias of some sort since long documents and short one would tend to be similar to each other.
+Are there any methods that have been tried that can help reduce training time in this case without sacrificing model performance?</p>
+"
+"115440","Why is it useful to use different word splitting with different tokenizers?","2022-10-21 08:15:27","1","45","0","2","","115457","<p>I have a problem. I have a NLP classification problem.
+There are different methods to decompose sentences into tokens, for example in whole words or in characters. Then there are different tokenizers like:</p>
+<ul>
+<li>TF-IDF</li>
+<li>Binary</li>
+<li>Frequency</li>
+<li>Count</li>
+</ul>
+<p>My question now aims, why should one make the effort and use a different word division (word or character) and then check this with the different tokenizers?</p>
+"
+"114958","LSTM Feature engineering: using different Knowledge Graph data types","2022-10-06 09:54:10","1","223","2","1","","114969","<p>For a research project, I'm planning to use an LSTM to learn from sequences of KG entities. However, I have little experience using LSTMs or RNNs in general. During planning, a few questions concerning feature engineering have come up.</p>
+<p>Let me give you some context:<br />
+My initial data will be a collection of <span class=""math-container"">$n$</span> texts.
+From these texts, I will extract <span class=""math-container"">$n$</span> sequences of entities of variable length using a DBPedia or Wikidata tagger. Consequently, I'll have <span class=""math-container"">$n$</span> sequences of KG entities that somehow correspond to their textual counterparts.</p>
+<p>Most LSTM implementations I've seen take only one type of feature as input. However, as we're dealing with knowledge graphs, we have access to more types of information. I'm wondering what would be a good strategy to use more than just one type of feature.</p>
+<h2>Objective</h2>
+<p>Given a sequence of seen entities, I want the model to predict the continuation of that sequence. A set of truncated sequences from the corpus will be kept apart. The beginnings will serve as prompts and the endings will be truth values for evaluation. <br />
+I'm also interested in the model's prediction probabilities when predicting following entities for one single entity given as a prompt.</p>
+<h2>Assumptions</h2>
+<p>I assume that diverse types of features will help the model make good predictions. Specifically, I want the model to learn not only from entity sequences but also from KG 'metadata' like associated RDF classes or pre-computed embedding vectors.</p>
+<h2>Features</h2>
+<h3>Feature 1: Numerical vocabulary features</h3>
+<p>The simplest case I can think of is to create an orderet set from all extracted entities. <br />
+For example, if the extracted entities from all my documents were <code>[U2, rock, post-punk, yen, Bono, revolutionary, guitar]</code> (in reality that'll probably be a few thousands more), I'd create this ordered set representing my <em>vocabulary</em>:</p>
+<pre><code>{1: http://dbpedia.org/resource/U2, 2: http://dbpedia.org/resource/Rock_music, 3: http://dbpedia.org/resource/Post-punk, 4: http://dbpedia.org/resource/Japanese_yen, 5: http://dbpedia.org/resource/Bono, 6: http://dbpedia.org/resource/Revolutionary, 7: http://dbpedia.org/resource/Acoustic_guitar}
+</code></pre>
+<p>The training data for the LSTM would then be sequences of integers such as</p>
+<pre><code>training_data = [
+# Datapoint 1
+[[1, 2, 3, 4, 5, 6, 7]],        #document 1
+# Datapoint 2
+[[5, 3, 3, 1, 6]],              #document 2
+# Datapoint 3
+[[2, 4, 5, 7, 1, 6, 2, 1, 7]],  #document 3
+...]
+</code></pre>
+<h3>Feature 2: Numerical class features</h3>
+<p>I want to include additional information about RDF classes. Similar to the approach in <strong>Feature 1</strong>, I could create an ordered set containing all possible classes. However, the difference is that each entity belongs to one or more classes</p>
+<p>If all classes extracted were</p>
+<pre><code>{1: owl:Thing, 2: dbo:MusicGenre, 3: dbo:Agent, 4: dbo:Person, 5: dbo:PersonFunction}
+</code></pre>
+<p>I would create a new data structure for each data point, this time containing class information. The notation represents <code>{entity: [classes]}</code>. My training data could then look something like this:</p>
+<pre><code>training_data = [
+# Datapoint 1
+[
+[1, 2, 3, 4, 5, 6, 7],                      # feature 1
+{1: [1,2,4], 2: [2,3,4,5], ..., 7: [3,5]}   # feature 2
+],
+# Datapoint 2
+[
+[5, 3, 3, 1, 6],                            # feature 1
+{1: [2,3,4], 2: [1,2,4,5], ..., 5: [3,5]}   # feature 2
+],
+# Datapoint 3
+[
+[2, 4, 5, 7, 1, 6, 2, 1, 7],                # feature 1
+{1: [1,2,4], 2: [1,2,3,5], ..., 9: [2,3]}   # feature 2
+],
+...]
+</code></pre>
+<h3>Feature 3: RDF2Vec embeddings</h3>
+<p>Each KG entity from a collection of entities can be mapped into a low-dimensional space using tools like RDF2Vec. I'm not sure whether to use this feature or not as its latent semantic content might interfere with my research question, but it is an option. <br />
+Embedding features, in this case, are vectors of length 200:</p>
+<pre><code>embedding_vector = tensor([5.9035e-01, 2.6974e-01, 8.6569e-01, 8.9759e-01, 9.3032e-01, 5.2442e-01, 9.6031e-01, 1.8393e-01, 6.3000e-01, 9.5930e-01, 2.5407e-01, 5.6510e-01, 8.1476e-01, 2.0864e-01, 2.7643e-01, 4.8667e-02, 9.3791e-01, 8.0929e-02, 5.0237e-01, 1.4946e-01, 5.9263e-01, 4.7912e-01, 6.8907e-01, 4.8248e-03, 4.9926e-01, 1.5715e-01, 7.0777e-01, 6.0065e-01, 2.6858e-01, 7.2022e-01, 4.4128e-01, 4.5026e-01, 1.9987e-01, 2.8191e-01, 1.2493e-01, 6.0253e-01, 6.9298e-01, 2.5828e-01, 2.8332e-01, 9.6898e-01, 4.5132e-01, 4.6473e-01, 8.0197e-01, 8.4105e-01, 8.8928e-01, 5.5742e-01, 9.5781e-01, 3.8824e-01, 4.6749e-01, 4.3156e-01, 2.8375e-03, 1.5275e-01, 6.7080e-01, 9.9894e-01, 7.2093e-01, 2.7220e-01, 8.5404e-01, 6.9299e-01, 3.9316e-01, 8.9538e-01, 8.1654e-01, 4.1633e-01, 9.6143e-01, 7.1853e-01, 9.5498e-01, 4.5507e-01, 3.6488e-01, 6.3075e-01, 8.0778e-01, 6.3019e-01, 4.4128e-01, 7.6502e-01, 3.2592e-01, 9.5351e-01, 1.1195e-02, 5.6960e-01, 9.2122e-01, 3.3145e-01, 4.7351e-01, 4.5432e-01, 3.7222e-01, 4.3379e-01, 8.1074e-01, 7.6855e-01, 4.0966e-01, 2.6685e-01, 2.4074e-01, 4.1252e-01, 1.9881e-01, 2.2821e-01, 5.9354e-01, 9.8252e-01, 2.7417e-01, 4.2776e-01, 5.3463e-01, 2.9148e-01, 5.8007e-01, 8.2275e-01, 4.8227e-01, 8.5314e-01, 3.6518e-01, 7.8376e-02, 3.6919e-01, 3.4867e-01, 8.9571e-01, 2.0085e-02, 7.9924e-01, 3.5849e-01, 8.7784e-01, 4.6861e-01, 6.2004e-01, 6.8465e-01, 4.1273e-01, 4.2819e-01, 9.4532e-01, 2.2362e-01, 8.3943e-01, 1.1692e-01, 6.9463e-01, 7.6764e-01, 2.8046e-02, 6.9382e-01, 9.2750e-01, 3.6031e-01, 6.8065e-01, 1.6976e-01, 8.2079e-01, 6.4580e-01, 8.3944e-01, 3.9363e-01, 4.4026e-01, 4.4569e-01, 8.2344e-01, 5.4172e-01, 1.6886e-04, 3.8689e-01, 5.8966e-01, 1.9510e-02, 2.5976e-01, 4.0868e-01, 3.1406e-01, 3.6334e-01, 6.1768e-01, 5.4854e-01, 4.1273e-01, 7.2670e-04, 2.4486e-01, 4.1042e-01, 9.0760e-01, 1.6224e-01, 7.4019e-02, 8.1329e-01, 7.2573e-01, 8.2816e-01, 7.3032e-01, 6.6017e-01, 6.4281e-01, 4.1839e-01, 9.2251e-01, 1.5183e-02, 4.4538e-01, 9.7205e-01, 9.5677e-01, 9.5649e-01, 1.2610e-01, 9.2521e-01, 3.2649e-01, 2.1019e-02, 2.5695e-01, 4.2663e-01, 9.2064e-01, 4.5242e-01, 7.0447e-01, 8.1233e-01, 2.7507e-01, 2.4744e-01, 1.3670e-01, 6.4032e-01, 5.8332e-01, 5.5130e-01, 2.4997e-02, 7.7206e-01, 1.5085e-01, 2.8028e-01, 8.2839e-01, 5.8292e-01, 9.9087e-01, 6.0233e-01, 4.1489e-01, 6.4902e-01, 7.5428e-01, 8.0953e-01, 3.7530e-01, 4.8196e-01, 1.8786e-01, 9.8463e-01, 6.3303e-01, 4.8519e-01, 7.6163e-01, 3.3821e-01]
+</code></pre>
+<p>If I included this in my training data, it would look something like this:</p>
+<pre><code>training_data = [
+# Datapoint 1
+[
+[1, 2, 3, 4, 5, 6, 7],                      # feature 1
+{1: [1,2,4], 2: [2,3,4,5], ..., 7: [3,5]},  # feature 2
+[7 embedding vectors],                      # feature 3
+],
+# Datapoint 2
+[
+[5, 3, 3, 1, 6],                            # feature 1
+{1: [2,3,4], 2: [1,2,4,5], ..., 5: [3,5]},  # feature 2
+[5 embedding vectors],                      # feature 3
+],
+# Datapoint 3
+[
+[2, 4, 5, 7, 1, 6, 2, 1, 7],                # feature 1
+{1: [1,2,4], 2: [1,2,3,5], ..., 9: [2,3]},  # feature 2
+[9 embedding vectors],                      # feature 3
+],
+...]
+</code></pre>
+<h2>Questions</h2>
+<p>My training data will consist of lists of variable length <em>and</em> matrices/tensors. How do I best feed this data to the model?  In any case, I'm interested in predicting only entities. Training only on feature 1 could be a baseline that I compare to combinations of features, e.g. Features 1+2 or 1+3 or 1+2+3</p>
+<p>Based on what I've read until now, I think I'm going to use padding and masking. However, I'm not sure what my features should finally look like.</p>
+<p>I appreciate any kind of feedback.
+Thanks for sharing your thoughts!</p>
+"
+"114932","Advantages of different tokenizers for NLP (specifically text generation)","2022-10-05 12:43:02","0","120","1","1","","114941","<p>What are the advantages of using different tokenizers? For example, let's take the sentence:
+&quot;In Düsseldorf I took my hat off. But I can't put it back on.&quot;</p>
+<p>The treebank tokenizer yields: &quot;In Düsseldorf I took my hat off . But I ca n't put it back on . &quot;</p>
+<p>However, the whitespace tokenizer would yield:
+&quot;In Düsseldorf I took my hat off . But I can't put it back on . &quot;</p>
+<p>NLTK has four tokenizers:</p>
+<ul>
+<li>TreebankWordTokenizer</li>
+<li>WordPunctTokenizer</li>
+<li>PunctWordTokenizer</li>
+<li>WhitespaceTokenizer</li>
+</ul>
+<p>When should you use which one? For my project, I am interested in text generation, so I am leaning toward the whitespace tokenizer. Is this a good choice? Won't my model generate nonsense tokens like &quot;n't&quot; when I use eg the treebank tokenizer?</p>
+"
+"114511","Inference Process in Autoregressive Transformer Architecture","2022-09-19 05:40:22","1","509","0","1","","114519","<p>I'm abit confused about how the inference/prediction process works in transformer.</p>
+<p>For simplicity suppose it is a transformer for translation. My understanding is that when training, the whole input and output sentences are put into model. This is possible because of the causal mask in the decoder that prevents the model from cheating and looking ahead.</p>
+<p><a href=""https://i.sstatic.net/PchHW.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/PchHW.png"" alt=""My understanding of Training Process"" /></a></p>
+<p>Then, once the weights have been trained, the inference/prediction works by placing &lt;/s&gt; or start sentence tag in the beginning with padding. The predicted word is then concatenated until &lt;/s&gt; is the predicted word. My confusion arises from how the predicted word is acquired.</p>
+<p>The causal mask ensures that the first predicted token (X_1 below) is only a function of the first token (i.e. is not affected by the padding we used in the other tokens. So our first predicted word/token should be taken from the first, and subsequently once we concatenated k words it should be taken from k+1 th output position. See the diagram below for clarity.</p>
+<p><a href=""https://i.sstatic.net/ZZpuq.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/ZZpuq.png"" alt=""My understanding of Inference Process"" /></a></p>
+<p>However, I've been using nlp.seas.harvard.edu/annotated-transformer/ as reference (and also checked another tensorflow tutorial), and they seem to take the predicted word/token as the last token (i.e. X_N).For example, under the inference section of the link above, we have:</p>
+<pre><code>prob = test_model.generator(out[:, -1])         
+_, next_word = torch.max(prob, dim=1)         
+next_word = next_word.data[0]         
+ys = torch.cat([ys, torch.empty(1, 1).type_as(src.data).fill_(next_word)], dim=1)
+</code></pre>
+<p>Thus, my question is whether I'm misunderstanding the model of misunderstanding the code?</p>
+"
+"113573","Running Model on both GPUs and CPUs","2022-08-16 11:41:48","0","573","0","1","","113976","<p>I have access to a hpc node, of 3 GPU and maximum of 38 CPU. I have a transformer model which I run of a single GPU at the moment, I want to utilize all the GPUs and CPUs.
+I have seen couple of tutorial on Dataparrallel and DistributedDataParallel. They only mentioned how to  use multiple GPUs.</p>
+<p>My questions are:</p>
+<ol>
+<li>Do I use  Dataparallel or DistributedDataParallel</li>
+<li>How do I adapt my code run on the GPUs and CPUs simultaneously. Perhaps if I can get a tutorial link.</li>
+<li>How to do I get the device ids.</li>
+</ol>
+"
+"112891","Smaller embedding size causes lower loss","2022-07-23 07:30:15","0","204","0","1","","112892","<p>When I convert my multilingual transformer model to a single lingual transformer model (got my languages embedding from the multilingual transformer and deleted other embeddings, decreased dimensions of embedding layers), the loss is much less. But I didn't understand why. What can be the reason for that?</p>
+"
+"112877","What is the difference between adding words to a tokenizer and training a tokenizer?","2022-07-22 12:38:24","0","71","0","1","","112893","<p>The title says it all. I was researching this question but couldn't find something useful. What is the difference between adding words to a tokenizer and training a tokenizer?</p>
+"
+"112816","What is the effect of the tokens?","2022-07-20 01:53:09","0","42","0","1","","112838","<p>What is the effect of the tokens that the model has if model A has 1B tokens and the other model has 12B tokens? Will that have an effect on the performance?</p>
+"
+"112402","What did Sentence-Bert return here?","2022-07-05 04:20:21","0","305","0","1","","112405","<p>I used sentence bert to embed sentences from this tutorial <a href=""https://www.sbert.net/docs/pretrained_models.html"" rel=""nofollow noreferrer"">https://www.sbert.net/docs/pretrained_models.html</a></p>
+<pre><code>from sentence_transformers import SentenceTransformer, util
+model = SentenceTransformer('all-mpnet-base-v2')
+</code></pre>
+<p>This is the event triples <code>t</code> I forgot to concat into sentences,</p>
+<pre><code>[('U.S. stock index futures', 'points to', 'start'),
+ ('U.S. stock index futures', 'points to', 'higher start')]
+</code></pre>
+<p><code>model.encode(t)</code> returns a 2d array of shape (2,768), with two idential 768-dimension vectors, and its value is different from both <code>model.encode('U.S. stock index futures')</code> and <code>model.encode('U.S. stock index futures points to start')</code>. What could possibly have it returned?</p>
+<p>It is the same situation for other models on huggingface such as <a href=""https://huggingface.co/sentence-transformers/stsb-distilbert-base"" rel=""nofollow noreferrer"">https://huggingface.co/sentence-transformers/stsb-distilbert-base</a></p>
+"
+"111735","Can I use Sentence-Bert to embed event triples?","2022-06-12 07:26:13","1","163","4","1","","111766","<p>I extracted event triples from sentences using OpenIE. Can I concatenate the components in the event triple to make it a sentence and use Sentence-Bert to embed it?
+It seems no one has done this way before so I am questioning my idea.</p>
+<p>I'm using news headlines to predict next day's stock movement. For example, there are two news headlines, the first is <em>&quot;U.S. stock index futures points to higher start&quot;</em>, I used openIE to extract it and there are two event triples, [('U.S. stock index futures', 'points to', 'start'), ('U.S. stock index futures', 'points to', 'higher start')]. (There are repetition in the openIE extracted event triples and I don't know how to avoid it.) Since it contains events I'm interested in (stock index), I will embed these two events and take their mean as the the embedding.</p>
+<p>The second headline is <em>&quot;STOCKS NEWS US- Economic and earnings diary for Jan 4&quot;</em>, it contains no events as it is only contain nouns. So I will embed it as 0 vector in this case.</p>
+"
+"110865","BERT base uncased required gpu ram","2022-05-11 15:28:37","1","2157","7","1","","110879","<p>I'm working on an NLP task, using BERT, and I have a little doubt about GPU memory.</p>
+<p>I already made a model (using DistilBERT) since I had out-of-memory problems with tensorflow on a RTX3090 (24gb gpu's ram, but ~20.5gb usable) with BERT base model.</p>
+<p>To make it working, I limited my data to 1.1 milion of sentences in training set (truncating sentences at 128 words), and like 300k in validation, but using an high batch size (256).</p>
+<p>Now I have the possibility to retrain the model on a Nvidia A100 (with 40gb gpu's ram), so it's time to use BERT base, and not the distilled version.</p>
+<p>My question is, if I reduce the batch size (e.g. from 256 to 64), will I have some possibilities to increase the size of my training data (e.g. from 1.1 to 2-3 milions), the lenght of sentences (e.g. from 128 to 256, or 198) and use the bert base (which has a lot of trainable params more than distilled version) on the 40gb of the A100, or it's probably that I will get an OOM error?</p>
+<p>I ask this because I haven't unlimited tries on this cluster, since I'm not alone using it (plus I have to prepare data differently in each case, and it has a quite high size), so I would have an estimation on what could happen.</p>
+"
+"107190","does ValueError: 'rat' is not in list means not exist in tokenizer","2022-01-18 12:52:43","1","110","2","1","","107248","<p>Does this error means that the word doesn't exist in the tokenizer</p>
+<pre><code>return sent.split(&quot; &quot;).index(word)
+ValueError: 'rat' is not in list
+</code></pre>
+<p>the code sequences like</p>
+<pre><code>def sentences():
+   for sent in sentences:
+       token = tokenizer.tokenize(sent)
+       for i in token :
+           idx = get_word_idx(sent,i)
+def get_word_idx(sent: str, word: str):
+    return sent.split(&quot; &quot;).index(word)
+</code></pre>
+<p>sentences split returns <code>['long', 'restaurant', 'table', 'with', 'rattan', 'rounded', 'back', 'chairs']</code>
+which <code>rattan</code> here is the problem as i think</p>
+"
+"106469","Why not rule-based semantic role labelling?","2021-12-27 19:06:10","1","162","0","1","","106473","<p>I have recently found some interest in automatic <a href=""https://en.wikipedia.org/wiki/Semantic_role_labeling"" rel=""nofollow noreferrer"">semantic role labelling</a>. Most introductory texts (e.g. Jurafsky and Martin, 2008) present approaches based on supervised machine learning, often using FrameNet (Baker et al. 1998) and PropBank (Kingsbury &amp; Palmer, 2002). Intuitively however, I would imagine that the same problem could be tackled with a grammar-based parser.</p>
+<p>Why is this not the case? Or rather, why would these supervised solutions be preferred?
+Thanks in advance.</p>
+<hr />
+<h2>References</h2>
+<p>Jurafsky, D., &amp; Martin, J. H. (2009). Speech and Language Processing: An Introduction to Natural Language Processing, Computational Linguistics, and Speech Recognition. Prentice Hall.</p>
+<p>Baker, C. F., Fillmore, C. J., &amp; Lowe, J. B. (1998). The Berkeley FrameNet Project. 36th Annual Meeting of the Association for Computational Linguistics and 17th International Conference on Computational Linguistics, Volume 1, 86–90. <a href=""https://doi.org/10.3115/980845.980860"" rel=""nofollow noreferrer"">https://doi.org/10.3115/980845.980860</a></p>
+<p>Kingsbury, P., &amp; Palmer, M. (2002). From treebank to propbank. In Language Resources and Evaluation.</p>
+"
+"106463","How to feed a Knowledge Base into Language Models?","2021-12-27 17:35:51","2","591","0","1","","106506","<p>I’m a CS undergrad trying to make my way into NLP Research. For some time, I have been wanting to incorporate &quot;everyday commonsense reasoning&quot; within the existing state-of-the-art Language Models; i.e. to make their generated output more reasonable and in coherence with our practical world. Although there do exist some commonsense knowledge bases like ConceptNet (2018), ATOMIC (2019), OpenMind CommonSense (MIT), Cyc (1984), etc., they exist in form of knowledge graphs, ontology, and taxonomies.</p>
+<p>My question is, how can I go about leveraging the power of these knowledge bases into current transformer language models like BERT and GPT-2? How can we fine-tune these models (or maybe train new ones from scratch) using these knowledge bases, such that they retain their language modeling capabilities but also get enhanced through a new commonsense understanding of our physical world?</p>
+<p>If any better possibilities exist other than fine-tuning, I'm open to ideas.</p>
+"
+"106214","How to precompute one sequence in a sequence-pair task when using BERT?","2021-12-17 10:22:30","1","158","0","1","","106217","<p>BERT uses separator tokens ([SEP]) to input two sequences for a sequence-pair task. If I understand the BERT architecture correctly, attention is applied to all inputs thus coupling the two sequences right from the start.</p>
+<p>Now, consider a sequence-pair task in which one of the sequences is constant and known from the start. E.g. Answering multiple unknown questions about a known context. To me it seems that there could be a computational advantage if one would precompute (part of) the model with the context only. However, if my assumption is correct that the two sequences are coupled from the start, precomputation is infeasible.</p>
+<p>Therefore my question is:
+<strong>How to precompute one sequence in a sequence-pair task while still using (pre-trained) BERT?</strong> Can we combine BERT with some other type of architecture to achieve this? And does it even make sense to do it in terms of speed and accuracy?</p>
+"
+"106191","validation/test set uniqueness question","2021-12-16 15:52:44","0","117","0","2","","106208","<p>Hopefully a simple question, but it's a little unclear to me on how best to separate train/validate/test sets.</p>
+<p>I have say 100 examples of class A.  I'm classifying text into either class A, which I care about, or class B, which could be any text in the world (negative class).  I have, obviously, far more examples of class B.</p>
+<p>When I split the data into train/validate/test sets, is it imperative that the test set, which is not at all used in training/tuning, NOT have any examples of class A that were used in training?  In the real world (and given my limited samples), the text it will classify against will have some exact examples of class A, but not always (there could be variations - of which I do not have all of them).</p>
+<p>I can ensure that the test set have unique class B text, but it is unclear if I have to also maintain completely unique class A examples in the test set, since the real world won't necessarily be like this.  Would it make sense to also have x% of class A examples from training in the test set, or should it always be 0% in the test set?</p>
+"
+"97630","What tokenizer does OpenAI's GPT3 API use?","2021-07-08 18:07:30","9","9068","0","1","","109483","<p>I'm building an application for the API, but I would like to be able to count the number of tokens my prompt will use, before I submit an API call. Currently I often submit prompts that yield a 'too-many-tokens' error.</p>
+<p>The closest I got to an answer was <a href=""https://datascience.stackexchange.com/a/66399/94705"">this post</a>, which still doesn't say what tokenizer it uses.</p>
+<p>If I knew what tokenizer the API used, then I could count how many tokens are in my prompt before I submit the API call.</p>
+<p>I'm working in Python.</p>
+"
+"89435","What is the difference between Okapi bm25 and NMSLIB?","2021-02-16 08:45:51","1","612","0","1","","89459","<p>I was trying to make a search system and then I got to know about <code>Okapi bm25</code> which is a ranking function like tf-idf. You can make an index of your corpus and later retrieve documents similar to your query.</p>
+<p>I imported a <a href=""https://pypi.org/project/rank-bm25/"" rel=""nofollow noreferrer"">python library</a> <code>rank_bm25</code> and created a search system and the results were satisfying.</p>
+<p>Then I saw something called <a href=""https://github.com/nmslib/nmslib"" rel=""nofollow noreferrer"">Non-metric space library</a>. I understood that its a similarity search library much like kNN algorithm.</p>
+<p>I saw <a href=""https://towardsdatascience.com/how-to-build-a-smart-search-engine-a86fca0d0795"" rel=""nofollow noreferrer"">an example where a guy was trying to make a smart search system</a> using <code>nmslib</code>. He did the following things:-</p>
+<ul>
+<li>tokenized the documents</li>
+<li>pass the tokens into <code>fastText</code> model to create word vectors</li>
+<li>then combined those word vectors with bm25 weights</li>
+<li>then passed the combination into nmslib</li>
+<li>performed the search.</li>
+</ul>
+<p><em>If the above link does not opens the document just open it in incognito mode.</em></p>
+<p>It was quite fast, but the results were not satisfying, I mean even if I was copy pasting any exact query from the doc, it was not returning that doc. But the search system that I made using rank_bm25 was giving great results. So the conclusion was</p>
+<p><strong><code>bm25</code> gave good results and <code>nmslib</code> gave faster results.</strong></p>
+<p>My questions are</p>
+<ul>
+<li>How do they both (bm25, nmslib) differ?</li>
+<li>How can I pass bm25 weights to nmslib to create a better and faster search engine?</li>
+<li>In short, how can I combine the goodness of both bm25 and nmslib?</li>
+</ul>
+"
+"88959","Python stemmer for Georgian","2021-02-05 07:06:47","6","694","1","2","","88962","<p>I am currently working with <strong>Georgian texts processing</strong>. Does anybody know any <strong>stemmers</strong>/<strong>lemmatizers</strong> (or other NLP tools) for Georgian that I could use with <strong>Python</strong>.</p>
+<p>Thanks in advance!</p>
+"
+"88824","Unigram tokenizer: how does it work?","2021-02-02 13:28:18","5","4302","0","1","","88831","<p>I have been trying to understand how the unigram tokenizer works since it is used in the sentencePiece tokenizer that I am planning on using, but I cannot wrap my head around it.</p>
+<p>I tried to read the original paper, which contains so little details that it feels like it's been written explicitely not to be understood. I also read several blog posts about it but none really clarified it (one straight up admitted not undertanding it completely).</p>
+<p>Can somebody explain it to me? I am familiar with the EM algorithm but I cannot see how it related to the loss function in order to find the subwords probabilities...</p>
+"
+"87793","Converting paragraphs into sentences","2021-01-11 10:29:08","5","2320","0","2","","87797","<p>I'm looking for ways to extract sentences from paragraphs of text containing different types of punctuations and all. I used <code>SpaCy</code>'s <code>Sentencizer</code> to begin with.</p>
+<p>Sample input python list <code>abstracts</code>:</p>
+<pre><code>[&quot;A total of 2337 articles were found, and, according to the inclusion and exclusion criteria used, 22 articles were included in the study. Inhibitory activity against 96% (200/208) and 95% (312/328) of the pathogenic fungi tested was described for Eb and [(PhSe)2], respectively. Including in these 536 fungal isolates tested, organoselenium activity was highlighted against Candida spp., Cryptococcus ssp., Trichosporon spp., Aspergillus spp., Fusarium spp., Pythium spp., and Sporothrix spp., with MIC values lower than 64 mug/mL. In conclusion, Eb and [(PhSe)2] have a broad spectrum of in vitro inhibitory antifungal activity.&quot;]
+</code></pre>
+<p>Code:</p>
+<pre><code>from spacy.lang.en import English
+
+nlp = English()
+sentencizer = nlp.create_pipe(&quot;sentencizer&quot;)
+nlp.add_pipe(sentencizer)
+
+# read the sentences into a list
+for doc in abstracts[:5]:
+    do = nlp(doc)
+    for sent in list(do.sents):
+        print(sent)
+</code></pre>
+<p>Output:</p>
+<pre><code>A total of 2337 articles were found, and, according to the inclusion and exclusion criteria used, 22 articles were included in the study.
+Inhibitory activity against 96% (200/208) and 95% (312/328) of the pathogenic fungi tested was described for Eb and [(PhSe)2], respectively.
+Including in these 536 fungal isolates tested, organoselenium activity was highlighted against Candida spp.,
+Cryptococcus ssp.,
+Trichosporon spp.,
+Aspergillus spp.,
+Fusarium spp.,
+Pythium spp.,
+and Sporothrix spp.,
+with MIC values lower than 64 mug/mL. In conclusion, Eb and [(PhSe)2] have a broad spectrum of in vitro inhibitory antifungal activity.
+</code></pre>
+<p>It works fine for normal text but fails when there are dots (<code>.</code>) present in the sentence elsewhere other than at the end, which breaks the whole sentence as shown in the above output. How can we address this? Are there any other proven methods or libraries to perform this task?</p>
+"
+"86974","Entity linking vs aliasing","2020-12-21 13:23:30","1","96","1","1","","94000","<p>The process of finding entity in a knowledge base (KB) that a given keyphrase in a text refers to is called entity linking. I have the
+opposite problem. I have an entity in my knowledge base (KB) and I want to find all the ways people might refer to this entity. For instance, I have &quot;Madonna&quot; (singer) and I am looking for aliases like &quot;Louise Ciccone&quot;, &quot;Madonna Ritchie&quot;, &quot;Queen of Pop&quot;, &quot;Mo&quot;, etc.</p>
+<p>Is it called aliasing? Or there is a better name in the literature?</p>
+<p>I guess finding the right key words will help me find related research.</p>
+"
+"86572","BERT uses WordPiece, RoBERTa uses BPE","2020-12-11 19:10:22","0","2335","0","1","","86573","<p>In the original <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer""><strong>BERT</strong></a> paper, section <em>'A.2 Pre-training Procedure'</em>, it is mentioned:</p>
+<blockquote>
+<p>The LM masking is applied after <strong>WordPiece</strong> tokenization with a uniform masking rate of 15%, and no special consideration given to partial word pieces.</p>
+</blockquote>
+<p>And in the <a href=""https://arxiv.org/pdf/1907.11692.pdf"" rel=""nofollow noreferrer""><strong>RoBERTa</strong></a> paper, section <em>'4.4 Text Encoding'</em> it is mentioned:</p>
+<blockquote>
+<p>The original BERT implementation (Devlin et al., 2019) uses a
+character-level <strong>BPE</strong> vocabulary of size 30K, which is learned after
+preprocessing the input with heuristic tokenization rules.</p>
+</blockquote>
+<p>I appreciate if someone can clarify why in the <a href=""https://arxiv.org/pdf/1907.11692.pdf"" rel=""nofollow noreferrer"">RoBERTa</a> paper it is said that <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer"">BERT</a> uses BPE?</p>
+"
+"86077","Why does GPU speed up inference?","2020-11-29 06:51:46","1","822","0","1","","86090","<p>I understand that GPU can speed up training for each batch multiple data records can be fed to the network which can be parallelized for computation. However, for inference, typically, each time the network only processes one record, for instance, for text classification, only one text (i.e., a tweet) is fed to the network. In such a case, how can GPU speed up?</p>
+"
+"85510","From where does BERT get the tokens it predicts?","2020-11-16 19:00:50","2","475","0","1","","85524","<p>When BERT is used for masked language modeling, it masks a token and then tries to predict it.</p>
+<p>What are the candidate tokens BERT can choose from? Does it just predict an integer (like a regression problem) and then use that token? Or does it do a softmax over all possible word tokens? For the latter, isn't there just an enormous amount of possible tokens? I have a hard time imaging BERT treats it like a classification problem where # classes = # all possible word tokens.</p>
+<p>From where does BERT get the token it predicts?</p>
+"
+"85208","How to find correlated knowledge among different documents?","2020-11-10 15:01:58","-1","30","0","1","","85210","<p>Say I have a sequence of documents clicked by a user, how can I mine the identical or semanticly similar word/knowledge/phrases shared among different documents?</p>
+<p>Maybe someone can give a paper or subject relating to my goal?</p>
+"
+"84692","Can I fine-tune the BERT on a dissimilar/unrelated task?","2020-10-30 07:20:30","1","466","1","1","","84695","<p>In the original BERT paper, section 3 (arXiv:1810.04805) it is mentioned:</p>
+<p>&quot;During pre-training, the model is trained on unlabeled data over <strong>different</strong> pre-training tasks.&quot;</p>
+<p>I am not sure if I correctly understood the meaning of the word <strong>&quot;different&quot;</strong> here. different means a different <strong>dataset</strong> or a different <strong>prediction task</strong>?</p>
+<p>For example if we pre-train the BERT on a &quot;sentence-classification-task&quot; with a big dataset. Then, should I fine-tune it again on the <strong>same</strong> &quot;sentence-classification-task&quot; task on a smaller and task-specific data-set or I can use the trained model for some other tasks such as &quot;sentence-tagging&quot;?</p>
+"
+"82765","NLP: what are the advantages of using a subword tokenizer as opposed to the standard word tokenizer?","2020-10-09 08:37:15","4","1922","0","1","","82767","<p>I'm looking at this Tensorflow colab tutorial about language translation with Transformers, <a href=""https://www.tensorflow.org/tutorials/text/transformer"" rel=""nofollow noreferrer"">https://www.tensorflow.org/tutorials/text/transformer</a>, and they tokenize the words with a subword text tokenizer. I have never seen a subword tokenizer before and don't know why or when it should be used as opposed to a word tokenizer.</p>
+<p>The tutorial says <code>The tokenizer encodes the string by breaking it into subwords if the word is not in its dictionary.</code></p>
+<p>To get an idea of what the results can look like, the work <code>Transformer</code> gets broken down into index-subword pairs.</p>
+<pre><code>7915 ----&gt; T
+1248 ----&gt; ran
+7946 ----&gt; s
+7194 ----&gt; former
+</code></pre>
+<p>Does anybody know what the advantages of breaking down words into subwords is and when somebody should use a subword tokenizer instead of the more standard word tokenizer? Is the subword tokenizer used because the translation is from Portuguese to English?</p>
+<p>*The version of Tensorflow is 2.3 and this subword tokenizer belongs to tfds.deprecated.text</p>
+"
+"80654","Word representation that gives more weight to terms frequent in corpus?","2020-08-22 14:28:37","2","174","0","1","","80704","<p>The tf-idf discounts the words that appear in a lot of documents in the corpus. I am constructing an anomaly detection text classification algorithm that is trained only on valid documents. Later I use One-class SVM to detect outliers. Interesting enough the tf-idf performs worse than a simple count-vectorizer. First I was confused, but later it made sense to me, as tf-idf discounts attributes that are most indicative of a valid document. Therefore I was thinking of a new approach that would weight words that always appear in documents more, or rather assign a negative weight for the absence of such words. I have preset dictionary of words, so there is no worry that irrelevant words such as(is, that) will be weighted.</p>
+<p>Do you have any ideas about such representations? The only thing I could imagine would be subtracting the document frequency from the attributes that are zero in a certain document.</p>
+"
+"71385","Using MultiLabelBinarizer for SMOTE","2020-03-28 22:49:55","1","343","0","1","","71415","<p>This is my first NLP project. I'm trying to use SMOTE for a classifier with 14 classes. I need to convert the classes into an array before using SMOTE. I tried using MultiLinearBinarizer but it does not seem to be working. From the stack trace, it seems like everything is getting converted.  Do I need to convert something else to an array? How would I do that?</p>
+
+<pre><code>from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.preprocessing import MultiLabelBinarizer
+
+nb = Pipeline([('vect', CountVectorizer()),
+               ('tfidf', TfidfTransformer()),
+               ('clf', MultinomialNB()),
+              ])
+nb.fit(X_train, y_train)
+
+
+mlb = MultiLabelBinarizer()
+print(mlb.fit_transform(df[""Technique""].str.split("","")))
+print(mlb.classes_)
+
+import imblearn 
+from imblearn.over_sampling import SMOTE 
+
+smote = SMOTE('minority')
+
+x_sm, y_sm = smote.fit_sample(X_train, y_train)
+#print(x_sm.shape, y_sm.shape)
+pd.DataFrame(x_sm.todense(), columns=tv.get_feature_names())
+</code></pre>
+
+<p>I'm getting the error ValueError: could not convert string to float: 'left left center'</p>
+
+<p>Here is the stack trace</p>
+
+<pre><code>[[1 0 0 ... 0 0 0]
+ [1 0 0 ... 0 0 0]
+ [0 0 0 ... 0 0 0]
+ ...
+ [0 0 0 ... 0 0 0]
+ [0 0 0 ... 0 0 0]
+ [0 0 0 ... 0 0 0]]
+['Appeal_to_Authority' 'Appeal_to_fear-prejudice' 'Bandwagon'
+ 'Black-and-White_Fallacy' 'Causal_Oversimplification' 'Doubt'
+ 'Exaggeration' 'Flag-Waving' 'Labeling' 'Loaded_Language' 'Minimisation'
+ 'Name_Calling' 'Red_Herring' 'Reductio_ad_hitlerum' 'Repetition'
+ 'Slogans' 'Straw_Men' 'Thought-terminating_Cliches' 'Whataboutism']
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+&lt;ipython-input-45-68681190410f&gt; in &lt;module&gt;()
+     10 smote = SMOTE('minority')
+     11 
+---&gt; 12 x_sm, y_sm = smote.fit_sample(X_train, y_train)
+     13 #print(x_sm.shape, y_sm.shape)
+     14 pd.DataFrame(x_sm.todense(), columns=tv.get_feature_names())
+
+8 frames
+/usr/local/lib/python3.6/dist-packages/numpy/core/_asarray.py in asarray(a, dtype, order)
+     83 
+     84     """"""
+---&gt; 85     return array(a, dtype, copy=False, order=order)
+     86 
+     87 
+
+ValueError: could not convert string to float: 'left left center'
+<span class=""math-container"">```</span>
+</code></pre>
+"
+"69338","Building a tag-based recommendation engine given a set of user tags?","2020-03-08 02:41:29","4","893","0","2","","69483","<p>Basically, the idea is to have users following tags on the site, so each users has a set of tags they are following. And then there is a document collection where each document in the collection has a Title, Description, and a set of tags which are of relevance to the topic being discussed in the document as determined by the author. What is the best way of recommending documents to the user, given the information we have, which would also take into consideration the semantic relevance of the title and description of a document to the user's tags, whether that be a word embeddings solution or a tf-idf solution, or a mix, do tell. I still don't know what I'm going to do about tag synonyms, it might have to be a collaborative effort like on stackoverflow, but if there is a solution to this or a pseudo-solution, and I'm writing this in C# using the Lucene.NET library, if that is of any relevance to you.</p>
+"
+"62538","What is the reason behind having low results using the data augmentation technique in NLP?","2019-11-01 18:20:23","1","42","0","1","","62545","<p>I used Data augmentation technique on my dataset, to have more data to train. My data is text so the data augmentation technique is based on random insertion of words, random swaps and synonyms replacement.</p>
+
+<p>The algorithm I used performs well in other datasets, but in mine, it gives lower accuracy results comparing to the original experiment. Are there any logical interpretations?</p>
+"
+"60369","Is it possible to create a rule-based algorithm to compute the relevance score of question-answer pair?","2019-09-18 07:09:36","0","136","0","1","","60397","<p>In information retrieval or question answering system, we use TD-IDF or BM25 to compute the similarity score of question-question pair as the baseline or coarse ranking for deep learning.</p>
+
+<p>In community question answering, we already have the question-answer pairs to collect some statistics info. Without deep learning, could we invent an algorithm like BM25 to compute the relevance score of question-answer pair? </p>
+"
+"57364","Is hyperparameter tuning more affected by the input data, or by the task?","2019-08-10 19:32:02","1","75","0","1","","57392","<p>I'm working on optimizing the hyperparameters for several ML models (FFN, CNN, LSTM, BiLSTM, CNN-LSTM) at the moment, and running this alongside another experiment examining which word embeddings are best to use on the task of binary text classification.</p>
+
+<p>My question is: should I decide on which embeddings to use before I tune the hyperparameters, or can I decide on the best hyperparameters and then experiment with the embeddings? The task remains the same in both cases.</p>
+
+<p>In other words, is hyperparameter tuning more affected by the task (which is constant) or by the input data?</p>
+"
+"57025","Why TREC set two task: document ranking and passage ranking","2019-08-06 03:29:50","1","70","0","1","","57051","<p>TREC is <a href=""https://microsoft.github.io/TREC-2019-Deep-Learning/"" rel=""nofollow noreferrer"">https://microsoft.github.io/TREC-2019-Deep-Learning/</a></p>
+
+<p>I am new to text retrieval. Still can not understand why set the two similar task.</p>
+
+<p>Thank you very much.</p>
+"
+"54748","Xgboost multiple class predictive performance beats one versus rest","2019-06-29 18:28:34","3","2194","0","1","","55738","<p>I have an NLP task I'm tackling with xgboost (R implementation).</p>
+
+<p>Before describing my doubt I'll give you some background:</p>
+
+<p>I have a corpus of documents for which I did topic discovery, using a term x term matrix clustering approach. For each document, I get a topic score computed using the terms in the document (with a TfIdf score). Then for each document, I pick up the topic with the highest score.</p>
+
+<p>The following step is to create a model that given the term x document score matrix and the best topic per document, predicts the best topic.</p>
+
+<p>I tried two different approaches:</p>
+
+<ul>
+<li>a multiple class model, where a topic is associated with each document;</li>
+<li>a one versus rest series of models, one per topic, where each document is labeled as belonging or not to a topic.</li>
+</ul>
+
+<p>Here are the results of the two approaches, using AUC:</p>
+
+<pre><code>    i                 topic    single     multi
+1   1             Topic.nv1 0.9564445 0.9880821
+2   2  Topic.nv10_Topic.wv9 0.9848492 0.9969546
+3   3            Topic.nv11 0.9174293 0.9741100
+4   4 Topic.nv12_Topic.wv11 0.9874073 0.9967725
+5   5 Topic.nv13_Topic.wv10 0.9509909 0.9916768
+6   6 Topic.nv14_Topic.wv12 0.9864622 0.9959161
+7   7            Topic.nv15 0.7333333 0.9333333
+8   8   Topic.nv2_Topic.wv3 0.9590279 0.9877953
+9   9   Topic.nv3_Topic.wv5 0.9448966 0.9879057
+10 10   Topic.nv4_Topic.wv2 0.9521490 0.9908656
+11 11   Topic.nv5_Topic.wv6 0.9761665 0.9946294
+12 12             Topic.nv6 0.9439377 0.9889028
+13 13   Topic.nv7_Topic.wv4 0.9656248 0.9926163
+14 14             Topic.nv8 0.9673726 0.9944970
+15 15   Topic.nv9_Topic.wv8 0.9716538 0.9929586
+16 16             Topic.wv1 0.9610704 0.9925414
+17 17             Topic.wv7 0.9765398 0.9904255
+</code></pre>
+
+<p>It is visible that the multiclass approach systematically outperforms the one vs rest one. NB: These are training set performances.</p>
+
+<p>Is there a clear theoretical reason for this?</p>
+"
+"47556","How can I output tokens from MWE Tokenizer?","2019-03-18 19:36:02","1","1291","0","1","","47682","<p>How to output the tokens produced using <a href=""https://www.nltk.org/_modules/nltk/tokenize/mwe.html"" rel=""nofollow noreferrer"">MWE Tokenizer</a>?</p>
+
+<p>NLTK's multi-word expression tokenizer (MWETokenizer) provides a method/function <code>add_mwe()</code> that allows the user to enter multiple word expressions prior to using the tokenizer on the text.</p>
+
+<p>Currently, I have a file consisting of phrases / multi-word expression I want to use with the tokenizer.  My concern is that the manner in which I am presenting the phrases to the function correctly and so not resulting in the desired set of tokens to be used in tokenizing the incoming text.</p>
+
+<p>So this leads me to ask if anyone knows how to output the token generated by <code>add_mwe()</code> so that I can verify that I am correctly passing the phrase to the function?</p>
+"
+"44270","NLP: What are some popular packages for phrase tokenization?","2019-01-20 09:45:14","2","952","0","1","","44290","<p>I'm trying to tokenize some sentences into phrases. For instance, given</p>
+
+<blockquote>
+  <p>I think you're cute and I want to know more about you</p>
+</blockquote>
+
+<p>The tokens can be something like</p>
+
+<blockquote>
+  <p>I think you're cute</p>
+</blockquote>
+
+<p>and</p>
+
+<blockquote>
+  <p>I want to know more about you</p>
+</blockquote>
+
+<p>Similarly, given input</p>
+
+<blockquote>
+  <p>Today was great, but the weather could have been better.</p>
+</blockquote>
+
+<p>Tokens:</p>
+
+<blockquote>
+  <p>Today was great</p>
+</blockquote>
+
+<p>and</p>
+
+<blockquote>
+  <p>the weather could have been better</p>
+</blockquote>
+
+<p>Can NLTK or similar packages achieve this?</p>
+
+<p>Any advice appreciated.</p>
+"
+"44215","Confidence Score For Trained Sentiment Analyser Model","2019-01-18 18:55:33","2","1189","0","1","","44931","<p>I have trained a text based sentiment analysis model, using SciKit-learn and custom data. I have the model ready and it works fine in predicting a text to a class (Positive or Negative or Neutral). I have achieved over <em>85%</em> testing accuracy and around <em>80%</em> cross validation accuracy.</p>
+
+<p>But I want to get the <strong>confidence score</strong> attached to each of my prediction to a new example data/text I feed to the classifier. This is just an <strong>extra parameter</strong> I want to show/output apart from just the predicted class.</p>
+
+<p>I have no idea how to achieve this, I shall be really thankful if anyone can provide some helpful insights.</p>
+"
+"44205","Word embeddings for Information Retrieval - Document search?","2019-01-18 15:08:49","1","1258","0","1","","44212","<p>What are good ways to find for single sentence (query) the most similiar document (text). I asked myself if word vectors (weighted average of the documents) are suitable to map a single sentence to a whole document?</p>
+"
+"40492","What is NLP technique to generalize manually created rules in text?","2018-10-31 10:09:30","3","693","0","1","","40500","<p>Let's say we have a free text containing key-value entities.</p>
+
+<p>Example: ""... patient's <strong>tumour</strong> has <strong>width 6 cm</strong> and <strong>height 5 cm</strong>""</p>
+
+<p>Then an expert comes, marks it as important, thus we do have the rule for finding the same entity in new, different texts.</p>
+
+<p><em>What is the name of NLP technique that produces generalized rule, so that we are able to recognize also synonyms/variations with the same meaning?</em></p>
+
+<p>Example: ""... patient with <strong>cancerous growth</strong>, <strong>60</strong> x <strong>50 mm</strong>""</p>
+
+<p>I need to to learn terminology to be able to search for papers. If you could add also some references to state-of-art approaches, would be great.</p>
+"
+"37489","mathematical accurate definition of the binary independence model","2018-08-27 21:19:58","1","81","0","1","","37622","<p>I have a hard time understanding the exact mathematical meaning behind the binary independence model. On <a href=""https://en.wikipedia.org/wiki/Binary_Independence_Model"" rel=""nofollow noreferrer"">wikipedia</a> we can see the following definition  or similarly in the <a href=""https://nlp.stanford.edu/IR-book/html/htmledition/the-binary-independence-model-1.html"" rel=""nofollow noreferrer"">book</a> from Manning and Schütze,</p>
+
+<p>it claims that </p>
+
+<blockquote>
+  <p>The probability P(R|d,q) that a document is relevant derives from the probability of relevance of the terms vector of that document P(R|x,q). By using the Bayes rule we get:</p>
+</blockquote>
+
+<p>$P(R|x,q) = \dfrac{P(x|R,q)P(R|q)}{P(x|q)}$ </p>
+
+<p>Now, Bayes rule is as follows:
+$P(A|B) = \dfrac{P(B|A)P(A)}{P(B)}$ </p>
+
+<p>If you set $A := R$ and $B := x,q$ you get:
+$P(A|B) = P(R|x,q) = \dfrac{P(x,q|R)P(R)}{P(x,q)}$ </p>
+
+<p>If you compare the terms, you'll notice why I am confused:</p>
+
+<ul>
+<li>$x=x,q$</li>
+<li>$R,q=q$</li>
+<li>$R|q=R$</li>
+<li>$x|q=x,q$ </li>
+</ul>
+
+<p>This result has nothing to do with the initial claim.
+I think that I miss the definition of the 'comma' in this context. I am not aware of multi-dimensional probabilities. As I understand, a probability $P$ is always defined over a $\sigma$ algebra of an event space $\Omega$</p>
+
+<p>In order to understand what's the idea behind the formula above, here a few things that could help:</p>
+
+<ul>
+<li>What does the comma  <em>precisely</em> mean in the formula above (in mathematical notation)?</li>
+<li>What is the underlying $\Omega$ ? If there is a probability $P$, then there must be an Omega $\Omega$ which serves as the space on which we define probabilities. It's not clear at all what this space is. If a document is a vector $x \in \{{0,1}\}^n$ and the query is a vector $q \in \{{0,1}\}^n$, then defining a space like $\Omega := \{{0,1}\}^n \times \{{0,1}\}^n$ could make sense. In this case it's not clear what $R$ is. Maybe the intent is to use $\Omega := \{{0,1}\}^n \times \{{0,1}\}^n \times \{{relevant, nonrelevant}\}$</li>
+<li>Do $R$, $x$ or $q$ have anything to do with random variables? If yes, then it would help to see their domain, e.g: $R : \Omega \mapsto {0,1}  $ </li>
+<li>Because the conditional probability is defined between 2 sets, $R$ and $x,q$, as well as $x$ and $R,q$ or $R|q$ should represent sets. If $R$ is a random variable, then maybe in the formula above the term $R$ represents the set $\{\omega \in \Omega\ | R(\omega)=relevant\}$. What is then the set for $x$ or for $q$ ?</li>
+</ul>
+"
+"37406","Classifying whether a comment or review is a complaint or appreciation of product and extracting the Topic?","2018-08-24 21:22:28","0","170","1","1","","37626","<p>I need to classify whether a given review or comment is a complaint or appreciation. This is planned to be used in multiple places, product review pages of own site as well as facebook and twitter. Suggestions on how to approach please.</p>
+
+<p>The Problems that are confusing me:</p>
+
+<ol>
+<li>In FB/Twitter I don't know which product it is for, I need to extract that from text as well.</li>
+<li>I need to extract the complaint/appreciation part and group similar ones together, (like good color reproduction and great clarity into just good display)</li>
+<li>Articles(each document) will be differently sized.</li>
+<li>Data availability is none, I will prepare data by going through our FB etc.</li>
+</ol>
+
+<p>My initial thought was LSTM based classification, but point 3,4 make that hard. Even with 3,4 solved. How do I go about 1,2. I only have played with word2vec a bit and done some twitter sentiment analysis dummy projects. Point 1,2 seem Information Retrieval, Need pointers for that.</p>
+"
+"35602","What machine learning algorithms to use for unsupervised POS tagging?","2018-07-17 15:13:42","4","1491","1","4","","35604","<p>I am interested in an <em>unsupervised</em> approach to training a POS-tagger.</p>
+
+<p>Labeling is very difficult and I would like to test a tagger for my specific domain (chats) where users typically write in lower cases etc. If it matters, the data is mostly in German.</p>
+
+<p>I read about about old techniques like HMM, but maybe there are newer and better ways?</p>
+"
+"29162","How do NLP tokenizers handle hashtags?","2018-03-16 14:55:49","0","1621","0","1","","29167","<p>I know that tokenizers turn words into numerics but what about hashtags? Are tokenizers design to handle hashtags or should I be filtering the ""#"" prior to tokenizing? What about the ""@"" symbol? </p>
+"
+"24868","Extracting NER from a Spanish language text file","2017-11-17 20:23:07","1","2062","1","1","","24870","<p>I am trying to extract various Named Entities from a Spanish language text file. I tried using nltk but to no success. I am using Python 2 with nltk 3.x.</p>
+"
+"22306","ADHoc Information Retrieval","2017-08-16 14:13:30","1","136","3","1","","23181","<p>I want to extract the total bill from image receipts. I could extract the entire data present in the image but now I am struck with the problem of extracting only the information that I need.</p>
+
+<p>This is the image that I have.</p>
+
+<p><a href=""https://i.sstatic.net/38XnB.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/38XnB.png"" alt=""enter image description here""></a></p>
+
+<p>I am pasting the extracted information from the image</p>
+
+<pre><code>m cm lnnk 3mm: :33; no 1 z m
+
+x Visut all! ms“; (or nulnunn mfn an an: nan.
+
+
+
+Sub Iota] 19.56
+TOTAL 19.56
+VISA 1956
+Fun 19.56
+D!!! You Know 0
+
+
+
+For ureat-tastlru dessens under 200
+cahries, try our Triple Berry Frozen
+Yogurt Sunda: a dish of Frozen Yogurt.
+or a Vanma rozen Vugurt Done.
+</code></pre>
+
+<p>From this data I just want to extract the total bill. To get this I found out that I could use Ad Hoc Normalization (Adhoc retrieval). Can someone provide any insights on Adhoc retrieval. If there are any other option to extract the data from the image please let me do so. I am using tesseract to extract this information. Sometimes it is no giving the proper output. I could use some help in improvising the output given by the tesseract.</p>
+"
+"14805","Are there libraries or techniques for 'noisifying' text data?","2016-10-28 21:47:16","3","818","6","3","","25060","<p><em>Data augmentation</em> techniques for image data and audio data (eg speech recognition) have proven successful and are now common.</p>
+
+<p>Are there libraries or techniques for augmenting <em>text</em> data?</p>
+
+<p>For example:</p>
+
+<blockquote>
+  <p>in: 'How are you?'<br>
+  out: ['how are you?', 'HOW ARE YOU?', 'hwo are y ou?', 'How're you?', 'how r u', ...]</p>
+</blockquote>
+"
+"5893","How to create a good list of stopwords","2015-05-24 21:45:02","10","18933","4","5","","5902","<p>I am looking for some hints on how to curate a list of stopwords. Does someone know / can someone recommend a good method to extract stopword lists from the dataset itself for preprocessing and filtering?</p>
+
+<p><strong>The Data:</strong></p>
+
+<p>a huge amount of human text input of variable length (searchterms and whole sentences (up to 200 characters) ) over several years. The text contains a lot of spam (like machine input from bots, single words, stupid searches, product searches ... ) and only a few % of seems to be useful. I realised that sometimes (only very rarely) people search my side by asking really cool questions. These questions are so cool, that i think it is worth to have a deeper look into them to see how people search over time and what topics people have been interested in using my website.</p>
+
+<p><strong>My problem:</strong></p>
+
+<p>is that i am really struggling with the preprocessing (i.e. dropping the spam). I already tried some stopword list from the web (NLTK etc.), but these don't really help my needs regarding this dataset. </p>
+
+<p>Thanks for your ideas and discussion folks!</p>
+"
+"5209","Accuracy of Stanford NER","2015-02-23 08:00:03","4","3565","0","2","","5998","<p>I am performing Named Entity Recognition using Stanford NER. I have successfully trained and tested my model. Now I want to know:</p>
+
+<p>1) What is the general way of measuring accuracy of NER model ?? For example what techniques or approaches are used ??</p>
+
+<p>2) Is there any built-in method in STANFORD NER for evaluating the accuracy ??</p>
+"
+"896","How to implement Brown Clustering Algorithm in O(|V|k^2)","2014-08-03 16:38:38","4","2007","2","2","","932","<p>I am trying to implement the Brown Clustering Algorithm.</p>
+
+<p><strong>Paper details: ""Class-Based n-gram Models of Natural Language"" by Brown et al</strong></p>
+
+<p>The algorithm is supposed to in <code>O(|V|k^2)</code> where <code>|V|</code> is the size of the vocabulary and k is the number of clusters. I am unable to implement it this efficiently. In fact, the best I can manage is <code>O(|V|k^3)</code> which is too slow. My current implementation for the main part of the algorithm is as follows:</p>
+
+<pre><code>for w = number of clusters + 1 to |V|
+{
+   word = next most frequent word in the corpus
+
+   assign word to a new cluster 
+
+   initialize MaxQuality to 0
+
+   initialize ArgMax vector to (0,0)
+
+   for i = 0 to number of clusters - 1 
+   {
+      for j = i to number of clusters
+      {
+         Quality = Mutual Information if we merge cluster i and cluster j
+
+         if Quality &gt; MaxQuality
+         {
+            MaxQuality = Quality 
+
+            ArgMax = (i,j) 
+         }
+      }
+   }
+} 
+</code></pre>
+
+<p>I compute quality as follows:</p>
+
+<pre><code>1. Before entering the second loop compute the pre-merge quality i.e. quality before doing any merges.
+2. Every time a cluster-pair merge step is considered:
+    i. assign quality := pre-merge quality
+   ii. quality = quality - any terms in the mutual information equation that contain cluster i or cluster j (pre-merge)
+  iii. quality = quality + any terms in the mutual information equation that contain (cluster i U cluster j)  (post-merge)
+</code></pre>
+
+<p>In my implementation, the first loop has approx |V| iterations, the second and third loop approx k iterations each. To compute quality at each step requires approx a further k iterations. In total it runs in <code>(|V|k^3)</code> time.</p>
+
+<p>How do you get it to run in <code>(|V|k^2)</code>?</p>
+"

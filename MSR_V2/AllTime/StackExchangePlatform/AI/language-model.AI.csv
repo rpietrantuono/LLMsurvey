@@ -1,0 +1,897 @@
+Post Link,Title,CreationDate,AcceptedAnswerId,Score,ViewCount,Tags,Body,TagName
+"46399","How exactly is the dynamical unfolding implemented in ByteNet?","2024-08-02 00:24:41","","1","29","<convolutional-neural-networks><reference-request><papers><language-model><byte-net>","<p>I am thinking about making use of ByteNet (<a href=""https://arxiv.org/abs/1610.10099"" rel=""nofollow noreferrer"">https://arxiv.org/abs/1610.10099</a>) architecture for a project, and would like to get a better understanding of how the model works.</p>
+<p>I've read through the paper about a million times, but can't figure out how exactly the dynamical unfolding is implemented.</p>
+<p>I understand that the input sequence is mapped to a longer intermediate representation, whose length is a function of the input length, but don't understand how 1×1 convolutional layers are able to do this.</p>
+<p>I am also unclear on how input sequences can be of variable length without any recurrence.</p>
+<p>Any help would be appreciated! Or of anyone knows of any good YouTube videos that explain it, that would also be helpful.</p>
+","language-model"
+"46054","How is the bidirectional context achieved in BERT?","2024-06-23 11:11:39","46212","0","49","<transformer><attention><gpt><bert><language-model>","<p>I have read the paper &quot;BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding&quot; by Jacob Devlin et al. (2018) and &quot;Improving Language Understanding by Generative Pre-training&quot; by Alec Radford et al. (2018).</p>
+<p>I have understand that the largest difference between BERT and GPT is the direction of the context. BERT is bidirectional, while GPT is unidirectional. I have understand the difference visually thorugh Figure 3 of the BERT paper.
+However, I have question about how the difference is achieved in more detailed level, such as implementation level. I have understand that the shortest way is to look at the code, but I am wondering if there is any explanation in the paper.
+Especially, I am wondering how multiple outputs from previous transformer layers are combined as the input of the next layer in BERT (or so does GPT).</p>
+<p>I have also looked at the paper &quot;Attention is All You Need&quot; by Vaswani et al. (2017) and found the following equation
+<span class=""math-container"">$$ Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V $$</span>
+, but I am not sure about where does it implies the unidirectional context in the transformer architecture. (I think original transformer is unidirectional.)</p>
+<p>I would appreciate it if you could explain how the bidirectional context is achieved in BERT.</p>
+","language-model"
+"45902","Any popular diffusion model for language modeling?","2024-06-06 07:28:33","","4","62","<natural-language-processing><large-language-models><diffusion-models><language-model>","<p>Is there a popular diffusion model-based framework for language modelling? If not, is it because of the difficulty sampling for discrete distributions?</p>
+","language-model"
+"45206","What type of AI model should I use to generate practice questions?","2024-03-22 23:42:16","","0","41","<ai-design><generative-model><language-model>","<p>I have a set of multiple choice English questions, and I wanted to use AI to generate more questions to quiz myself with. I know there are platforms online to accomplish this, but I wanted to challenge myself to create my own simple AI architecture. After training it on some English questions, I want it to be able to generate new questions to help me study.</p>
+<p>Which ML/intelligence model(s) should I use as a baseline?</p>
+","language-model"
+"45054","Why do LLM tokenizers use a special symbol for space such as Ġ in BPE or ▁ in SPM?","2024-03-08 08:55:04","","1","197","<natural-language-processing><large-language-models><language-model>","<p>Popular tokenizers use a special symbol such as &quot;Ġ&quot; (BPE) or &quot;▁&quot; (SentencePiece) to represent space. What is the reasoning behind this?</p>
+<p>I did try searching for the answer. I got two types of explanations, but they don't explain anything to me.</p>
+<p><strong>Some languages such as Japanese don't typically use space to separate words.</strong></p>
+<p>That's true, but tokenizing such a language won't make use of the special character as well. I don't understand how having a token as <code>&quot;Ġhorse&quot;</code> is any different from <code>&quot; horse&quot;</code> in this scenario.</p>
+<p>Let's assume we want to tokenize the made-up laguage Spaceless English, which is English, but without whitespace. <code>tokenize(&quot;I'mridingahorse&quot;) -&gt; [&quot;I'm&quot;, &quot;riding&quot;, &quot;ahorse&quot;]</code>. No need for spaces at all, let alone a special character.</p>
+<p>In fact this seems like it would be in favor of using a plain space as opposed to a special symbol.</p>
+<p><strong>Some tokens have a space in them and this helps us differentiate between spaces in the original text and spaces in the tokens</strong></p>
+<p>For example &quot;New York&quot; might be a token.</p>
+<p>This kinda makes sense, but I still don't quite get why we would ever need this distinction. How is <code>&quot;ĠNew York&quot;</code> different from <code>&quot; New York&quot;</code>? <code>&quot; New York&quot;</code> is still different from <code>[&quot; New&quot;, &quot; Toronto&quot;]</code>. A tokenizer would employ some kind of a greedy algorithm to tokenize text... and even if it's not greedy, but the full NP-complete search, it would still tokenize <code>&quot;I'm going to New York&quot;</code> as <code>[&quot;I'm&quot;, &quot; going&quot;, &quot; to&quot;, &quot; New York&quot;]</code>, the same way as we would expect it to tokenize &quot;extracurricular&quot; to say <code>[&quot;extra&quot;, &quot;curricul&quot;, &quot;ar&quot;]</code> and not to <code>[&quot;ex&quot;, &quot;trac&quot;, &quot;u&quot;, &quot;rr&quot;, &quot;ic&quot;, &quot;u&quot;, &quot;lar&quot;]</code>, and the same way as we would expect it to work on Spaceless English.</p>
+<p>Note that I'm looking at the problem only through the lens of converting text to tokens and tokens to text. Perhaps the need for these character has to do with creating the token list based on the training corpus?</p>
+","language-model"
+"44943","What technique is used for training Large Language Models like GPT?","2024-02-28 03:06:16","","1","354","<machine-learning><natural-language-processing><unsupervised-learning><gpt><language-model>","<p>I'm learning about GenAI, such as GPT (Generative Pretrained Transformer), and I'm particularly interested in understanding the training techniques used for these models.</p>
+<p>Deep learning, generally, can involve training with supervised learning with labeled datasets which makes sense.  But I also encounter references to unsupervised learning: specifically, predicting the next word in a sequence. The concept of unsupervised training with next-word prediction is unclear to me. To me, it feels like GPT is trained with supervised learning with a labeled dataset: is this correct?</p>
+","language-model"
+"43843","What language model can convert normal text to JSON data","2024-02-20 05:32:39","43855","0","229","<natural-language-processing><language-model><natural-language-understanding>","<p>I have tried training T5-small, T5-base and T5-Large on around 15K rows of data where input data was something like but I did not get desired results</p>
+<pre><code>Nutrition Facts,
+100g per,
+Energy 646.95Kcal Carbohydrates 19.31g,
+ Protein 21.94g 53.55g Total Fat 6.64g Saturated Fat 14.97g Dietary Fiber,
+&lt;1.Omg Cholesterol Sodium 0.29g Sugars 3.39g,
+Lightly Salted and to Perfection,
+Ingredients: Peanuts, Almonds,,
+Cashews, Pistachios, Vegetable Oil, Salt,
+aa, ,
+74G,
+Pistachio, 61129110611336177
+WE ARE NUTS ABOUT QUALITY,
+Baked,
+Nuts Salted,
+Mixed
+WE ARE NUTS ABOUT,
+Community 364, 13 Street Plot No. 36,
+Al Area 1, 24149,UAE 4971 4 3355777,
+License Number: 224614 VAT No: 100058529700003,
+CERTIFIED COMPANY,
+ALLERGEN WARNING: in a facility that also processes nuts, sesame and mustard,
+Store in a cool dry place away from heat moisture,
+Instruction Once store in airtight container and consume before expiry date,
+Pro: 14/12/23,
+Exp:13/12/24,
+Net 40gms
+</code></pre>
+<p>Output data will be in JSON format of the above details.
+What language models can be trained for this purpose and minimum how many Parameters it should have?</p>
+","language-model"
+"43508","Seeking an LLM with Browser Control Capabilities for Website Interaction Use Cases","2024-01-22 09:22:28","","0","112","<language-model>","<p>I'm exploring the possibility of using a large language model (LLM) that can interact with web browsers, including taking screenshots and controlling mouse and keyboard actions.  Does anyone know of an LLM capable of such functionalities? Any guidance or pointers to relevant resources?</p>
+","language-model"
+"43408","publically available language models that can be used to train arbitrary language data?","2024-01-12 08:00:09","","1","39","<natural-language-processing><large-language-models><chatgpt><language-model>","<p>I have sentence data in a language that is not widely in use and as such popular LLMs do not support the language. I want to train some language model such that given some question, it is able to respond back in the same language, just as in ChatGPT just with a different language.</p>
+<p>In such a case, what language model is publically available and is sufficiently powerful? Or would it be possible to use popular LLMs (such as ChatGPT) to achieve such a goal?</p>
+","language-model"
+"43038","Is beam search the actual obstacle that prevents GPT-style models from doing sophisticated math reasoning?","2023-12-07 05:10:47","","4","249","<natural-language-processing><large-language-models><language-model><automated-theorem-proving><automated-reasoning>","<p>This is a rather soft question. Some people believe that GPT-style models can eventually solve very complex math problems if the models are large enough, but I'm skeptical about this. Suppose the GPT model is indeed large enough and can make very accurate predictions about the probabilities of the next token. Now we let it solve an extremely hard math problem, e.g. proving the Riemann Hypothesis. Proof length is not an obstacle, since the model can generate lots of tokens and therefore gains a lot of computational resources.</p>
+<p>I think the most serious obstacle is how to generate the most likely <em>proof</em>, instead of the most likely <em>next token</em>. The bad thing is, that a proof might seem very plausible in the beginning, but may look more and more ridiculous as more tokens are generated. So, greedy decoding does not necessarily work; that's why people came up with beam search. But, beam search is also kind of greedy, and it also does not guarantee to produce the global optimal proof.</p>
+<p>There may be extreme cases in which the optimal proof is among the top k+1 candidates but our beam size is k so it's not adopted. Therefore, the problem degenerates to a classic computational complexity problem: how on earth can we find the optimal generated sequence? This seems to be rather irrelevant to LLMs.</p>
+<p>This problem is clearly in NP since its corresponding decision problem is: <em>given a scheme to generate the next token probabilities, can we generate a sequence with length as most l and log-likelihood at least p?</em> This decision problem can be verified in polynomial time by providing a satisfying sequence. I suspect this problem is NP-complete but I don't know how to prove it yet.</p>
+<p>So, I conjecture that, unless P=NP, we can't use GPT-style LLMs to solve really hard math problems. Do you think so?</p>
+","language-model"
+"42819","NLP ""small"" model to improve ""big"" model","2023-11-16 08:47:15","42860","2","89","<machine-learning><natural-language-processing><language-model>","<p>When training the model for NLP is it important to get rid of data which has &quot;bad semantic&quot; for learning process?</p>
+<p>My plan is to create a &quot;small model&quot; which can decide whether data used for training the final model are &quot;good&quot; or &quot;bad&quot;.</p>
+<p>For instance the small model will be made from &quot;good&quot; data example and &quot;bad&quot; data example.
+Later on all data which are going to be used to train a final big data model will be fist evaluated by the smaller one in order to increase overall quality of the data used in the final model.</p>
+","language-model"
+"42544","How can Knowledge Graphs be Integrated with Language Models for Semantic Search?","2023-10-25 04:28:30","","0","46","<reference-request><gpt><language-model><knowledge-base><gpt-4>","<p>I am exploring the incorporate knowledge graphs (KGs) with language models.</p>
+<p>I understand that KGs can provide structured understanding of entities and their relationships which can be crucial for semantic search tasks such as query understanding, and quesiton-answering.</p>
+<p>I am particularly interested in practical implementations and would like to know:</p>
+<p>What are the common practices for integrating KGs with language models like gpt-4?</p>
+<p>I appreciate any insights or references that can guide me in implementing a KG-enhanced gpt-4.</p>
+","language-model"
+"42495","What is the lowest possible loss for a language model?","2023-10-19 15:29:13","","1","83","<loss><language-model><cross-entropy><n-gram>","<p>Example: Suppose a character-level language model (three input letters to predict the next one), trained on a dataset which contains three instances of the sequence <code>aei</code>, with two occurrences preceding <code>o</code> and one preceding <code>u</code>, i.e., the dataset is:</p>
+<div class=""s-table-container"">
+<table class=""s-table"">
+<thead>
+<tr>
+<th style=""text-align: center;"">Input</th>
+<th style=""text-align: center;"">Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style=""text-align: center;"">aei</td>
+<td style=""text-align: center;"">o</td>
+</tr>
+<tr>
+<td style=""text-align: center;"">aei</td>
+<td style=""text-align: center;"">u</td>
+</tr>
+<tr>
+<td style=""text-align: center;"">aei</td>
+<td style=""text-align: center;"">o</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>In this case, the ideal probability distribution for the model's logits for <code>aei</code> would be <span class=""math-container"">$\sim 0.66$</span> for <code>o</code>, <span class=""math-container"">$\sim 0.33$</span> for <code>u</code>, and zero for other letters. In other words, when the model is input with <code>aei</code>, the ideal softmax of the logits would be <span class=""math-container"">$\sim 0.66$</span> for <code>o</code>, <span class=""math-container"">$\sim 0.33$</span> for <code>u</code>, and zero for other letters.</p>
+<p>Following this reasoning, the objective is to optimize the model's output for a given input to match the distribution of occurrences in the dataset.</p>
+<p>If this reasoning is correct, then we have the following ideal loss (cross-entropy):</p>
+<p><span class=""math-container"">$$
+L = \frac{- log\left(\frac{2}{3}\right) - log\left(\frac{1}{3}\right) - log\left(\frac{2}{3}\right)}{3} \approx 0.63
+$$</span></p>
+<p>Thus, <span class=""math-container"">$\sim 0.63$</span> is the smallest loss we can get with this dataset.</p>
+<p>Is my reasoning correct?</p>
+","language-model"
+"42452","Setting number of rows returned by vector stores","2023-10-14 18:35:38","42453","0","147","<natural-language-processing><python><language-model>","<p>When using vector stores like pinecone or Faiss from langchain, is it possible to set the number of records returned based on similarity search?</p>
+<p>For example, consider the following code, is there a parameter that can be set to control number of rows returned?</p>
+<pre><code>FAISS.from_documents(mydata, embed_model)
+</code></pre>
+","language-model"
+"42319","How do I balance context and history when creating prompts for LLM's?","2023-10-04 13:38:47","","3","151","<neural-networks><image-recognition><large-language-models><language-model><prompt-design>","<p>A conversation through the OpenAI API looks something like this</p>
+<pre><code>    messages=[
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a helpful assistant.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Who won the world series in 2020?&quot;},
+        {&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;The Los Angeles Dodgers won the World Series in 2020.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Where was it played?&quot;}
+    ]
+</code></pre>
+<p>When I call a vector database I'm going to get back related content in the order of similarity to the question.</p>
+<p>Let's say I get back 10 chunks at around 500 characters each.</p>
+<p>Some frameworks (i.e. llama-index) set the context in the &quot;system&quot; role.</p>
+<p>So that would look something like</p>
+<pre><code>    messages=[
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a helpful assistant. &quot;Context information is below.&quot;
+    &quot;\n--------------------\n&quot;
+    &quot;{context_str}&quot;
+    &quot;\n--------------------\n&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Who won the world series in 2020?&quot;},
+        {&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;The Los Angeles Dodgers won the World Series in 2020.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Where was it played?&quot;}
+    ]
+</code></pre>
+<p>Where <code>context_string</code> will be replaced by the chunks retrieved from the similarity search.</p>
+<p>Now for the history, I can keep adding &quot;user&quot;, &quot;assistant&quot; role pair say up to a maximum of 10.</p>
+<p>What's a good strategy for making sure I don't overflow the data limit I can send to the LLM?</p>
+<p>For example I have GPT4All 7b with a limit of 2000 tokens and another model has a limit of 32K tokens.</p>
+<p>How do I calculate how much to use?</p>
+","language-model"
+"42234","Data preparation for NLP model","2023-09-28 06:23:34","42335","1","55","<machine-learning><natural-language-processing><language-model>","<p>I have data from our ticketing system. Currently using OpenNLP to create different models.</p>
+<p>For simplicity I have a <strong>10k ticket's text</strong> as category <strong>final queue</strong> of the ticket.</p>
+<p>My questions:</p>
+<ul>
+<li>Is it important for the model to have data similarly distributed?
+<ul>
+<li>eg. for 3 category imagine that 6k items is for 1.cat, 3k is for 2.cat and the rest 1k for 3.cat.</li>
+<li>Will this affect the final classification?</li>
+</ul>
+</li>
+<li>Is it wise to remove a constants from the evaluated text?
+eg. &quot;Good day&quot;, &quot;Best regards&quot; and others?
+<ul>
+<li>Should I already remove such constants from data set for training model or just remove it from text for classification?</li>
+</ul>
+</li>
+</ul>
+","language-model"
+"42178","Seeking Advice on Local AI Model for Analyzing Personal Files","2023-09-23 04:43:18","","0","136","<models><language-model><filters>","<p>I'm embarking on a project to develop an application for personal use that can assist me in retrieving specific information from my files. I'd like to be able to ask questions like &quot;What was my income last year?&quot; and get accurate answers directly from my stored documents.
+One of my primary concerns is privacy; I want to keep my data as secure as possible. Therefore, I am interested in utilizing a local AI model that doesn't rely on cloud-based services. As I am relatively new to the world of AI, I'm looking for suggestions on which models would be most suitable for my needs.
+After some preliminary research, I've come across Langchain, which seems to fit my requirements well. However, I'm open to other suggestions too.
+A potential complication is that my files are not in any specific format or structure; they range from PDFs and text files to PowerPoints and Excel spreadsheets. I can segregate them into separate folders if that would be helpful. My question is, would restructuring my files into a specific format improve the accuracy of the AI model giving me proper answer?
+I'd appreciate any advice on the following:</p>
+<ol>
+<li>What AI model would be best suited for my project?</li>
+<li>Is Langchain a good choice for this type of task?</li>
+<li>Would reformatting my files increase the model's accuracy?</li>
+</ol>
+<p>My current hardware:</p>
+<ul>
+<li>RAM: DDR5 64GB</li>
+<li>GPU : 3090</li>
+<li>CPU: I9 11TH</li>
+</ul>
+<p>Thank you for your time and expertise!</p>
+","language-model"
+"42140","Why do current language models no longer generate to long or short texts?","2023-09-19 21:58:45","","3","165","<natural-language-processing><chatgpt><large-language-models><language-model><natural-language-generation>","<p>One of the biggest strengths of ChatGPT is that it generates fitting text with respect to the input query. It usually stays on topic, anwers the question completely and especially does not start talking gibberish or repeating itself.</p>
+<p>This behaviour is different when comparing this to older LLMs. For example: GPT2 would usually only stop generating text when it hit the token limit or a predefined stop sequence. Also, it had a much bigger problem with giving repeating answers. Newer models (especially instruction tuned ones) do not suffer from this problems (e.g. llama 2).</p>
+<p><strong>So I have 2 questions: What mechanisms/techniques are used in current language models such that...</strong></p>
+<ol>
+<li>...<strong>the models know when to stop generating text.</strong></li>
+<li>...<strong>the models do not repeat themselfes and stay on topic.</strong></li>
+</ol>
+<p>I suspect it might have alot to do with instruction tuning but I am happy to hear from you.</p>
+","language-model"
+"41936","How to train a language model to write poem?","2023-08-31 07:32:47","","1","301","<chat-bots><language-model>","<p>I am using some of the LLM applications, and all of them are better at provide formal, steady conversations, rather than writing texts with styles. So I wonder whether it is possible to train a LLM better at writing poem, or other stylish texts in general.</p>
+<p>Is this resulted from the dataset or the model structure, the loss function? If so, what should I do if I want to train a model that can write poem? Should I make a special dataset to train the Lora models, or try to design a new loss function?</p>
+","language-model"
+"41921","How can I improve this toy Graph Neural Network Generative Language model","2023-08-29 21:10:41","","3","133","<machine-learning><tensorflow><graph-neural-networks><language-model><natural-language-generation>","<h3>Background</h3>
+<p>I'm an undergraduate student with research interests in a field of physics that has significant overlap with graph theory, and a functioning knowledge of how simple neural nets work and how to build them with TensorFlow and Keras. As many people are, I'm fascinated by the recent advancements in transformer-based language models, and I've spent the last several weeks reading up on them in an attempt to construct my own simple &quot;mini GPT&quot;. In doing so I encountered Graph Neural Networks, and decided I'd try instead to construct a generative language model out of these, inspired by the fact that graphs are (in a very hand-wavy sense) perhaps inherently more amenable to encoding relationships like &quot;attention&quot;, etc. I'm aware that the task I'm trying to accomplish could probably be much more easily achieved using alternative architectures. This is mostly just a fun &quot;what if&quot; project.</p>
+<hr />
+<h3>Code</h3>
+<p>I still haven't quite wrapped my head around all the details of how and what a Graph Neural Net learns, nor what the different types of GNN layers do. Nevertheless, I've constructed a simple GNN using the <code>Spektral</code> library, which takes an input string, and predicts the rest of the string word-by-word by predicting the most probable next token. Here's what I have so far:</p>
+<pre><code>import tensorflow as tf
+from tensorflow.keras.layers import Input, Dense, Embedding
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+from spektral.layers import GCNConv
+from spektral.utils import normalized_adjacency
+
+import numpy as np
+
+import random
+import os
+
+def get_training_data(training_data_dir):
+        filenames = []
+
+        for filename in os.listdir(training_data_dir):
+                filenames.append(os.path.join(training_data_dir, filename))
+
+        random.shuffle(filenames)
+
+        lines = []
+
+        for filename in filenames:
+                with open(filename, &quot;r&quot;) as file:
+                        for line in file:
+                                lines.append(line.strip())
+
+        return lines
+
+# Import data
+training_corpus = get_training_data(&quot;./training_data&quot;)
+tokens = [line.split() for line in training_corpus]
+vocab = set(token for line in tokens for token in line)
+
+vocab_size = len(vocab)
+
+print(&quot;Vocabulary size: &quot;, vocab_size, &quot; words&quot;)
+
+# Tokenize
+word_to_idx = {word: idx for idx, word in enumerate(vocab)}
+idx_to_word = {idx: word for word, idx in word_to_idx.items()}
+
+# Pad and truncate sequences to a fixed length
+train_data = [[word_to_idx[token] for token in line] for line in tokens]
+train_data_padded = pad_sequences(train_data, maxlen=vocab_size, padding='pre', truncating='pre')
+
+# Shift train_data_padded to create train_labels
+train_labels = np.roll(train_data_padded, -1, axis=1)
+train_labels[train_labels &gt;= vocab_size] = 0
+
+train_data_padded = np.array(train_data_padded)
+train_labels = np.array(train_labels)
+
+# Construct token-to-token similarity matrix
+similarity_matrix = np.zeros((vocab_size, vocab_size))
+
+for sentence in tokens:
+    for i, token1 in enumerate(sentence):
+        for j, token2 in enumerate(sentence):
+            if i != j:
+                num_words_between = pow(abs(j - i), 2)
+                similarity_matrix[word_to_idx[token1], word_to_idx[token2]] += num_words_between
+
+adjacency_matrix = normalized_adjacency(similarity_matrix)
+
+
+# Construct model
+input_layer = Input(shape=(None,))
+embedding = Embedding(input_dim=vocab_size, output_dim=vocab_size)(input_layer)
+gcn_layer = GCNConv(vocab_size)([embedding, adjacency_matrix])
+
+output_layer = Dense(vocab_size, activation='softmax')(gcn_layer)
+
+model = tf.keras.Model(inputs=input_layer, outputs=output_layer)
+model.compile(optimizer='adam', loss='categorical_crossentropy')
+
+# Training loop
+num_epochs = 100
+
+model.fit(train_data_padded, tf.keras.utils.to_categorical(train_labels, num_classes=vocab_size), epochs=num_epochs)
+
+padding_token = &quot;&lt;PAD&gt;&quot;
+
+def respond_to_text(initial_string):
+  initial_tokens = initial_string.split()
+
+  for i in range(len(initial_tokens)):
+    if initial_tokens[i] not in word_to_idx:
+        initial_tokens[i] = &quot;&lt;PAD&gt;&quot;
+
+  while len(initial_tokens) &lt; vocab_size:
+      initial_tokens.insert(0, padding_token)
+
+  generated_tokens = [word_to_idx[token] for token in initial_tokens]
+  max_generation_length = 40
+
+  # Number of tokens from the initial string that have been used
+  initial_tokens_used = len(initial_tokens)
+
+  for _ in range(max_generation_length):
+      current_seq = np.array([generated_tokens[-vocab_size:]])  # Always use the last vocab_size tokens
+      next_token_probs = model.predict(current_seq)[0][-1]
+      next_token = np.random.choice(np.arange(vocab_size), p=next_token_probs)
+      generated_tokens.append(next_token)
+
+      # If there are more initial tokens to use, do that
+      if initial_tokens_used &lt; len(initial_tokens):
+          generated_tokens[-vocab_size:] = [word_to_idx[token] for token in initial_tokens[initial_tokens_used:]]
+          initial_tokens_used = len(initial_tokens)
+
+  # Generate text
+  generated_text = [idx_to_word[idx] for idx in generated_tokens]
+
+  # Remove trailing &quot;&lt;PAD&gt;&quot; tokens
+  generated_text = [token for token in generated_text if token != padding_token]
+
+  # Join the tokens into text
+  generated_text = &quot; &quot;.join(generated_text)
+  print(&quot;Generated Text:&quot;, generated_text)
+
+while True:
+  input_string = input()
+  respond_to_text(input_string)
+</code></pre>
+<p>It's relatively simple, thus far. I train the network on strings of text from a subset of the WikiQA corpus, which I pre-process by removing all punctuation and capitalization. I define the elements of the adjacency matrix to be the squared distance between tokens (and 0 between a token and itself). I'm using <code>GCNConv()</code>, admittedly without knowing the intimate details of how it is different from other options provided by <code>Spektral</code>. Since the number of tokens in the input string must be identical to the vocabulary size, I pre-pend it with &quot;<code>&lt;PAD&gt;</code>&quot; tokens, and only pass in the last <code>vocab_size</code> tokens each time I generate a new token. I deal with unknown tokens by replacing them with &quot;<code>&lt;PAD&gt;</code>&quot;.</p>
+<p>If I understand correctly, the GNN learns the &quot;strengths&quot; of connections between nodes (words), i.e. the edge weights and, as I imagine it, the adjacency matrix encodes a sort of very weak form of &quot;attention&quot;.</p>
+<hr />
+<h3>Question</h3>
+<ol>
+<li><strong>What and how, precisely, is this learning?</strong> I know that in a simple feed-forward neural network, a set of weights &quot;between&quot; perceptrons is learned. Do I understand correctly that what is being learned here are edge weights? How do node features and the adjacency matrix factor into this, and what does the model &quot;do&quot; with some input text? How are the next token probabilities calculated? I only understand this on a very superficial level, sufficient so as to produce this seemingly somewhat functional script. I can see that, when I plot the graph associated with the <code>GCNConv</code> layer using <code>networkx</code> after fitting, words that are similar (e.g. &quot;boat&quot;, &quot;ocean&quot;, &quot;water&quot;) tend to cluster.</li>
+<li><strong>How can I improve the model?</strong>* I've spent a fair amount of time reading GNN research papers, however they're written largely in what appears to be very subfield-specific jargon that is unfamiliar to me as someone very familiar with graph theory and somewhat familiar with machine learning. I'd like to begin by taking smaller steps, hopefully starting with some suggestions provided by the community here. I have no strict, &quot;objective&quot; criteria in mind, outside of producing more realistic, human-like text.</li>
+</ol>
+<p>Here's some example input and output:</p>
+<ol>
+<li><strong>Input:</strong> &quot;the traffic&quot; -&gt; <strong>Output:</strong> &quot;the traffic was invaluable sense day playing urban evening together made past weekends board plot off color cookies calm concert flowers express eye-opening learn garden outside satisfying laughter movie waves how's sunrise of try traffic scratch day captivating hobby live blanket delicious&quot;</li>
+<li><strong>Input:</strong> &quot;i enjoy&quot; -&gt; <strong>Output:</strong> &quot;i enjoy watching magical journaling awe-inspiring buds tail feeling entertainment resist homemade ones flavors soothing well-being laughter life culture cleanup picnics beauty accomplishment nature mood ocean up satisfying magical contagious joy admiring feeling live marathons beauty views things expression hikes next happiness vacations&quot;</li>
+</ol>
+<p><span class=""math-container"">$*$</span> Outside of the obvious, e.g. more training data, adjusting hyperparameters, etc.</p>
+","language-model"
+"41643","Optimal Quantity of Training Data for Fine-Tuning an LLM: Is Bigger Always Better?","2023-08-04 07:43:00","","0","348","<natural-language-processing><gpt><large-language-models><language-model><fine-tuning>","<p>I am currently working on fine-tuning an LLM for a specific task, and I am trying to determine the optimal size for my training dataset. Intuitively, one might think that the more data, the better. However, I am aware that in some contexts, this may lead to overfitting or other issues.</p>
+<p>What is the general consensus on the optimal quantity of training data required for fine-tuning a Large Language Model? Is bigger always better?</p>
+","language-model"
+"41508","Confusion About Triangle Mask in Transformer Decoder","2023-07-27 20:04:05","","0","219","<transformer><language-model>","<p>I have some confusion about the implementation of the triangle mask in the transformer decoder. I understand the reasoning for the mask, it prevents the network from 'cheating' by looking ahead at the next token, but the way it's implemented seems strange. First of all, why do we apply the mask to the product <span class=""math-container"">$QK^T$</span>? Why not just set the rows representing unseen tokens to zero or some special token before sending the matrix to the transformer? Also, I don't understand the reasoning of a triangle mask in general. Suppose we are training with a sequence of length <span class=""math-container"">$\ell_s$</span>, and we are trying to predict token <span class=""math-container"">$k$</span> with <span class=""math-container"">$k &lt; \ell_s$</span>. Why don't we have to mask all entries <span class=""math-container"">$QK^T_{i,j}$</span> if <span class=""math-container"">$i &gt; k$</span> or <span class=""math-container"">$j &gt; k$</span>? With a standard triangle mask it seems like we still incorporate information computed from 'unseen' tokens.</p>
+","language-model"
+"41462","Is there a limitation to the amount of data that a genAI model could be trained upon?","2023-07-24 18:00:20","","1","217","<generative-model><language-model>","<p>My friend says that genAI would become more human like, and perhaps even smarter than humans if it were simply trained on more and more data. I say that this would overtrain the models, and we would perhaps lose the generative aspect.</p>
+<p>I looked up on the internet, and it seems overtraining is actually a problem... but could it be said that there is a limitation to the amount of data we could feed to a model which would kill it's generativeness off completely?</p>
+","language-model"
+"40749","How big the context can be using HuggingFace models?","2023-06-07 17:53:04","46011","0","727","<natural-language-processing><pytorch><bert><language-model><question-answering>","<p>I'm new on AI, Neural Networks, ChatBots and all this ecosystem. I'm trying to use a classical example of pre-trained models, more specifically <code>timpal0l/mdeberta-v3-base-squad2</code>.</p>
+<p>As I could see in the examples, it is necessary to provide a small text (context) and a question, which the model will respond to by extracting information from the context and using training on the structure of the language. This is my working code so far:</p>
+<pre><code>from transformers import AutoTokenizer, AutoModelForQuestionAnswering, AutoConfig, DefaultDataCollator
+import torch
+
+tokenizer = AutoTokenizer.from_pretrained(&quot;timpal0l/mdeberta-v3-base-squad2&quot;)
+model = AutoModelForQuestionAnswering.from_pretrained(&quot;timpal0l/mdeberta-v3-base-squad2&quot;, return_dict=False )
+
+# From portuguese: My cat is called Helena. She is fat and has spots all over her body.
+little_text = &quot;minha gata se chama helena. Ela é gorda e tem manchas pelo corpo.&quot;
+
+# From portuguese: who is helena?
+question = &quot;quem é helena?&quot;
+
+inputs = tokenizer.encode_plus(question, little_text, add_special_tokens=False, return_tensors=&quot;pt&quot;)
+
+input_ids = inputs[&quot;input_ids&quot;].tolist()[0]
+
+text_tokens = tokenizer.convert_ids_to_tokens(input_ids)
+answer_start_scores, answer_end_scores = model(**inputs)
+
+answer_start = torch.argmax(
+    answer_start_scores
+)  
+answer_end = torch.argmax(answer_end_scores) + 1
+
+answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
+
+print(f&quot;Question: {question}&quot;)
+print(f&quot;Answer: {answer}\n&quot;)
+
+------------------------------------------------
+Question: quem é helena?
+Answer: minha gata # From portuguese: My cat 
+</code></pre>
+<p>Everything went well. The model is able to perfectly answer questions about the small text provided as context.</p>
+<p>What I couldn't understand is: when I provide a much larger text to serve as context (from a file, for example) the time for the response increases considerably. So every time I go to ask a question about the given text I have to wait a long time to get the answer.</p>
+<p>So my question is: Am I doing this correctly? My intention is to create a chatbot to help answer questions about a specific system (a kind of help bot), so I simply copied all the text from the online help and pasted it into a single file but I believe that this method only works for small texts because at every question I must <code>tokenizer.encode_plus(question, little_text ... </code></p>
+<p>How big the context can be?</p>
+","language-model"
+"40379","Is the problem of Language Modelling a Well-Posed Learning Problem?","2023-05-09 15:45:52","","2","100","<natural-language-processing><math><sequence-modeling><language-model>","<p>Hadamard defines (<a href=""https://en.wikipedia.org/wiki/Well-posed_problem"" rel=""nofollow noreferrer"">Well-posed problem (Wikipedia)</a>) a well-posed problem as one for which:</p>
+<ol>
+<li>a solution exists,</li>
+<li>the solution is unique,</li>
+<li>the solution depends continuously on the data (e.g. it is stable)</li>
+</ol>
+<p>Now for an autoregressive language model, the pretaining objective consists of predicting the next token given all previous tokens. But as I see it, while the objective helps the model pick nuances of the language and learn &quot;language representation&quot;, there is no &quot;correct&quot; answer.
+Given the example, say, &quot;I would love to have some ____&quot;, &quot;chocolate&quot; is just as &quot;correct&quot; as &quot;coffee&quot;.
+Thus, the solution is not &quot;unique&quot; as required by the definition.
+But again, we could think of the problem as taking as input all the previous tokens and returning a probability distribution over the whole vocabulary. In this way of looking at the problem, the solution, i.e., the probability distribution, is unique.
+So, is the problem of language modelling well-posed?
+Is either of the two approaches the right reason? If not, what is the correct reason?</p>
+","language-model"
+"40167","How does GPT-based language model like ChatGPT determine the n-th letter of a word?","2023-04-23 02:30:19","","6","642","<natural-language-processing><chatgpt><gpt><natural-language-understanding><language-model>","<p>I understand that GPT models process input text by converting words into tokens and then embedding vectors and do not process them letter by letter. Given this approach, I am curious to know how a model like ChatGPT can identify the first (or n-th) letter of a given word. Can anyone explain the underlying mechanism or provide any insights on this capability?</p>
+<p><a href=""https://i.sstatic.net/qZNNx.png"" rel=""noreferrer""><img src=""https://i.sstatic.net/qZNNx.png"" alt=""enter image description here"" /></a>
+<a href=""https://i.sstatic.net/2hGyg.png"" rel=""noreferrer""><img src=""https://i.sstatic.net/2hGyg.png"" alt=""enter image description here"" /></a></p>
+","language-model"
+"40140","How is the next token predicted in transformers?","2023-04-21 00:48:04","","5","3512","<natural-language-processing><transformer><gpt><language-model>","<p>In the transformer (or GPT/decoder only), at the end of the decoder blocks but before the final linear layer you have X vectors (for the X tokens at the input of the decoder). We then want to compute the probabilities for the next token of the sequence - what do we then feed to the linear layer? Is it the last embedding corresponding to the hidden state of the last token in the input sequence?</p>
+<p>I've seen some tutorials on youtube on how to make mini gpts but I never quite understood why they feed the entire X vectors/hidden states at the end of the decoder blocks to the linear layer and not just the last vector/hidden state... Wouldn't you have X probability distributions when in reality you only want one? And if we do want the X probability distributions then wouldn't we be completely missing the point of the masked self attention since we would be trying to predict words that are already in the input sequence, so essentially &quot;cheating&quot;?</p>
+","language-model"
+"40135","What puts the ""chat"" in a system like ChatGPT?","2023-04-20 16:54:36","","4","155","<natural-language-understanding><language-model><natural-language-generation>","<p>So I read Wolfram's <a href=""https://writings.stephenwolfram.com/2023/02/what-is-chatgpt-doing-and-why-does-it-work/"" rel=""nofollow noreferrer"">What Is ChatGPT Doing … and Why Does It Work?</a> but it left one really big question in my mind. His summary [if it could be called that!] really emphasizes that the core model is trained to &quot;continue a piece of text that it’s been given&quot;.</p>
+<p>But if I <em>prompt</em> it with something like:</p>
+<blockquote>
+<p>this is the reason that</p>
+</blockquote>
+<p>it usually gives a <em>response</em> like:</p>
+<blockquote>
+<p>I'm sorry, but your message seems to be incomplete. Could you please provide more context or information so that I can understand what you are trying to convey?</p>
+</blockquote>
+<p>And in general, tends to very much give the impression of a <strong>conversation</strong>, &quot;prompt&quot; vs. &quot;response&quot;.</p>
+<p>Architecturally is there a layer within the core LLM that encodes and gets trained on the &quot;conversation&quot; aspects? Or is that done via a separate standalone system, either an independently trained model or some non-ML wrapper logic?</p>
+","language-model"
+"40049","Is the GPT-4 for text the same model that can input and output images?","2023-04-13 19:44:02","","0","915","<image-recognition><image-generation><language-model><large-language-models><gpt-4>","<p>Currently, the published GPT-4 can input and output text.
+A version of GPT-4 that can input and output text and images exists, according to the technical report, but is not yet publicly available.</p>
+<p>I suspect that they are the same.
+Only the interface for image input and output is not publicly available.</p>
+<p>That is because GPT-4 shows some understanding of images if you find a way to output them. One way is asking it to write a program that produces the image output. And that actually works, demonstrated below:</p>
+<blockquote>
+<p>Prompt: &quot;Write a program that creates a picture of HAL 9000&quot;<br />
+[System prompt empty]</p>
+</blockquote>
+<p>The result is this image (created by following the directions in the text output):</p>
+<p><a href=""https://i.sstatic.net/dSo0T.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/dSo0T.png"" alt=""Window created by GPT-4 generated program showing HAL9000"" /></a></p>
+<p>The following is the unedited GPT-4 output (formatting in the original):</p>
+<hr />
+<p>Creating a visual program requires a programming language with graphics libraries or frameworks, as well as a specific platform or environment to run the code. Here's an example using Python and the Pygame library to create a simple picture of HAL 9000:</p>
+<ol>
+<li>First, you need to install the Pygame library if you haven't already. You can do this by running the following command in your terminal:</li>
+</ol>
+<pre><code>pip install pygame
+</code></pre>
+<ol start=""2"">
+<li>Next, create a new Python file (e.g. hal9000.py) and paste the following code:</li>
+</ol>
+<pre><code>import pygame
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the display
+width, height = 400, 400
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption(&quot;HAL 9000&quot;)
+
+# Define colors
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+WHITE = (255, 255, 255)
+
+# Draw HAL 9000
+def draw_hal9000(surface):
+    surface.fill(BLACK)
+    
+    # Draw the outer circle
+    pygame.draw.circle(surface, WHITE, (width // 2, height // 2), 100)
+    
+    # Draw the inner circle
+    pygame.draw.circle(surface, RED, (width // 2, height // 2), 80)
+
+    # Draw the lens
+    pygame.draw.ellipse(surface, BLACK, (width // 2 - 40, height // 2 - 60, 80, 120))
+
+    # Draw the lens reflection
+    pygame.draw.ellipse(surface, WHITE, (width // 2 - 20, height // 2 - 45, 15, 25), 2)
+
+# Main loop
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
+    draw_hal9000(screen)
+    pygame.display.flip()
+
+# Clean up
+pygame.quit()
+</code></pre>
+<ol start=""3"">
+<li>Save the file and run the program using the following command in your terminal:</li>
+</ol>
+<pre><code>python hal9000.py
+</code></pre>
+<p>This code will create a simple picture of HAL 9000 using the Pygame library. The main loop will keep the program running until you close the window.</p>
+<p>Note: This example assumes that you have Python and pip (package installer for Python) already installed on your system. If you don't have Python installed, you can download it from the official website: <a href=""https://www.python.org/downloads/"" rel=""nofollow noreferrer"">https://www.python.org/downloads/</a></p>
+<hr />
+","language-model"
+"39999","What is the difference between T5 and T0 models?","2023-04-11 21:48:09","40007","1","469","<deep-learning><natural-language-processing><gpt><language-model>","<p>What is the difference between T5 and T0 models? I had read that T0 is T5 + LM. But as I know T5 uses encoder-decoder model like BART but BART can be used as LM so that's mean that T5 has a LM function too. So what is the difference between T5 and T0 then?</p>
+","language-model"
+"39828","Can I reduce computation by only predicting response tokens in a transformer and still get the same gradients?","2023-03-29 04:27:11","","1","45","<natural-language-processing><python><transformer><chatgpt><language-model>","<p>I have been looking at the source code of the Stanford Alpaca model and I believe that during inference, the whole instruction + response data is fed into the model normally. Then the instruction part of the label is masked with IGNORE_INDEX to prevent gradient calculation on the instruction.</p>
+<p>But I believe that in the transformer network, after the attention blocks and before the last head layer, it should be possible to take only the (embedded) tokens corresponding to the response parts from contexts and avoid predicting from the tokens corresponding to the instruction part altogether. This could potentially save computation, especially when the instruction part is long or when training on back-and-forth conversations, similar to interactions with ChatGPT. So my question is:</p>
+<hr />
+<ol>
+<li>Is the gradients calculated by these two approaches the same?</li>
+</ol>
+<p>I actually tried to ask GPT-4 about this. Initially, he suggested that my approach would lose some information, but later changed his opinion when I asked him further. Would my approach indeed result in a loss of information or any other drawbacks?</p>
+<hr />
+<ol start=""2"">
+<li>Is the saving, if possible, worth the effort of modifying the model's source code?</li>
+</ol>
+<p>Since the change would only affect one matrix multiplication, which is already efficiently computed, I'm unsure if it's worth the trouble. Furthermore, I only know a little bitPyTorch and would definitely struggle with implementing modifications to complicated models written in other frameworks like TensorFlow or JAX.</p>
+<hr />
+","language-model"
+"39817","What's the most efficient way of performing batched training of Causal Language Models?","2023-03-28 07:40:46","","2","444","<training><transformer><gpt><language-model><batch-learning>","<p>I have seen a number of ways to train (yes, train, not fine-tune) these models efficiently with batches. I will illustrate these techniques with the following example dataset and context window:</p>
+<pre><code>Context window:
+   -----------------
+Data samples:
+1. ###
+2. ################
+3. ####
+4. ##############
+5. ########
+6. #########
+</code></pre>
+<p>Suppose we have a batch size of 2. Our pad token is x</p>
+<h2>First technique: Vanilla Padding</h2>
+<pre><code>Context window:
+   -----------------
+batch 1:
+1. ###xxxxxxxxxxxxx
+2. ################
+
+batch 2:
+3. ####xxxxxxxxxx
+4. ##############
+
+batch 3: 
+5. ########x
+6. #########
+</code></pre>
+<h2>Second technique: Bucketed Padding</h2>
+<p>Samples of similar lengths are batched together to minimise the number of pad tokens</p>
+<pre><code>Context window:
+   -----------------
+batch 1:
+1. ###x
+3. ####
+
+batch 2:
+2. ################
+4. ##############xx
+
+batch 3: 
+5. ########x
+6. #########
+</code></pre>
+<p>this is <em>uniform length batching</em> described in <a href=""https://mccormickml.com/2020/07/29/smart-batching-tutorial/"" rel=""nofollow noreferrer"">this blogpost</a> and referred to as <em>bucketed random sampling</em> in <a href=""https://aclanthology.org/2021.findings-acl.74/"" rel=""nofollow noreferrer"">this paper</a>.</p>
+<h2>Third technique: Concatenating samples</h2>
+<p>In this technique, we concatenate samples, separating them with a EOS token (E) until they reach the context length. In this way, we have no padding tokens, and the entire context length is used. The attention mask keeps track of where the EOS tokens occur.</p>
+<pre><code>Context window:
+   -----------------
+batch 1:
+   ###E############# (1 and part of 2)
+batch 2:
+   ###E####E######## (rest of 2, 3 and part of 4)
+batch 3:
+   ######E########E# (rest of 4, 5, part of 6)
+batch 4:
+   ######## (rest of 6)
+</code></pre>
+<p>This technique is referenced at 2:28 of <a href=""https://www.youtube.com/watch?v=ma1TrR7gE7I"" rel=""nofollow noreferrer"">this video</a> from <a href=""https://huggingface.co/course/chapter7/6"" rel=""nofollow noreferrer"">this huggingface tutorial</a>.</p>
+<p>With this technique, we reduce the number of batches, and only have to pad the final batch if necessary. However, it is unclear to me whether this is &quot;allowed&quot; for causal language modelling, as it is unclear whether this will cause the causal attention mechanism to attend to tokens from previous samples, only ignoring the EOS token (instead of everything before it)</p>
+<hr />
+<p>Of these 3 techniques, which is the most memory efficient? Which is the most commonly used?</p>
+","language-model"
+"39689","If we prompt a large language model on a task, will its ability for other tasks be affected? How to recover?","2023-03-20 14:14:24","","1","202","<natural-language-processing><chatgpt><language-model><large-language-models><prompt>","<p>For example, I guess that for some retrieval augmented LLMs, their generated contents may lack some creativity? Recent work has explored the inability of retrieval augmented methods to enhance the reasoning of LLMs. Then imagine a scenario where we prompt ChatGPT in order to have it implement a task related to information extraction, and suppose we continue the session process and we want it to answer a question for us ( here the task transform from <em>Information Extraction</em> to <em>Open-domain QA</em>), then will the LLM remain the same ability to answer a question?</p>
+<p>So, a natural consideration is: when prompt has become a paradigm for aligning LLM with human needs, how can we <strong>eliminate the impact of prompt and recover</strong> LLM?</p>
+<p>But perhaps a more economical strategy would be to open a new session window and give the LLM a prompt about the open-domain QA.</p>
+","language-model"
+"39540","How do temperature and repetition penalty interfere?","2023-03-12 15:25:05","39551","0","5071","<language-model><encoder-decoder>","<p>I'm trying to demystify my understanding of various decoding parameters. Building on <a href=""https://ai.stackexchange.com/a/32478/69194"">our understanding of temperature</a>, <strong>how does the repetition penalty interfere with temperature?</strong></p>
+<p>For example, does something special happen when the penalty is approximately equal to temperature, or approximately its reciprocal? Does the penalty need to be offset or biased based on the temperature?</p>
+","language-model"
+"39363","Coding a conversational AI which remembers previous context","2023-02-28 18:13:50","","1","89","<natural-language-processing><transformer><generative-model><language-model>","<p>I am trying to code a proper conversational AI which remembers previous context and answers accordingly (something like a micro ChatGPT). Additionally I want the AI to work on a custom knowledge base stored in a vector database like pinecone.</p>
+<p>Are there any implementation references available ?</p>
+","language-model"
+"39355","How to best implement Accelerate for vary large models","2023-02-28 13:18:32","","1","826","<machine-learning><language-model>","<p>This was pointed out to me: <a href=""https://huggingface.co/blog/accelerate-large-models"" rel=""nofollow noreferrer"">https://huggingface.co/blog/accelerate-large-models</a></p>
+<p>and seems it could be a great resource, but it is broken down into steps as a tutorial vs as out of the box solution script.</p>
+<p>Does anyone know of a good library, or example code that implements Accelerate for large models to use less VRAM / RAM?</p>
+<p>This is what I tried to run last:</p>
+<pre><code>from accelerate import infer_auto_device_map, init_empty_weights
+
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
+
+import torch
+
+checkpoint = &quot;bigscience/mt0-small&quot;
+
+config = AutoConfig.from_pretrained(checkpoint)
+
+with init_empty_weights():
+
+model = AutoModelForCausalLM.from_config(config)
+
+device_map = infer_auto_device_map(model, no_split_module_classes=[&quot;OPTDecoderLayer&quot;], dtype=&quot;float16&quot;)
+
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+device_map[&quot;model.decoder.layers.37&quot;] = &quot;disk&quot;
+
+model = AutoModelForCausalLM.from_pretrained(
+
+checkpoint, device_map=device_map, offload_folder=&quot;offload&quot;, offload_state_dict = True, torch_dtype=torch.float16
+
+)
+</code></pre>
+<p>Goal is to run <strong>Flan-T5</strong> or <strong>BLOOMZ</strong> locally, using disk space, to run the models on lower resources.</p>
+<p>This code throws the error:</p>
+<pre><code>ValueError: Unrecognized configuration class &lt;class 'transformers.models.mt5.configuration_mt5.MT5Config'&gt; for this kind of AutoModel: AutoModelForCausalLM
+</code></pre>
+<p>That is another issue, it would be good to know how to supply a configuration or convert the config to a supported type.
+And not sure if the code I put together would work once that is addressed.</p>
+<p>Any suggestions?</p>
+","language-model"
+"39078","What background should I have before starting to fine tune a Large Language Model?","2023-02-08 01:26:48","39081","1","162","<natural-language-processing><language-model><fine-tuning>","<p>I want to know what things I should be learning before trying to fine-tune or for that matter working with a large language model.</p>
+<p>In my case, I am trying to fine-tune bloom (<a href=""https://huggingface.co/blog/bloom"" rel=""nofollow noreferrer"">https://huggingface.co/blog/bloom</a>).</p>
+<p>But considering my inadequate knowledge of this, I want to know what things I should cover first before taking on something so big.</p>
+<p>Any suggestions are appreciated.</p>
+","language-model"
+"38940","Would a transformer trained on highly specific material be as usable as a commercial product like ChatGPT?","2023-01-28 23:44:52","38948","2","164","<transformer><gpt><language-model><fine-tuning><chatgpt>","<p>Soft question here.</p>
+<p>I was recently learning a bit about how it is feasible to train a transformer on a personal computer like an M1 Mac. I have been told that the model could have 1-3 million parameters and the training data could be from 1GB - 1TB, and that the training could take from about a day to a week. Also, there is an open source GPT <a href=""https://github.com/karpathy/nanoGPT"" rel=""nofollow noreferrer"">here</a>.</p>
+<p>My question is, if you consider that ChatGPT is trained on a very large and diverse amount of data, you may think a solo project could never compete with it. However, what if you chose a specialized set of training data that was smaller but a much richer, more reliable knowledge base, like only academic science textbooks, or only English literature, or only Python libraries documentation, and so on?</p>
+<p>Could it actually be much more useful because it's open-source, you have freedom of use (unlike ChatGPT's heavy behavioral conditioning from OpenAI), and you can choose what kind of knowledge the transformer contains? If the data is smaller but way, way higher quality, could you just make a library of niche GPTs for any topic you are studying?</p>
+","language-model"
+"38923","Why does ChatGPT not give the answer text all at once?","2023-01-27 15:18:09","","17","8240","<natural-language-processing><language-model><chatgpt>","<p>When ChatGPT is generating an answer to my question, it generates it word by word.<br />
+So I actually have to wait until I get the final answer.</p>
+<p>Is this just for show?<br />
+Or is it really real-time generating the answer word by word not knowing yet what the next word will be?</p>
+<p>Why does it not give the complete answer text all at once?</p>
+","language-model"
+"38879","What makes reproducing a model like GPT3/GPT3.5/ChatGPT difficult?","2023-01-25 07:33:06","38972","4","491","<training><language-model><large-language-models>","<p>Is it difficult for other companies to train a model similar to ChatGPT, and what makes it difficult? What is challenging about reproducing the results obtained by OpenAI with ChatGPT/GPT3.5? Would it be possible for a company like Meta or Google to have a model equal to ChatGPT/GPT3.5 in the next month or so? Why or why not?</p>
+<p>I understand that a big language model is expensive to train, so I'm expecting only large companies to be able to train such models to a sufficient extent.</p>
+","language-model"
+"38706","How can i create a new language model for language other than english?","2023-01-11 08:48:43","","1","95","<natural-language-processing><language-model>","<p>I have large set of corpus for all literature in 'Tamil' language, i am trying to create a document retrieval engine through simple natural language.</p>
+<p>Since the corpus is huge, its hard to do a supervised learning, i also checked ai4bharat.org 's initiatives to build the language models, but its still not working good the literature texts.</p>
+<p>what is required to build a model from scratch</p>
+","language-model"
+"38660","Was ChatGPT trained on Stack Overflow data?","2023-01-08 11:27:38","","50","23458","<chat-bots><chatgpt><language-model>","<p>Has ChatGPT used highly rated and upvoted questions/answers from Stack Overflow in its training data?</p>
+<p>For me it makes complete sense to take answers that have upwards of 100 upvotes and include them in your training data, but people around me seem to think this hypothesis doesn't make sense. Is there a way to confirm this?</p>
+","language-model"
+"38578","For specific tasks, is it better to fine-tune models on examples or just use prompting with the context of the task?","2023-01-03 17:54:35","38580","1","645","<natural-language-processing><comparison><training><fine-tuning><language-model>","<p>These days large language models cover a vast amount of topics and information, but I wanted to understand: <em>For specific tasks, is it better to fine-tune models on examples or just use prompting with the context of the task?</em></p>
+<p>For example, if I wanted to train a language model to do question answering for linear algebra, is it better to train it with examples of linear algebra problems and their solutions, or try out different prompts?</p>
+","language-model"
+"38521","How was ChatGPT trained?","2022-12-29 01:02:32","38561","6","2212","<natural-language-processing><chat-bots><training-datasets><language-model><chatgpt>","<p>I know that large language models like GPT-3 are trained simply to continue pieces of text that have been scraped from the web. But how was ChatGPT trained, which, while also having a good understanding of language, is not directly a language model, but a chatbot? Do we know anything about that? I presume that a lot of conversations was needed in order to train it. Did they simply scrape those conversations from the web, and where did they find such conversations in that case?</p>
+","language-model"
+"38372","How can a language model keep track of the provenance of the main knowledge/sources used to generate a given output?","2022-12-16 18:12:54","","6","826","<natural-language-processing><language-model><chatgpt>","<p>One of the main criticisms against the use of ChatGPT on Stack Exchange is that it doesn't attribute the main knowledge/sources used to generate a given output. How can a language model keep track of the provenance of the main knowledge/sources used to generate a given output?</p>
+","language-model"
+"38361","What causes ChatGPT to generate responses that refer to itself as a bot or LM?","2022-12-16 08:58:28","39020","9","1426","<chat-bots><training-datasets><language-model><gpt-3><chatgpt>","<p>ChatGPT occasionally generates responses to prompts that refer to itself as a &quot;bot&quot; or &quot;language model.&quot;</p>
+<p>For instance, when given a certain input (the first paragraph of <a href=""https://politics.meta.stackexchange.com/q/6454"">this question</a>) ChatGPT produces (in part) the output:</p>
+<blockquote>
+<p>It is not appropriate for a language model like myself to provide a
+stance on the policies of a specific website or community.</p>
+</blockquote>
+<p>To my understanding, ChatGPT is not a person that is conscious of its own existence and identity as a bot — it is a model trained on large quantities of undifferentiated text gathered from the Internet and largely reproduces the most common patterns given the context, which is why its responses seem very generic much of the time.
+Presumably very little of this data involved humans referring to themselves as language models or chatbots—that is, something like &quot;a language model&quot; should very rarely have been followed by &quot;like myself.&quot;</p>
+<p>As such, what causes ChatGPT to produce patterns referring to itself as a chatbot or language model? Which patterns in the training data or elements of the model structure (or even hard-coding?) cause it to generate responses like this?</p>
+","language-model"
+"38217","How does ChatGPT know math?","2022-12-08 18:43:24","","24","12537","<math><chat-bots><natural-language-understanding><language-model><chatgpt>","<p>ChatGPT is a language model. As far as I know and If I'm not wrong, it gets text as tokens and word embeddings. So, how can it do math? For example, I asked:</p>
+<blockquote>
+<p>ME: Which one is bigger 5 or 9. <br />
+ChatGPT: In this case, 9 is larger than 5.</p>
+</blockquote>
+<p>One can say, GPT saw numbers as tokens and in its training dataset there were some 9s that were bigger than 5s. So, it doesn't have actual math understanding and just sees numbers as some tokens. But I don't think that is true, because of this question:</p>
+<blockquote>
+<p>ME: Which one is bigger? 15648.25 or 9854.2547896 <br />
+ChatGPT: In this case, 15648.25 is larger than 9854.2547896.</p>
+</blockquote>
+<p>We can't say it actually saw the token of <code>15648.25</code> to be bigger than the token of <code>9854.2547896</code> in its dataset!</p>
+<p>So how does this language model understand the numbers?</p>
+","language-model"
+"37827","How can (pretrained) language models actively seek additional training data - possibly reference request?","2022-11-09 22:30:42","","1","24","<language-model><fine-tuning><self-supervised-learning>","<p>I am reading the paper &quot;Large Language Models Can Self-Improve&quot; <a href=""https://arxiv.org/abs/2210.11610"" rel=""nofollow noreferrer"">https://arxiv.org/abs/2210.11610</a> in which the authors consider that LLM can generate Chain-of-Thoughts sequences and even novel questions and their respective CoT responses and then selects the best sequences and fine-tunes themselves. Such self-reflection improves LLM. Such self-reflection also mimics how the human beings learns material by rethinking it. The usual human learning process is guided by the preset questions - courses and textbooks have them. But more mature learners usually can discover knowledge and understanding gaps in their minds themselves and form the most relevant questions and open problems, whose solution can improve the understanding and hence the assimilation of material in the actionable form.</p>
+<p>Such process is known in psychology as apperception <a href=""https://en.wikipedia.org/wiki/Apperception"" rel=""nofollow noreferrer"">https://en.wikipedia.org/wiki/Apperception</a>.</p>
+<p>My personal experience shows that apperception can be greatly enhanced (sometimes it even required) the reading of additional, carefully selected material. Sometimes it gives additional information. Sometimes it just reformulated the existing information and hints to additional links among the existing pieces of knowledge.</p>
+<p>Apparently - if LLM is working in self-improving mode then it could be highly benefitial if LLM could actively seek specific additional information and fine-tune itself on it.</p>
+<p>My question is - how to do such active seeking of specific additional information and is there any research efforts that have already done something like that?</p>
+<p><strong>Additional info</strong>: actually there is a least one paper <a href=""https://parl.ai/projects/seeker/"" rel=""nofollow noreferrer"">https://parl.ai/projects/seeker/</a> (<a href=""https://arxiv.org/abs/2203.13224"" rel=""nofollow noreferrer"">https://arxiv.org/abs/2203.13224</a>) that uses this self-improvement scheme.</p>
+","language-model"
+"37526","Are custom tokens better than punctuation pseudo-tokens for LLMs?","2022-10-19 14:20:45","","1","27","<natural-language-processing><natural-language-understanding><language-model>","<p>I've seen two approaches for introducing custom tokens for transfer learning with large language models like Bert or GPT3. Some approaches introduce new tokens into the vocabulary and learn embeddings from scratch. This is the &quot;traditional&quot; approach. However, I've seen other papers that imitate custom tokens with the use of punctuation, e.g. <code>&quot;&lt;custom-token&gt;&quot;</code>. In this case the model is not learning any new tokens, but is learning to connect subword tokens and punctation already in its vocabulary. I think this approach is often used with GPT3, as the closed API prevents learning new tokens from-scratch.</p>
+<p>Has any research benchmarked whether one approach is better than another, when both options are available?</p>
+","language-model"
+"37335","Why can't language models, like GPT-3, continuously learn once trained?","2022-10-08 15:08:36","","7","3316","<deep-learning><language-model>","<p>GPT-3 has a prompt limit of about ~2048 &quot;tokens&quot;, which corresponds to about 4 characters in text. If my understanding is correct, a deep neural network is not learning after it is trained and is used to produce an output, and, as such, this limitation comes from amount of the input neurons. My question is: <strong>what is stopping us from using the same algorithm we use for training, when using the network?</strong> That would allow it to adjust its weights and, in a way, provide a form of long-term memory which could let it handle prompts with arbitrarily long limits. Is my line of thinking worng?</p>
+","language-model"
+"37205","Papers on Prompt Engineering","2022-09-27 06:22:45","","1","1129","<natural-language-processing><reference-request><papers><language-model><gpt-3>","<p>I am into AI in general and NLP in particular. Besides, I have a background in philosophy, and the new LLMs like GPT-3 seem to have exciting capabilities. I want to study prompt engineering (for example, teaching the model to reason, etc.)</p>
+<p>Do you know any specific papers to start? I am looking for studies on the techniques of prompt engineering.</p>
+","language-model"
+"37154","Which language model technique should be used with a low-resource language?","2022-09-21 11:01:28","","1","25","<natural-language-processing><language-model>","<p>I am working with a language for which the amount of text available is relatively small (less than a billion words), what techniques exist? In particular, is it worth using a transformer or is it better to use more traditional techniques?</p>
+<p>The aim is to generate texts in continuation of a given prompt.</p>
+","language-model"
+"37026","How to combine pretrained language models with additional feature set?","2022-09-08 12:06:55","","0","1108","<natural-language-processing><bert><fine-tuning><language-model>","<p>Are there any techniques to combine a feature set (other than the text itself) with pretrained language models.</p>
+<p>Let's say I have a random NLP task that tries to predict a binary class label based on e.g. Twitter data. One could easily utilize a pretrained language model such as BERT/GPT-3 etc. to fine-tune it on the text of the tweets. However the tweets come with a lot of useful metadata such as likes/retweets etc. or if I want to add additional syntactic features such as POS-Tags, dependency relation or any other generated feature. Is it possible to use additional features I extracted for the finetuning step of the pretrained language model? Or is the only way of doing so to use an ensemble classifier and basically write a classifier for each of the extracted features and combine all of their predictions with the finetuned LMs predictions?</p>
+","language-model"
+"35214","What is the next-character perplexity of the PaLM model?","2022-04-15 00:57:12","","0","15","<language-model>","<p>In the 2022 paper <a href=""https://arxiv.org/pdf/2204.02311.pdf"" rel=""nofollow noreferrer"">&quot;PaLM: Scaling Language Modeling with Pathways&quot;</a>, what is the bits-per-character perplexity of the resultant pre-trained model for next-word prediction?</p>
+","language-model"
+"32477","What is the ""temperature"" in the GPT models?","2021-11-21 01:34:07","32478","38","43701","<machine-learning><terminology><gpt><language-model><gpt-3>","<p>What does the temperature parameter mean when talking about the GPT models?</p>
+<p>I know that a higher temperature value means more randomness, but I want to know how randomness is introduced.</p>
+<p>Does temperature mean we add noise to the weights/activations or do we add randomness when choosing a token in the softmax layer?</p>
+","language-model"
+"32385","Why do language models produce different outputs for same prompt?","2021-11-12 22:13:07","","2","2636","<deep-learning><transformer><language-model><natural-language-generation><forward-pass>","<p>For conventional 'Neural Networks', the weights simply act as a transformation in highly multi-dimensional space; for a forward pass, the output is always the same since there is no stochastic weighting component in the process.</p>
+<p>However, in Transformers (self-attention based encoder-decoder type architecture to be specific) we get different outputs with the same prompts (assuming <span class=""math-container"">$T &gt; 0$</span>). This doesn't make sense to me because the set of weights are always static, so the <em>probability distribution</em> produced should be the same; this simple decoding should yield the same output.</p>
+<p>However, in practice, we observe that it is not actually the case.
+Any reasons why?</p>
+","language-model"
+"32341","What is input (and shape) to K/V/Q of self-attention of EACH Decoder block of Language-translation model Transformer's tokens during Inference?","2021-11-09 15:48:28","","3","2371","<transformer><attention><machine-translation><language-model><encoder-decoder>","<p>Transformer model of the original <a href=""https://arxiv.org/abs/1706.03762"" rel=""nofollow noreferrer"">Attention paper</a> has a decoder unit that works differently during Inference than Tranining.</p>
+<p>I'm trying to understand the shapes used during decoder (both self-attention and enc-dec-attention blocks), but it's very confusing. I'm referring to <a href=""https://towardsdatascience.com/transformers-explained-visually-part-1-overview-of-functionality-95a6dd460452"" rel=""nofollow noreferrer"">this link</a> and also the original <a href=""https://arxiv.org/abs/1706.03762"" rel=""nofollow noreferrer"">Attention paper</a></p>
+<p>In Inference, it uses all previous tokens generated until that time step (say <code>k</code>th time-step), as shown in the diagram below and explained at <a href=""https://towardsdatascience.com/transformers-explained-visually-part-1-overview-of-functionality-95a6dd460452"" rel=""nofollow noreferrer"">this link.</a></p>
+<p><a href=""https://i.sstatic.net/0Lt8b.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/0Lt8b.png"" alt="""" /></a></p>
+<p>Another diagram that shows self-attention and enc-dec-attention within decoder:</p>
+<p><a href=""https://i.sstatic.net/BbCxU.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/BbCxU.png"" alt=""enter image description here"" /></a></p>
+<p><strong>Question:</strong></p>
+<p>However when I look at actual shapes of the QKV projection in the decoder self-attention, and feeding of the decoder self-attention output to the &quot;enc-dec-attention&quot;'s Q matrix, I see only 1 token from the output being used.</p>
+<p>Let's <strong>assume 6 deocder blocks one after the other in the decoder stack</strong> (which is the base transformer model).</p>
+<p>I'm very confused how the shapes for all matrices in the <strong>Decoder blocks after decoder-1</strong> of the decoder-stack (more specifically decoder-block-2 decoder-3, decoder-4..., decoder-6 of the decoder stack) self-attention and enc-dec-attention can match up with variable length of input to the decoder during inference. I looked at several online material but couldn't find answer.
+I see only the BGemms in the decoder's self-attention (not enc-dec-attention) using the variable shapes until all previous <code>k</code> steps, but all other Gemms are fixed size.</p>
+<ul>
+<li>How is that possible? Is only 1 token (last one from decoder output) is being used for qkv matmuls in self-attention and Q-matmul in enc-dec-attention (which is what I see when running the model)?</li>
+<li>Could someone elaborate how all these shapes for QKV in self-attention and Q in enc-dec-attention match up with decoder input length being different at each time-step?**</li>
+</ul>
+","language-model"
+"26771","Are training sequences for LMs sampled in an IID fashion?","2021-03-11 18:14:33","","2","111","<natural-language-processing><language-model><iid>","<p>If I understand correctly, when training language models, we take a document and then chunk the document into a sequences of k tokens. So if the document is of length 30 and k=10, then we'll have 20 chunks of 10 tokens each (token 1-11, 2-12, and so on).</p>
+<p>However these training sequences are not iid, right? If so, are there any papers that try and deal with this?</p>
+","language-model"
+"26739","What is the difference between a language model and a word embedding?","2021-03-09 21:43:24","26745","5","7926","<natural-language-processing><comparison><word-embedding><language-model><bleu>","<p>I am self-studying applications of deep learning on the NLP and machine translation.</p>
+<p>I am confused about the concepts of &quot;Language Model&quot;, &quot;Word Embedding&quot;, &quot;BLEU Score&quot;.</p>
+<p>It appears to me that a language model is a way to predict the next word given its previous word. Word2vec is the similarity between two tokens. BLEU score is a way to measure the effectiveness of the language model.</p>
+<p>Is my understanding correct? If not, can someone please point me to the right articles, paper, or any other online resources?</p>
+","language-model"
+"25270","Are there any good alternatives to an LSTM language model for text generation?","2020-12-18 17:08:31","25271","0","646","<natural-language-processing><reference-request><language-model><text-generation>","<p>I have a trained LSTM language model and want to use it to generate text. The standard approach for this seems to be:</p>
+<ol>
+<li>Apply softmax function</li>
+<li>Take a weighted random choice to determine the next word</li>
+</ol>
+<p>This is working reasonably well for me, but it would be nice to play around with other options. Are there any good alternatives to this?</p>
+","language-model"
+"25096","When we translate a text from one language to another, how does the frequency of various POS tags change?","2020-12-10 10:14:32","","1","11","<natural-language-processing><transformer><language-model><pos-tagging>","<p>When we translate a text from one language to another, how does the frequency of various POS tags change?</p>
+<p>So, let's say we have a text in English, with 10% nouns, 20% adjectives, 15% adverbs, 25% verbs, etc., which we now translate to German, French, or Hindi. Can we say that in these other languages the POS tag frequency will remain the same as earlier?</p>
+","language-model"
+"24683","How is input defined for a biaxial lstm network for generating music?","2020-11-17 23:45:25","","1","176","<deep-learning><recurrent-neural-networks><long-short-term-memory><language-model>","<p>I am reading <a href=""https://www.danieldjohnson.com/2015/08/03/composing-music-with-recurrent-neural-networks/"" rel=""nofollow noreferrer"">Composing Music With Recurrent Neural Networks</a> by Daniel D. Johnson. But I am really confused about the input passed to this network. If we pass notes of music along the time axis, then what is passed along the note axis?</p>
+<p><a href=""https://i.sstatic.net/W0waA.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/W0waA.png"" alt=""bi-axial netowork architecture"" /></a></p>
+<p>The author says:</p>
+<blockquote>
+<p>If we make a stack of identical recurrent neural networks, one for each output note, and give each one a local neighborhood (for example, one octave above and below) around the note as its input, then we have a system that is invariant in both time and notes: the network can work with relative inputs in both directions.</p>
+</blockquote>
+<p>This might mean that the inputs passed to the network along the note axis are fixed representations of notes in the vocabulary. But I am not sure.</p>
+<p>I am also having a hard time understanding the input passed to this network as the author explains a few paragraphs below. (Position, Pitchclass, Previous Vicinity, Previous Context, Beat).</p>
+<p>Also, at some point, the author talks about RNN along the note axis. But in the architecture, there only seems to be RNN along the time axis. I would really appreciate is anyone could give me some more information to understand how this Biaxial Network is setup. <a href=""https://deepdarklearning.wordpress.com/2016/12/15/composing-classical-music-with-recurrent-neural-network/"" rel=""nofollow noreferrer"">This</a> article by Deep Dark Learning was a little helpful but I am still not fully sure what is going on here.</p>
+","language-model"
+"24332","Is there a way to provide multiple masks to BERT in MLM task?","2020-10-31 06:23:52","24384","1","1482","<natural-language-processing><bert><language-model>","<p>I'm facing a situation where I've to fetch probabilities from BERT MLM for multiple words in a single sentence.</p>
+<pre><code>Original : &quot;Mountain Dew is an energetic drink&quot;
+Masked : &quot;[MASK] is an energetic drink&quot;
+</code></pre>
+<p>But BERT MLM task doesn't consider two tokens at a time for the MASK. I strongly think that there should be some sort of work around that I'm unable to find other than fine-tuning.</p>
+","language-model"
+"23560","Appropriate metric and approach for natural language generation for small sentences","2020-09-13 12:45:40","","1","60","<natural-language-processing><long-short-term-memory><attention><language-model>","<p>I am trying to create a language generation model to generate very short sentences/words, like a rapper name generator. The sentences in my dataset are anywhere between 1 word and 15 words (3-155 characters). So far, I have tried LSTM's with 1-3 layers and inputs as subwords and characters. The results so far are not that great, I am getting ~0.5 crossentropy loss and ~50% accuracy.</p>
+<p>My inputs are like a sliding window with prepadding, (eg. (for a batch) <code>Inputs = [[0,0,0,1], [0,0,1,2]...[n-4,..n-1]]</code>, <code>outputs=[[0,0,1,2], ...[n-3,n-2,n-1,n]]</code>) where 0 is padding, <code>1</code> is the start token and <code>n</code> is the end token. Outputs are 1 hot encoded.</p>
+<p>The model is an embedding layer, few lstm and dropout layers, followed by time distributed dense and then a dense layer.</p>
+<p>My doubt is, is accuracy a right metric, I am using it because at the end, I am making a classification for 4 output values. Another one is, will a transformer be suitable for this, since I want to generate small sentences, (which are nouns) and models like GPT/ Bert are more suitable for capturing dependency between long sentences.</p>
+","language-model"
+"23557","Fundamentally, what is a perfect language model?","2020-09-13 01:19:04","23566","3","195","<language-model>","<p>Suppose that we want to generate a sentence made of words according to language <span class=""math-container"">$L$</span>:
+<span class=""math-container"">$$
+W_1 W_2 \ldots W_n
+$$</span></p>
+<p><strong>Question:</strong> What is the perfect language model?</p>
+<p>I ask about <em>perfect</em> because I want to know the concept fundamentally at its fullest extent. I am not interested in knowing heuristics or shortcuts that reduce the complexity of its implementation.</p>
+<hr />
+<h1>1. My thoughts so far</h1>
+<h2>1.1. Sequential</h2>
+<p>One possible way to think about it is moving from left to right.  So, 1st, we try to find out value of <span class=""math-container"">$W_1$</span>. To do so, we choose the specific word <span class=""math-container"">$w$</span> from the space of words <span class=""math-container"">$\mathcal{W}$</span> that's used by the language <span class=""math-container"">$L$</span>.  Basically:
+<span class=""math-container"">$$
+w_1 = \underset{w \in \mathcal{W}}{\text{arg max }} \Pr(W_1 = w)
+$$</span></p>
+<p>Then, we move forward to find the value of the next word <span class=""math-container"">$W_2$</span> as follows
+<span class=""math-container"">$$
+w_2 = \underset{w \in \mathcal{W}}{\text{arg max }} \Pr(W_2 = w | W_1 = w_1)
+$$</span></p>
+<p>Likewise for <span class=""math-container"">$W_3, \ldots, W_n$</span>:
+<span class=""math-container"">$$
+w_3 = \underset{w \in \mathcal{W}}{\text{arg max }} \Pr(W_3 = w | W_1 = w_1, W_2=w_2)
+$$</span>
+<span class=""math-container"">$$
+\vdots
+$$</span>
+<span class=""math-container"">$$
+w_n = \underset{w \in \mathcal{W}}{\text{arg max }} \Pr(W_n = w | W_1 = w_1, W_2=w_2, \ldots W_{n-1}=w_{n-1})
+$$</span></p>
+<p>But is this really <em>perfect</em>?  I personally doubt.  I think while language is read and written usually from a given direction (e.g. left to right), it is not always done so, and in many cases language is read/written possibly in a funny order as we always do.  E.g. even when I wrote this question, I jumped back and forth, then went to edit it (as I'm doing now).  So I clearly didn't write it from left to right!  Similarly, <em>you</em>, the reader; you won't really read it in a single pass from left to right, will you?  You will probably read it in some funny order and go back and forth for awhile until you conclude an understanding.  So I personally really doubt that the sequential formalism is perfect.</p>
+<h2>1.2. Joint</h2>
+<p>Here we find all the <span class=""math-container"">$n$</span> words jointly. Of course ridiculously expensive computationally (if implemented), but our goal here is to only know what is the problem at its fullest.</p>
+<p>Basically, we get the <span class=""math-container"">$n$</span> words as follows:</p>
+<p><span class=""math-container"">$$
+(w_1, w_2, \ldots, w_n) = \underset{(w_1,w_2,\ldots,w_n) \in \mathcal{W}^n}{\text{arg max }} \Pr(W_1 = w_1, W_2=w_2, \ldots W_n=w_n)
+$$</span></p>
+<p>This is a <em>perfect</em> representation of language model in my opinion, because its answer is gauranteed to be correct.  But there is this annoying aspect which is that its <em>words candidates space</em> is needlessly large!</p>
+<p>E.g. this formalism is basically saying that the following is a candidate words sequence: <span class=""math-container"">$(., Hello, world, !)$</span> even though we know that in (say) English a sentence cannot start by a dot &quot;.&quot;.</p>
+<h2>1.3. Joint but <em>slightly</em> smarter</h2>
+<p>This is very similar to <strong>1.2 Joint</strong>, except that it deletes the single bag of all words <span class=""math-container"">$\mathcal{W}$</span>, and instead introduces several bags <span class=""math-container"">$\mathcal{W}_1, \mathcal{W}_2, \ldots, \mathcal{W}_n$</span>, which work as follows:</p>
+<ul>
+<li><span class=""math-container"">$\mathcal{W}_1$</span> is a bag that contains words that can <em>only</em> appear as <em>1<sup>st</sup></em> words.</li>
+<li><span class=""math-container"">$\mathcal{W}_2$</span> is a bag that contains words that can <em>only</em> appear as <em>2<sup>nd</sup></em> words.</li>
+<li><span class=""math-container"">$\vdots$</span></li>
+<li><span class=""math-container"">$\mathcal{W}_n$</span> is a bag that contains words that can <em>only</em> appear as <em><span class=""math-container"">$n$</span><sup>th</sup></em> words.</li>
+</ul>
+<p>This way, we will avoid the <em>stupid</em> candidates that <strong>1.2. Joint</strong> evaluated by following this:
+<span class=""math-container"">$$
+(w_1, w_2, \ldots, w_n) = \underset{w_1 \in \mathcal{W}_1,w_2 \in \mathcal{W}_2,\ldots,w_n \in \mathcal{W}_n) \in \mathcal{W}^n}{\text{arg max }} \Pr(W_1 = w_1, W_2=w_2, \ldots W_n=w_n)
+$$</span></p>
+<p>This will also guarantee being a <em>perfect</em> representation of a language model, yet it its <em>candidates</em> space is smaller than one in <strong>1.2. Joint</strong>.</p>
+<h2>1.4. Joint but <em>fully</em> smart</h2>
+<p>Here is where I'm stuck!</p>
+<p><strong>Question rephrase (in case it helps):</strong> Is there any formalism that gives the perfect correctness of <strong>1.2.</strong> and <strong>1.3.</strong>, except for also being <em>fully</em> smart in that its candidates space is smallest?</p>
+","language-model"
+"22086","What are the main differences between a language model and a machine translation model?","2020-06-23 04:08:03","","1","923","<natural-language-processing><comparison><models><machine-translation><language-model>","<p>What are the main differences between a language model and a machine translation model?</p>
+","language-model"
+"18759","What are pros and cons of Bi-LSTM as compared to LSTM?","2020-03-23 07:41:11","","6","2892","<natural-language-processing><comparison><long-short-term-memory><language-model><bidirectional-lstm>","<p>What are the pros and cons of <strong>LSTM</strong> vs <strong>Bi-LSTM</strong> in language modelling? What was the need to introduce Bi-LSTM?</p>
+","language-model"
+"18222","How to pad sequences during training for an encoder decoder model","2020-02-24 20:41:37","","1","79","<neural-networks><recurrent-neural-networks><long-short-term-memory><sequence-modeling><language-model>","<p>I've got an encoder-decoder model for character level English language spelling correction, it is pretty basic stuff with a two LSTM encoder and another LSTM decoder. </p>
+
+<p>However, up until now, I have been pre-padding the input sequences, like below:</p>
+
+<pre><code>abc  -&gt; -abc
+defg -&gt; defg
+ad   -&gt; --ad
+</code></pre>
+
+<p>And next I have been splitting the data into several groups with the same output length, e.g.</p>
+
+<pre><code>train_data = {'15': [...], '16': [...], ...}
+</code></pre>
+
+<p>where the key is the length of the output data and I have been training the model once for each length in a loop.</p>
+
+<p>However, there has to be a better way to do this, such as padding after the EOS character etc. But if this is the case, how would I change the loss function so that this padding isn't counted into the loss?</p>
+","language-model"
+"17102","How to use BERT as a multi-purpose conversational AI?","2019-12-14 13:55:05","","7","1355","<natural-language-processing><classification><bert><language-model>","<p>I'm looking to make an NLP model that can achieve a dual purpose. One purpose is that it can hold interesting conversations (conversational AI), and another being that it can do <em>intent classification</em> and even accomplish the classified task. </p>
+
+<p>To accomplish this, would I need to use multimodal machine learning, where you combine the signal from two models into one? Or can it be done with a single model?</p>
+
+<p>In my internet searches, I found <a href=""https://github.com/google-research/bert"" rel=""nofollow noreferrer"">BERT</a>, developed by Google engineers (although apparently not a Google product), which is an NLP model trained in an unsupervised fashion on 3.3 billion words or more and seems very capable. </p>
+
+<p>How can I leverage BERT to make my own conversational AI that can also carry out tasks? Is it as simple as copying the weights from BERT to your own model?</p>
+
+<p>Any guidance is appreciated.</p>
+","language-model"
+"16874","What would be a good internal language for an AI?","2019-12-01 06:29:17","","4","222","<knowledge-representation><programming-languages><language-model>","<p>For an AI to represent the world, it would be good if it could translate human sentences into something more precise.</p>
+<p>We know, for example, that mathematics can be built up from set theory. So representing statement in language of set theory might be useful.</p>
+<p>For example</p>
+<blockquote>
+<p>All grass is green</p>
+</blockquote>
+<p>is something like:</p>
+<blockquote>
+<p><span class=""math-container"">$\forall x \in grass: isGreen(x)$</span></p>
+</blockquote>
+<p>But then I learned that set theory is built up from something more basic. And that theorem provers use a special form of higher-order logic of types. Then there is propositional logic.</p>
+<p>Basically what the AI would need would be some way representing statements, some axioms, and ways to manipulate the statements.</p>
+<p>Thus what would be a good language to use as an internal language for an AI?</p>
+","language-model"
+"16353","Are embeddings in multi-lingual language models comparable across languages?","2019-11-08 09:39:43","","4","352","<deep-learning><natural-language-processing><transformer><language-model>","<p>Facebook has <a href=""https://arxiv.org/pdf/1911.02116.pdf"" rel=""nofollow noreferrer"">just pushed out</a> a bigger version of their multi-lingual language model XLM, called XLM-R. My question is: do these kind of multi-lingual models imply, or even ensure, that their embeddings are comparable between languages? That is, are semantically related words close together in the vector space across languages?</p>
+
+<p>Perhaps the most interesting citation from the paper that is relevant to my question (p. 3):</p>
+
+<blockquote>
+  <p>Unlike Lample and Conneau (2019), we do not use language embeddings,
+  which allows our model to better deal with code-switching.</p>
+</blockquote>
+
+<p>Because they do not seem to make a distinction between languages, and there's just one vocabulary for all trained data, I fail to see how this can be truly representative of semantics anymore. The move away from semantics is increased further by the use of BPE, since morphological features (or just plain, statistical <em>word chunks</em>) of one language might often not be semantically related to the same chunk in another language - this can be true for tokens themselves, but especially so for subword information.</p>
+
+<p>So, in short: how well can the embeddings in multi-lingual language models be used for semantically comparing input (e.g. a word or sentence) of two different languages?</p>
+","language-model"
+"16328","How do you build a language model to predict the contextual similarity between two documents?","2019-11-07 07:28:37","","2","88","<natural-language-processing><language-model>","<p>How do you build a language model to predict the contextual similarity between two documents?</p>
+","language-model"
+"11621","How can I generate a document from a single word using GPT or BERT?","2019-04-03 13:15:15","","2","80","<natural-language-processing><bert><language-model><gpt>","<p>I have a dataset of 100000 documents each labelled with a topic to it. I want to create a model such that, given a topic, the model can generate a document from it. </p>
+
+<p>I came across language models <a href=""https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf"" rel=""nofollow noreferrer"">GPT</a>, GPT-2 and <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""nofollow noreferrer"">BERT</a>. I learned that they can be used for generation purposes. But I did not find anywhere whether they can generate sentences given only a word.</p>
+
+<p>I am inclined to use GPT for my task, but I am not sure how to proceed with it. I wanted to know whether it is possible or not? It would be helpful if anyone can help me give a start in the right direction.</p>
+","language-model"
+"7684","Where can I find pre-trained language models in English and German?","2018-08-23 07:17:27","7754","5","1948","<neural-networks><natural-language-processing><bert><gpt><language-model>","<p>Where can I find (more) pre-trained <a href=""https://en.wikipedia.org/wiki/Language_model"" rel=""nofollow noreferrer"">language models</a>? I am especially interested in <strong>neural network-based</strong> models for <strong>English and German</strong>.</p>
+
+<p>I am aware only of <a href=""https://github.com/tensorflow/models/tree/master/research/lm_1b"" rel=""nofollow noreferrer"">Language Model on One Billion Word Benchmark</a> and <a href=""https://github.com/lverwimp/tf-lm"" rel=""nofollow noreferrer"">TF-LM: TensorFlow-based Language Modeling Toolkit</a>.</p>
+
+<p>I am surprised not to find a greater wealth of models for different frameworks and languages.</p>
+","language-model"

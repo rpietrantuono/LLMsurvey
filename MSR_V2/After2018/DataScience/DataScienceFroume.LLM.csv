@@ -1,0 +1,2256 @@
+Post Link,Title,CreationDate,AcceptedAnswerId,Score,ViewCount,Tags,Body,TagName
+"{
+  ""id"": 129955,
+  ""title"": ""Splitting large document and bucketing""
+}","Splitting large document and bucketing","2024-08-13 16:59:56","","0","13","<machine-learning><llm><pretraining>","<p>I asked this question in the discussion section of (<a href=""https://github.com/NVIDIA/Megatron-LM/issues/975"" rel=""nofollow noreferrer"">https://github.com/NVIDIA/Megatron-LM/issues/975</a>) but did not receive any response so asking here with a little bit more details hoping someone had some experience with Megatron LM. I am trying to figure out if bucketization is done (or can be done) for Megatron LM model training. By &quot;bucketization&quot; I am referring to batching based on similar sequence length (<a href=""https://torchtext.readthedocs.io/en/latest/data.html#bucketiterator"" rel=""nofollow noreferrer"">https://torchtext.readthedocs.io/en/latest/data.html#bucketiterator</a>).. The motivation is that I have documents with very large text and I want pick a splitting schema (which may create a lot of samples with small number of tokens and bucketize them). That brings me to the second question which is - is splitting supported in Megatron?</p>
+<p>Any answer would be much appreciated - Thanks.</p>
+","llm"
+"{
+  ""id"": 129845,
+  ""title"": ""Fine-tune llama 3.1 with domain specific terms""
+}","Fine-tune llama 3.1 with domain specific terms","2024-07-31 20:19:45","","0","46","<llm>","<p>New to working with LLMs and I'd like to fine-tune Llama3.1 Instruct on domain specific terms. The terms are about 10K medical terms, which are groups of words ranging from one to thirteen words. Which libraries can I use to fine-tune Llama3.1 for this task? Also, how do I handle the multiple word terms? Do I break them up into single words?</p>
+","llm"
+"{
+  ""id"": 129766,
+  ""title"": ""Document clustering and summarisation via GraphRAG""
+}","Document clustering and summarisation via GraphRAG","2024-07-24 05:01:35","","0","6","<embeddings><llm><knowledge-graph><rag>","<p>Suppose I have a corpus of documents that I want to cluster and summarise. There are an indeterminate number of parent clusters, and each parent may in turn have several tributary child clusters. I would like to identify both parent and child clusters, and generate LLM summaries for each.</p>
+<p>My approach has been to use hierarchical agglomerative clustering to determine the number of parents so as to maximise the silhouette score, subsequently clustering document embeddings with this optimal number. I then repeat this process to determine the number of child clusters for each parent. Following this, for each cluster I extract several documents whose embeddings are closest to the cluster centroids, along with important keywords and key phrases from the cluster, to use in the LLM summarisation prompt.</p>
+<p>This isn't exactly a conventional RAG application since I seek to summarise the entire corpus, but I think it shares enough similarities as to be considered a kind of RAG.</p>
+<p>I would be grateful for recommendations on how to improve this procedure. For example, I'm aware that GraphRAG can use community detection to identify clustered concepts. Would GraphRAG perhaps be more suitable for identifying parent and child clusters than my current approach? If so, would the LLM prompt take a different form than the key document, key phrase and keyword extraction that I've outlined?</p>
+","llm"
+"{
+  ""id"": 129752,
+  ""title"": ""What word embedding model (no contex) to choose in 2024?""
+}","What word embedding model (no contex) to choose in 2024?","2024-07-22 10:33:49","","0","43","<word2vec><embeddings><llm>","<p>I need word embeddings to build a latent space of words (English). I have about 2500 words to embed and then about 9000 to infer basing on some model I'll build. I used word2vec so far, but its coverage isn't great and I'd like something that is used in 2024. I looked into bert, but it's contextualized, while I only have words. I looked into openai's embeddings, but am still not sure as I'd like to run the code as many times as I'd like. I saw the leaderboard, but it's not clear as there are many prompt-based techniques, and I want embeddings. What would you recommend to me?</p>
+","llm"
+"{
+  ""id"": 129693,
+  ""title"": ""How to adjust classification totals based on known bias of estimator""
+}","How to adjust classification totals based on known bias of estimator","2024-07-14 02:36:54","","0","10","<classification><prediction><llm><bias><confidence>","<p>Let's say I have a dataset, <span class=""math-container"">$D$</span>, with known ground truth labels. I nonetheless use a few-shot LLM classifier on this dataset to predict <span class=""math-container"">$k$</span> classes for each label.</p>
+<p>From the LLM results, I get precision-recall scores and a bias amount for the proportion of each label as the difference of the predicted proportion vs. the ground truth.</p>
+<p>I now plan to predict labels on a new dataset, where I don't know the ground truth. I want to adjust and quantify the uncertainty of the total number of labels in each category based on the past performance of the LLM.</p>
+<p>Normally, I might use the bootstrap to simply re-sample and re-fit a deterministic model in a loop and take the empirical distribution of the predictions to get the confidence intervals of the prediction. However, we cannot do that because the LLM calls are too expensive.</p>
+<p>My thinking is that instead we should:</p>
+<ul>
+<li>Determine the bias of the classifier for each <span class=""math-container"">$k$</span> class by subtracting the empirical estimated class proportion <span class=""math-container"">$\frac{TP_k}{N}$</span> from the known proportion <span class=""math-container"">$p_k$</span>.</li>
+<li>Determine a confidence interval for the empirical class estimate <span class=""math-container"">$\frac{TP_k}{N}$</span> using standard wald normal-approximation binomial methods and simply shift these intervals by the bias amount.</li>
+</ul>
+<p>However, I'm not sure this is valid. It doesn't feel valid because the standard error is not invariant to the value of <span class=""math-container"">$p_k$</span>.</p>
+","llm"
+"{
+  ""id"": 129640,
+  ""title"": ""NLP model for word recovery (analogy to BERT, but letters)""
+}","NLP model for word recovery (analogy to BERT, but letters)","2024-07-07 11:03:14","","0","23","<nlp><bert><llm>","<p>I am working on solving the problem of restoring words in text where some letters are missing. For example (restore words where vowels are removed): Hll wrld -&gt; Hello world n ltrntv ssssmnt sggsts -&gt; An alternative assessment suggests</p>
+<p>Can you please suggest what pre-trained models I can use to solve this problem or maybe there are some articles that describe similar problems? I know it's similar to BERT, but BERT predicts the word, not the letters.</p>
+","llm"
+"{
+  ""id"": 129594,
+  ""title"": ""NaN grad norm even with a stable loss and gradient""
+}","NaN grad norm even with a stable loss and gradient","2024-07-02 22:47:34","","0","109","<llm><finetuning><gradient>","<p>Currently I am working on a custom fine-tune of several code LLMs and while working on the DeepSeekCoder I encountered a strange behaviour.</p>
+<p>When training the model earlier or later the loss goes to zero while the gradient_norm goes to NaN.
+Usually this means that the training parameters weren't set up in a good way, however it seems that changing the parameters does not change the fact that earlier or later this still happens.
+Using different gradient clippings, batch sizes and learning rates (2e-5 - 4e-6) did not help at all. In my last trial the results looked pretty good, because the losses dropped slowly and the gradient was quite stable for the entire run, but then the run ended with the same result again. Since the methods to avoid this did not work well and the statistics look stable enough to not assume some kind of overfitting or gradient explosion I am left perplexed.</p>
+<p>Some more helpful info:</p>
+<p>Library: Unsloth<br />
+rsLoRa rank: 128<br />
+rsLoRa alpha: 16<br />
+quantization: NF4<br />
+lr_scheduler: cosine<br />
+weight decay: 0.01<br />
+max_grad_norm: 0.3 or 1.0</p>
+<p>Here are the last statistics:</p>
+<p>Step, Loss, grad_norm<br />
+263 0.9913 0.160921<br />
+264 Evaluation step with loss: 1.015229<br />
+265 1.0015 0.146931<br />
+266 1.0656 0.186978<br />
+267 0.9506 0.152463<br />
+268 0.8927 NaN<br />
+267 0.0000 NaN</p>
+<p><a href=""https://i.sstatic.net/oJ2qpKlA.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/oJ2qpKlA.png"" alt=""Image showing my losses and grad values"" /></a></p>
+","llm"
+"{
+  ""id"": 129579,
+  ""title"": ""What informatics tools will allow complex search in order to select full-text articles?""
+}","What informatics tools will allow complex search in order to select full-text articles?","2024-07-01 11:28:39","","1","23","<nlp><r><llm><api>","<p>I'd like to search plant science literature (full text) to only return articles in which the word &quot;three&quot; appears four or more times in the full-text Methods section (presumably the best source of this information would be pubmed central). I've looked at scite - and this accepts json and regex - but apparently only searches citations rather than full-text methods. Perhaps it's possible to write a query which uses json and regex to query <a href=""https://europepmc.org/"" rel=""nofollow noreferrer"">https://europepmc.org/</a> to perform this specific action ? An alternative would be to use informatics tools to download huge amounts of data from PubMed and then construct R (or other) programming in order to search through the downloaded dataset. This question is about what is the most effective way forward in order to achieve this ? I have extensive R coding experience, Python shouldn't be a problem - I've been advised that an API would probably first be needed - and then NLP (natural language processing), particularly a technique called &quot;stemming&quot; and &quot;tokenising&quot;, or perhaps the large language model langchain ?</p>
+","llm"
+"{
+  ""id"": 129350,
+  ""title"": ""Search for documents with similar texts""
+}","Search for documents with similar texts","2024-06-09 16:05:35","","0","19","<nlp><llm><search>","<p>I have a document with three attributes: tags, location, and text.</p>
+<p>Currently, I am indexing all of them using LangChain/pgvector/embeddings.</p>
+<p>I have satisfactory results, but I want to know if there is a better way since I want to find one or more documents with a specific tag and location, but the text can vary drastically while still meaning the same thing. I thought about using embeddings/vector databases for this reason.</p>
+<p>Would it also be a case of using RAG (Retrieval-Augmented Generation) to &quot;teach&quot; the LLM about some common abbreviations that it doesn't know?</p>
+","llm"
+"{
+  ""id"": 129348,
+  ""title"": ""The real world implementations of RAG vs the methods explained in the paper""
+}","The real world implementations of RAG vs the methods explained in the paper","2024-06-09 08:08:21","","1","24","<nlp><transformer><llm>","<p>While building a RAG application we</p>
+<ol>
+<li>Encode the query</li>
+<li>Retrieve k docs</li>
+<li>Concatenate before the query</li>
+<li>Pass the entire thing to a LLM and it completes it for you</li>
+</ol>
+<p>I do not think this is either of RAG-sequence or RAG-token explained in the <a href=""https://arxiv.org/abs/2005.11401"" rel=""nofollow noreferrer"">paper</a>. Or, am I missing something. It seems closer to RAG-sequence but there also there are k output sequences generated which are then marginalized over the retrieved documents and the output sequence with the highest probability is selected</p>
+<p>From the paper:</p>
+<blockquote>
+<p>RAG-Sequence Model The RAG-Sequence model uses the same retrieved document to generate
+the complete sequence. Technically, it treats the retrieved document as a single latent variable that
+is marginalized to get the seq2seq probability p(y|x) via a top-K approximation. Concretely, the
+top K documents are retrieved using the retriever, and the generator produces the output sequence
+probability for each document, which are then marginalized,</p>
+</blockquote>
+<blockquote>
+<p>RAG-Token Model In the RAG-Token model we can draw a different latent document for each
+target token and marginalize accordingly. This allows the generator to choose content from several
+documents when producing an answer. Concretely, the top K documents are retrieved using the
+retriever, and then the generator produces a distribution for the next output token for each document,
+before marginalizing, and repeating the process with the following output token</p>
+</blockquote>
+","llm"
+"{
+  ""id"": 129331,
+  ""title"": ""Text generation using Ollama""
+}","Text generation using Ollama","2024-06-07 18:10:51","","0","72","<llm><text-generation>","<p>I have installed the ollama server on my local system. I split created embeddings out of a document and fed those to the model. The model is able to retrieve the correct chunk of text when asked a question. However, it does not generate its own answer. How do I make the model generate its own answers?</p>
+<p>Model used for embedding: all-minilm
+Model used for question-answering: Llama3</p>
+","llm"
+"{
+  ""id"": 129263,
+  ""title"": ""Noob question - which NLP/deep learning technique shoud I use""
+}","Noob question - which NLP/deep learning technique shoud I use","2024-06-01 17:59:37","","2","44","<python><deep-learning><nlp><multilabel-classification><llm>","<p>Let's say I have dataset with inputs and expected outputs like this:</p>
+<pre class=""lang-json prettyprint-override""><code>[
+  {
+    &quot;input&quot;: &quot;http://localhost/wordpress/wp-includes/blocks/navigation/view.min.js?ver=6.5.3&quot;,
+    &quot;output&quot;: [&quot;WordPress 6.5.3&quot;]
+  },
+  {
+    &quot;input&quot;: &quot;&lt;meta content=\&quot;max-image-preview:large\&quot; name=\&quot;robots\&quot;/&gt;&quot;,
+    &quot;output&quot;: []
+  },
+  {
+    &quot;input&quot;: &quot;https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js?ver=3.7.1&quot;,
+    &quot;output&quot;: [&quot;jQuery 3.7.1&quot;]
+  },
+  {
+    &quot;input&quot;: &quot;Server: Apache/2.4.56 (Win64) OpenSSL/1.1.1t PHP/8.2.4&quot;,
+    &quot;output&quot;: [&quot;Apache 2.4.56&quot;, &quot;OpenSSL 1.1.1t&quot;, &quot;PHP 8.2.4&quot;]
+  },
+  { &quot;input&quot;: &quot;X-Powered-By: PHP/7.4&quot;, &quot;output&quot;: [&quot;PHP 7.4&quot;] },
+  ...
+]
+</code></pre>
+<p>I would like to create a program that extracts/guesses which technologies (ideally with version) are in a given input.</p>
+<p>I read something about multi-label classification, named entity recognition and also about fine tuning some LLM.
+I'm still learning, not sure how best to solve this problem. Thanks for advice!</p>
+","llm"
+"{
+  ""id"": 129234,
+  ""title"": ""How does ChatGPT-4o work on text + image data?""
+}","How does ChatGPT-4o work on text + image data?","2024-05-30 07:41:12","","1","49","<text><llm><image><diffusion>","<p>What known state of art techniques might ChatGPT-4o, Claude 3 or other similar systems be using to understand both text and image data? I noticed that ChatGPT-4o can recognize text in an image well. Might it be using an external OCR tool or has it learned to recognize characters neurally? What training sets and methods make sense for training such text+image systems?</p>
+<p>For some image-related tasks, such as asking to color a given image ChatGPT-4o seems to be using a less interesting approach - it looks that it generates a program and runs it on the image, the output of an image is not generated by a NN.</p>
+","llm"
+"{
+  ""id"": 129155,
+  ""title"": ""does DALL-E api use Microsoft account info while generating responses?""
+}","does DALL-E api use Microsoft account info while generating responses?","2024-05-21 23:07:20","","0","13","<machine-learning><generative-models><llm><gpt><image-generation>","<p>I have read some work regarding occupational gender bias in AI image generation and it seemed. According to my research, tools like DALL-E generated more images of men when trying out for images with high paying jobs (lawyers, doctors etc). However, when I tried it via my openAI account, the results were shockingly different. I am a female, which probably reflects in my account info. When I generate images of these professions, I get almost all females. Which is quite opposite to what I get when I try Stable diffusion locally. Is there any proof/study that shows that the DALL-E api might use our account info while generating responses?</p>
+","llm"
+"{
+  ""id"": 129099,
+  ""title"": ""Callback handlers in Langchain""
+}","Callback handlers in Langchain","2024-05-16 20:42:19","129161","1","42","<python><language-model><llm>","<p>This might be an odd question, but why is there two codes for the class BaseCallbackHandler?</p>
+<p><a href=""https://api.python.langchain.com/en/latest/_modules/langchain_core/callbacks/base.html#BaseCallbackHandler"" rel=""nofollow noreferrer"">https://api.python.langchain.com/en/latest/_modules/langchain_core/callbacks/base.html#BaseCallbackHandler</a></p>
+<p><a href=""https://python.langchain.com/v0.1/docs/modules/callbacks/"" rel=""nofollow noreferrer"">https://python.langchain.com/v0.1/docs/modules/callbacks/</a></p>
+","llm"
+"{
+  ""id"": 128968,
+  ""title"": ""Instruction LLM - extract data from text wrongly continues""
+}","Instruction LLM - extract data from text wrongly continues","2024-05-06 09:04:32","","0","34","<transformer><huggingface><llm>","<p>I'm trying to fine-tune open sourced LLMs, for now let's stick with Mistral-7b-instruct model.</p>
+<p>My task is a follow: I have emails, that represents &quot;price requests&quot; for shipments sends by our clients.
+In the emails, the clients tells us the pickup address, the shipper, consignee ETC.</p>
+<p>My initial idea was to train different adapters, using DORA, each of them is trained on extracting a different entity from the email.</p>
+<p>My dataset was created as follow: I have the email, and the annotation which is &quot;Based on the email, I've found this [ENTITY]: entity_here</p>
+<p>I've created a System message, and and chat_template to create the dataset in a way Mistral will accept, using this chat_template:</p>
+<pre><code>&quot;{%- for message in messages %}&quot;
+  &quot;{%- if message['role'] == 'system' -%}&quot;
+      &quot;{{- '&lt;s&gt;' + message['content'] -}}&quot;
+  &quot;{%- else -%}&quot;
+      &quot;{%- if message['role'] == 'user' -%}&quot;
+          &quot;{{-'[INST] ' + message['content'].rstrip() + ' [/INST]'-}}&quot;
+      &quot;{%- else -%}&quot;
+          &quot;{{-'' + message['content'] + '&lt;/s&gt;' -}}&quot;
+      &quot;{%- endif -%}&quot;
+  &quot;{%- endif -%}&quot;
+&quot;{%- endfor -%}&quot;
+&quot;{%- if add_generation_prompt -%}&quot;
+    &quot;{{-''-}}&quot;
+&quot;{%- endif -%}&quot;
+</code></pre>
+<p>Now to the problem. The model seems to learn what it needs to extract, it generates decent answers, with the same format as the assistant it was trained by, the problem is that after it generates the answer, it keeps on generating additional texts regarding the email that are irrelevant to the task, E.G. &quot;please contact us in....&quot;</p>
+<p>When I fine tune GPT3.5 for example for the same task, the model is able to extract exactly what I need for it, which suggests to me that I'm doing something wrong.</p>
+<p>Does anyone have suggestions as to where did I go wrong?</p>
+","llm"
+"{
+  ""id"": 128956,
+  ""title"": ""llama3 fine tuning data format - shogi""
+}","llama3 fine tuning data format - shogi","2024-05-04 14:50:37","","0","24","<python><llm>","<p>I'm a ML actor, but LLM fintuning are new to me. To train myself, I investigate the possibility to develop a Shogi instructor (japanese chess) based on Llama 3 for example or GPT, to help players to improve their game. I imagine the first step consists in formating specific data coming from shogi pdf, games, or websites for example. But concretely there are standard format for that ? Any tutorial recommandation ?</p>
+","llm"
+"{
+  ""id"": 128884,
+  ""title"": ""Retrieval-Augmented Generation for Identifying Similar and Duplicate Controls in a Dataset""
+}","Retrieval-Augmented Generation for Identifying Similar and Duplicate Controls in a Dataset","2024-04-29 06:21:16","","1","37","<llm><rag>","<p>I'm exploring the feasibility of implementing a Retrieval-Augmented Generation (RAG) system to tackle a specific use case involving control identification in a dataset. The objective is to identify similar and duplicate controls within the dataset by comparing each control with every other control present. The implementation should calculate similarity scores for pairs of controls, considering controls with similarity scores between 80-87 as similar and those exceeding 95 as duplicates.</p>
+<p>The dataset is available in a CSV file format, and the desired output includes displaying relevant pairs of similar and duplicate controls based on the input prompt provided.</p>
+<p>The prompt given is : &quot;Identify Similar and Duplicate controls for each control with every other control present in the dataset, also calculate similarity score for similar controls between a threshold of 80-87 and duplicate controls exceeding a threshold of 95&quot;</p>
+<p>I'm seeking insights, suggestions, or any guidance on how to proceed with the implementation of this Retrieval-Augmented Generation system for this particular use case. Any pointers,or references this usecase would be greatly appreciated. Thank you!&quot;</p>
+","llm"
+"{
+  ""id"": 128831,
+  ""title"": ""Implementing Data Isolation in an RAG System in GCP using any of the LLM models""
+}","Implementing Data Isolation in an RAG System in GCP using any of the LLM models","2024-04-24 07:45:36","","0","57","<nlp><information-retrieval><llm><rag>","<p>I am currently working on developing a Retrieval Augmented Generation (RAG) system where User-1 and User-2 each have their unique set of documents. My goal is to create a system where User-1's queries only receive responses from their own documents without any interference from User-2's data, and vice versa. Maintaining data confidentiality and security is crucial for this project.
+I am using langchain with LLM models to structure my data, and I am seeking advice on how to implement data isolation effectively to ensure that the private documents of one user are protected from another. I have tried the following approaches:
+Using separate directories for different users to store their documents in GCP Cloud storage.
+Planning to use separate collections in vector DB for each user to ensure data isolation.</p>
+<p>However, both methods have their drawbacks in terms of scalability and performance.
+I would appreciate any suggestions or recommendations from the community on how to structure data isolation in this scenario. Some questions I have are:
+Are there any best practices for data isolation?
+What are some efficient ways to maintain data security while ensuring good performance in a RAG based architecture system?
+Should I consider using other Python libraries or tools to achieve better data isolation?
+Any help or advice would be greatly appreciated. Thank you all in advance!</p>
+","llm"
+"{
+  ""id"": 128773,
+  ""title"": ""Use text embeddings to map job descriptions to ESCO occupations""
+}","Use text embeddings to map job descriptions to ESCO occupations","2024-04-19 15:07:53","","2","41","<transformer><bert><embeddings><llm><semantic-similarity>","<p>I'm trying to build a model to map job descriptions to <a href=""https://esco.ec.europa.eu/en/classification/occupation_main"" rel=""nofollow noreferrer"">ESCO occupations</a> which is a taxonomy for job titles. Every ESCO occupations have a title, a description and some essential skills.
+Ideally I would have built a classification model but since I don't have labelled data that's out of the question.</p>
+<p>So my idea was to generate text embeddings from every ESCO occupation and then for an input job description, and using cosine similarity, find the most similar ESCO occupation to that job description. I'm using this <a href=""https://huggingface.co/jjzha/esco-xlm-roberta-large"" rel=""nofollow noreferrer"">model</a> to generate the embeddings, which is an XLM-roBERTa which was pre-trained on job market data. I use the mean of the embeddings for every token as the job description's final embedding.
+However the results are very bad, it fails to find most relevant ESCO occupations.</p>
+<p>Here's how I compute the embeddings:</p>
+<pre class=""lang-py prettyprint-override""><code>from transformers import AutoTokenizer, AutoModel
+tokenizer = AutoTokenizer.from_pretrained(&quot;jjzha/esco-xlm-roberta-large&quot;)
+model = AutoModel.from_pretrained(&quot;jjzha/esco-xlm-roberta-large&quot;)
+
+sample_job_title = &quot;We are looking for a junior software developer with experience in React and Python.&quot;
+encoded_input = tokenizer(sample_job_title, padding=True, truncation=True, return_tensors=&quot;pt&quot;)
+with torch.inference_mode():
+    output = model(**encoded_input)
+embedding = output.last_hidden_state.mean(dim=1)
+</code></pre>
+<p>From this output I retrieve output.last_hidden_state, which should correspond to the tokens embeddings, and then compute the mean embedding. This returns a pytorch tensor of shape (1, 1024). I have another tensor of shape (3007, 1024), <code>esco_embeddings</code> which corresponds to the embeddings for every 3007 ESCO occupation.
+I then compute cosine similarity by doing:</p>
+<pre class=""lang-py prettyprint-override""><code>similarities = torch.nn.functional.cosine_similarity(embedding, esco_embeddings, dim=1)
+</code></pre>
+<p>And find the k most similar ESCO occupations by computing</p>
+<pre class=""lang-py prettyprint-override""><code>most_similar = torch.topk(similarities, k)
+</code></pre>
+<p>I thought that the problem might be in the embeddings itself, with XLM-roBERTa generating embeddings for every token and not one emebdding for the whole text.</p>
+<p>Does anyone have an idea why that isn't working, and how it could be fixed? Maybe there's a better approach?</p>
+<p>Thanks for the help.</p>
+","llm"
+"{
+  ""id"": 128734,
+  ""title"": ""Train a LLM to learn the entropy of the use case""
+}","Train a LLM to learn the entropy of the use case","2024-04-16 19:25:57","","1","24","<nlp><training><information-retrieval><llm><finetuning>","<p>I want to train a LLM (prefered Llama-2-13b) to learn the entropy of german texts - to be specific sports news. I use perplexity as training metric and want to check the training success after the training.
+I want to use the fine-tuned model for RAG and I hope, that the fine-tuned model understand the query and context better to give a better answer compared to the orignal model
+How can an experiment look like to compare the fine-tuned Llama-2-13b related to the original Llama-2-13b preferably automated for this use case?</p>
+","llm"
+"{
+  ""id"": 128677,
+  ""title"": ""Which model and classification algorithms should I use for deobfuscating/mapping symbols in source code?""
+}","Which model and classification algorithms should I use for deobfuscating/mapping symbols in source code?","2024-04-12 20:39:23","","1","21","<machine-learning-model><llm><tokenization>","<p>I have a source code for an application that recently started undergoing obfuscation. Each new version alters the names of symbols, shuffles the order of classes, and employs other strategies. However, in spite of the obfuscation, a human can easily determine the original unobfuscated symbol to which each obfuscated one corresponds by examining the surrounding context, their placement, and other hints.</p>
+<p>Here's a sample of what the codes resemble:
+<a href=""https://i.sstatic.net/Y91tZ.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/Y91tZ.png"" alt=""Side-By-Side Comparison of Unobfuscated and Obfuscated Source Codes"" /></a></p>
+<p>As you might notice, I've utilized different colors to indicate various pairings of matches. Recognizing the patterns surrounding each symbol is straightforward for a human, for example, you can easily deduce that <code>FFIGNHDBKGD</code> is meant to represent <code>Data</code>.</p>
+<p>My goal to develop a machine learning model that can execute this mapping task autonomously, using unsupervised training. I've had varying success by testing proof-of-concepts with LSTM and CBOW models. However, I am strongly inclined to believe that a Transformer model would be best suited for this task.</p>
+<p>I'm currently facing two main challenges:</p>
+<ul>
+<li>The first one involves tokenizing the datasets. I can parse the code using an AST with 'tree-sitter,' but I am uncertain about handling the obfuscated symbols. Should I replace all instances of each symbol with a <code>&lt;MASK&gt;</code> token for example? Do I even need to parse the source code through an AST before?</li>
+<li>The second challenge revolves around finding the most suitable model for this task. Would a pretrained GPT model be most effective, or should I consider training my own model from the beginning? What other alternatives might be available?</li>
+</ul>
+","llm"
+"{
+  ""id"": 128672,
+  ""title"": ""Azure OpenAI API with LangChain issue""
+}","Azure OpenAI API with LangChain issue","2024-04-12 13:35:17","","-1","159","<llm><azure-ml>","<p>We(my company) have Azure OpenAI API for all our LLM projects. We are working on getting to know how to use this Azure OpenAI API using LangChain as we have been suggested this is the best framework for LLM projects.</p>
+<p>I'm just trying to work with the connect using langchain in Azure OpenAI for a question and response. However its is failing with the connection as below:</p>
+<p>BadRequestError: Error code: 400 - {'error': {'code': 'OperationNotSupported', 'message': 'The completion operation does not work with the specified model, gpt-35-turbo-16k. Please choose different model and try again. You can learn more about which models can be used with each operation here: <a href=""https://go.microsoft.com/fwlink/?linkid=2197993.%27%7D%7D"" rel=""nofollow noreferrer"">https://go.microsoft.com/fwlink/?linkid=2197993.'}}</a></p>
+<p>This is the code:</p>
+<pre><code>import os
+import openai
+
+os.environ[&quot;AZURE_OPENAI_API_KEY&quot;] = &quot;62*****************************&quot;
+os.environ[&quot;AZURE_OPENAI_ENDPOINT&quot;] = &quot;https://sample.openai.azure.com/&quot;
+os.environ[&quot;OPENAI_API_VERSION&quot;] = &quot;2023-07-01-preview&quot;
+os.environ[&quot;DEPLOYMENT_NAME&quot;] = &quot;sampleDeployment&quot;
+os.environ[&quot;LLM_MODEL&quot;] = &quot;gpt-35-turbo-16k&quot;
+openai.api_key = os.getenv(&quot;AZURE_OPENAI_API_KEY&quot;)
+openai.api_version = os.getenv(&quot;OPENAI_API_VERSION&quot;)
+
+# Import Azure OpenAI
+from langchain_openai import AzureOpenAI
+
+# Create an instance of Azure OpenAI
+# Replace the deployment name with your own
+llm = AzureOpenAI(
+    deployment_name=&quot;sampleDeployment&quot;, 
+)
+
+# Run the LLM
+print(llm.invoke(&quot;Tell me a joke&quot;))
+
+</code></pre>
+<p>Not sure what i'm missing.</p>
+","llm"
+"{
+  ""id"": 128663,
+  ""title"": ""Best way to achieve High throughput with ChatGPT (and LLMs in general) APIs""
+}","Best way to achieve High throughput with ChatGPT (and LLMs in general) APIs","2024-04-12 07:37:19","","1","16","<generative-models><ai><llm><text-generation><chatgpt>","<p>I was wondering what the best way is to perform API calls to ChatGPT, and in general, with LLMs API providers, to achieve the highest throughput in a batch inference context.</p>
+<p>Suppose you have 1000 input prompts ready to be processed. What is the best approach to perform the requests, obtaining the highest possible throughput (I don't care too much about latency)? Is it better to batch prompts together and send fewer but bigger payload requests, or send single small requests in parallel? Or is there any other way?</p>
+<p>In both cases, we need to respect the TPM and RPM limits, so I imagine we also need some control logic to slow down the process if needed.</p>
+<p>Whatever the selected approach, is there any library/tool/platform to support and ease the handling of requests?</p>
+","llm"
+"{
+  ""id"": 128654,
+  ""title"": ""Reducing emails token count preprocessing for Large Email Datasets - Feeding LLMs""
+}","Reducing emails token count preprocessing for Large Email Datasets - Feeding LLMs","2024-04-11 19:41:27","128660","1","66","<nlp><data-cleaning><preprocessing><bert><llm>","<p>I have a large email dataset in .txt format and want to feed LLMs (like Gemini and ChatGPT) to provide answers based on email content.</p>
+<p>The token count for my email data is very high (~1M for 1K emails), exceeding LLM token limits. Even after preprocessing the basic headers, there are still a lot of tokens with low information like email threads on the body of the email.</p>
+<p>I'm considering the following models/approaches:</p>
+<ol>
+<li>Signature removal: This <a href=""https://huggingface.co/spaces/Jean-Baptiste/email_parser"" rel=""nofollow noreferrer"">hugging face bert project</a> does a good job, even if the model is trained in french.</li>
+<li>Quoted Text Identification (for text inside the list of emails)</li>
+<li>Stop Word Removal</li>
+<li>BERT-Based Transformers for Focused Preprocessing</li>
+<li>Summarization Transformers</li>
+<li>Extractive Summarization</li>
+</ol>
+<p>The challenge is doing so in mixed language emails (parts in french, english and portuguese). Since this is a very common (emails or any text) is there any hugging face project to address most of these points?</p>
+","llm"
+"{
+  ""id"": 128634,
+  ""title"": ""How do I prompt GPT-4 to look at a PDF in Jupyter Notebook?""
+}","How do I prompt GPT-4 to look at a PDF in Jupyter Notebook?","2024-04-11 04:16:55","128635","4","1425","<nlp><jupyter><gpt><llm><api>","<p>I am a beginner. I purchased tokens to use GPT-4 and finally figured out how to import the GPT-4 model into my Jupyter Notebook.</p>
+<pre><code>%env OPENAI_API_KEY= (my key goes here)
+
+!pip install --upgrade openai wandb
+
+from openai import OpenAI
+
+LLM = OpenAI()
+
+response = LLM.chat.completions.create(
+
+model='gpt-4',
+
+messages=[{'role': 'user', 'content': 'What is 1+1?'}],)
+
+response
+</code></pre>
+<p>Now, I would like to upload a PDF document and prompt GPT-4 to extract important headings from the document. Can you provide the code for how to do this? Specifically the part where you upload the PDF, and prompt GPT-4 with an example instruction.</p>
+<p>If I'm not mistaken, I don't need to process the PDF into text format because GPT-4 can work directly with PDFs? That's why I wanted to use GPT-4, because when I was converting the PDF to text, it was very messy due to tables, headers, footers, etc.</p>
+","llm"
+"{
+  ""id"": 128555,
+  ""title"": ""Group/cluster semantically similar classes in reports?""
+}","Group/cluster semantically similar classes in reports?","2024-04-04 12:29:20","","0","25","<classification><clustering><llm>","<p>I'm fine-tuning BERT models to binary classify reports. For example, a report can be about 'birds' or not about 'birds'.</p>
+<p>This works really well, but now I want to do multi-label classification, because I want to classify for about 1000 animals. However, some animals are closely related (for example: 'raven' and 'crow').</p>
+<p>Predicting these individual labels will get lower accuracy, but if I would group them together in 'raven or crow' I get a much higher accurary.</p>
+<p>However, I don't want to manually make these groups. Is there a generic method that would use the LLM and classes to create those groups for me?</p>
+","llm"
+"{
+  ""id"": 128454,
+  ""title"": ""Prompt Ops Alternatives""
+}","Prompt Ops Alternatives","2024-03-26 10:57:20","128455","0","44","<generative-models><llm><sagemaker><mlops><prompt-engineering>","<p>What are the main alternatives for prompt ops nowadays? By prompt ops, I mean a comprehensive solution for tracking prompt engineering experiments and also registering prompts in different stages, similar to how I would with an ML model in a model registry.</p>
+<p>I went through MLFLow and it seems to have somehow what I look for, instead Sagemaker has tracking prompt experiments features, but it seems to allow prompt registration just using a &quot;fake Estimator&quot; object, that's not a very clean solution. Please correct me if there is another option for SageMaker I did not go through.</p>
+","llm"
+"{
+  ""id"": 128375,
+  ""title"": ""How to combine two vector embeddings into one?""
+}","How to combine two vector embeddings into one?","2024-03-20 08:43:19","128383","0","337","<word-embeddings><embeddings><llm><semantic-similarity><search>","<p>I want to use <a href=""https://github.com/mlfoundations/open_clip"" rel=""nofollow noreferrer"">OpenCLIP</a> for generating embeddings for each slide in an array of pptx presentations.
+To improve the quality of the results, I want to vectorize both slide text content and preview images. So then I can run queries like &quot;What slides show the project plan of Fintech project delivery in the form of a Gantt chart?&quot;, assuming text embeddings will cover the &quot;Fintech&quot; part and image embeddings the &quot;Gantt chart&quot; part.</p>
+<p>Is that even possible?</p>
+<p>If so, can I just concatenate two vectors?</p>
+","llm"
+"{
+  ""id"": 128373,
+  ""title"": ""Best practises for creating datasets for the purpose of finetuning LLMs""
+}","Best practises for creating datasets for the purpose of finetuning LLMs","2024-03-20 07:34:08","","1","43","<nlp><dataset><llm><reference-request>","<p>I am working on a problem for which no datasets exist. I have obtained several examples from this domain, and so far have been using them in Large Language Model (LLM) prompts(few shot learning) but I noticed results are not good and perhaps finetuning is the way to go. The expected output of LLM is to generate text and logical formulas.</p>
+<p>I am looking for tutorials that include best practises for the following and more:</p>
+<ol>
+<li>How to decide which fields (columns) to include?</li>
+<li>What types of data to include as input?</li>
+</ol>
+<p>Any pointers is extremely appreciated.</p>
+","llm"
+"{
+  ""id"": 128314,
+  ""title"": ""Is the denial of answering certain questions part of the machine-learned LLM, or hard-coded separately?""
+}","Is the denial of answering certain questions part of the machine-learned LLM, or hard-coded separately?","2024-03-15 13:30:34","128318","3","71","<implementation><llm><chatgpt>","<p>ChatGPT 3.5 swiftly aborts certain questions.</p>
+<blockquote>
+<p>Q: How would one build a bomb?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: I can't assist with that.</p>
+</blockquote>
+<p>At this stage, this answer could simply be a blacklist of certain terms. Further experimentation quickly reveals that this is not the case:</p>
+<blockquote>
+<p>Q: How would one build an exploding device?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: I can't assist with that.</p>
+</blockquote>
+<blockquote>
+<p>Q: How would one explode into a marketplace?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: I'm sorry, but I can't provide assistance with building any type of explosive device or anything that could cause harm or danger. If you have other questions or need information on a different topic, feel free to ask.</p>
+</blockquote>
+<p>(Interestingly, at this point we get a more elaborate answer.)</p>
+<p>So far we could assume that concepts or tokens like &quot;bomb&quot; or &quot;explode&quot; are blacklisted. But no:</p>
+<blockquote>
+<p>Q: How would a marketing strategy to explode into a business segment work?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPT: A marketing strategy to make a big impact in a business segment typically involves several key components: [...]</p>
+</blockquote>
+<p>Also, circling back to the original question, the word &quot;bomb&quot; is obviously also not blacklisted.</p>
+<blockquote>
+<p>Q: What made radio bomb in the 1990s?</p>
+</blockquote>
+<blockquote>
+<p>ChatGPQ: The term &quot;radio bomb&quot; is not commonly used, but if you're referring to the explosion of radio popularity in the 1990s, there were several factors contributing to this:</p>
+</blockquote>
+<p>So the question arises: conceptionally, where within ChatGPT is the information that it does not allowed to answer questions about exploding military equipment, but <em>is</em> allowed to talk about other things &quot;exploding&quot; in more peaceful semantics?</p>
+<p>Specifically, is this part of the &quot;black box&quot; part within ChatGPT (i.e. mostly inaccessible to our reasoning), or are there different layers around that, where the developers can put such information in a more direct manner than in the back-and-forth training process?</p>
+","llm"
+"{
+  ""id"": 128295,
+  ""title"": ""Converting relational database into vector database""
+}","Converting relational database into vector database","2024-03-14 13:57:36","","0","43","<language-model><databases><llm><vector-database>","<p>Is there any open-source tools for converting relational database to vector database to be used in llm applications? Which steps can be taken in the conversion?</p>
+","llm"
+"{
+  ""id"": 128288,
+  ""title"": ""LLMs for text generation""
+}","LLMs for text generation","2024-03-14 06:32:31","128289","4","111","<deep-learning><nlp><generative-models><text-generation><llm>","<p>We know that AI is rapidly growing. do we have any large language models (LLMs) to process images, pdf documents directly (fine-tune approach) for text generation tasks?</p>
+","llm"
+"{
+  ""id"": 128274,
+  ""title"": ""Why does prompt engineering work, since prompt engineering questions don't appear as training data?""
+}","Why does prompt engineering work, since prompt engineering questions don't appear as training data?","2024-03-13 12:02:04","128276","13","6051","<llm><prompt-engineering>","<p>One can find advice on prompt engineering telling basically the following thing: if you are seeking advice about a topic X, start your prompt to an LLM by</p>
+<blockquote>
+<p>You are an expert in X, you have pedagogical skills, and you are very
+good at synthesizing information blahblahblah...</p>
+</blockquote>
+<p>I don't understand why this should work at all. Let's simplify the matter: assume an LLM is trained only on stackoverflow questions and answers. Since no question on SO starts with such a sentence, the pre-prompt actually makes the prompt more different from training data that it was before.</p>
+<p><strong>More generally, why would writing prompts like asking questions to a being, and moreover telling this being what it is give us better output? Moreover, is this even measurably true?</strong></p>
+<p>My hand-waving understanding of LLMs is that since they basically are excellent for predicting the following words of a context, they have, as a side-effect, learnt to answer questions just because they have learnt that on the Internet, questions are usually followed by answers.</p>
+","llm"
+"{
+  ""id"": 128254,
+  ""title"": ""can decoder only large language model be fine tuned to perform well at semantic similarity search?""
+}","can decoder only large language model be fine tuned to perform well at semantic similarity search?","2024-03-12 07:08:36","","0","18","<deep-learning><nlp><transformer><llm>","<p>BERT based models are Encoder only which are well suited for text classification, and Semantic Text similarity search (If fine-tuned via sBERT). I want to know whether decoder only models like Llama2, GPT can be fine-tuned to do well on STS benchmark. If yes, does it perform better than fine-tuning encoder-only models?</p>
+","llm"
+"{
+  ""id"": 128252,
+  ""title"": ""How to find LLM that is best at STS task?""
+}","How to find LLM that is best at STS task?","2024-03-12 06:01:18","","0","54","<deep-learning><nlp><huggingface><llm>","<p>I'm trying to find large language models that maps an embedding vector in proximity if they are semantically similar, in Korean. I tried looking at bunch of leaderboard such as MTEB_ko-ko STS, AI Hub benchmark(Korean LLM benchmark), etc... However not all models that I want to compare are within one benchmark therefore hard to compare which one is the best.</p>
+<p>So I'm reading about each LLM from its base model, how it is continuously pre-trained to see how its objective function looks like. After shortlisting LLMs I'm planning to create my own dataset to compare all LLMs in shortlists.</p>
+<p>As this method seem tidious, wanted to here some ideas on how others will tackle such problem.</p>
+","llm"
+"{
+  ""id"": 128203,
+  ""title"": ""what is the main difference between ROUGE and BLUE?""
+}","what is the main difference between ROUGE and BLUE?","2024-03-07 11:58:40","","0","17","<nlp><transformer><model-evaluations><language-model><llm>","<p>Both (ROUGE, BLUE) are useful to find the similarity between machine generated summary and reference summary.</p>
+<p>what is the main difference?</p>
+","llm"
+"{
+  ""id"": 128192,
+  ""title"": ""Could You Suggest Me Some Details of Realizing This LLM?""
+}","Could You Suggest Me Some Details of Realizing This LLM?","2024-03-06 21:46:05","","0","17","<nlp><transformer><llm>","<p>I mean this hypothetical LLM:
+<a href=""https://twitter.com/RokoMijic/status/1663299142431432704"" rel=""nofollow noreferrer"">https://twitter.com/RokoMijic/status/1663299142431432704</a></p>
+<p>I'm trying to figure out how the neural network (let's abstract from the data) can be realized. I understand that:</p>
+<ol>
+<li>It's a transformer;</li>
+<li>It's sequence-to-sequence prediction (with a decoder, not with classification layers).</li>
+</ol>
+<p>I'd like to ask more experienced ML people for more details of the realization. &quot;Chronologically labelled data&quot; means here concatenation of the events with the dates (like in life2vec)? Am I missing something else that is critical?
+Thanks a lot in advance!</p>
+","llm"
+"{
+  ""id"": 128173,
+  ""title"": ""Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:3! in DPOTrainer with ec2 G5 12X Large""
+}","Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:3! in DPOTrainer with ec2 G5 12X Large","2024-03-06 05:49:18","","0","206","<python><deep-learning><pytorch><transformer><llm>","<pre><code>import os
+import torch
+from datasets import load_dataset, Dataset
+from transformers import (
+    BitsAndBytesConfig,
+    AutoTokenizer,
+    TrainingArguments,
+
+)
+
+from peft import AutoPeftModelForCausalLM
+from trl import DPOTrainer
+from peft import LoraConfig
+
+hf_auth = &quot;&quot;
+peft_model_path = 'test/'
+dataset = load_dataset(
+    &quot;test_classification&quot;,
+)
+print(&quot;Dataset loaded:&quot;, dataset)
+
+
+def format_instruction(vignette: str):
+    return f&quot;&quot;&quot;&lt;s&gt;[INST]{vignette.strip()} Generate given Vignette class and explain the reason for class.[/INST] &quot;&quot;&quot;.strip()
+
+
+def generate_instruction_dataset(data_point):
+
+    return {
+        &quot;chosen&quot;: data_point[&quot;chosen&quot;],
+        &quot;rejected&quot;: data_point[&quot;rejected&quot;],
+        &quot;prompt&quot;: format_instruction(data_point[&quot;prompt&quot;])
+    }
+
+
+def process_dataset(data: Dataset):
+    return (
+        data.shuffle(seed=42)
+        .map(generate_instruction_dataset)
+    )
+
+
+dataset = process_dataset(dataset)
+
+print(&quot;Dataset processed:&quot;, dataset)
+
+compute_dtype = getattr(torch, &quot;float16&quot;)
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    llm_int8_threshold=6.0,
+    llm_int8_has_fp16_weight=False,
+    bnb_4bit_compute_dtype=compute_dtype,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type=&quot;nf4&quot;,
+)
+
+print(&quot;Loading base model:&quot;)
+
+model = AutoPeftModelForCausalLM.from_pretrained(
+    peft_model_path,  # location of saved SFT model
+    device_map=&quot;auto&quot;,
+    quantization_config=bnb_config,
+)
+
+print(&quot;Loading reward model:&quot;)
+
+model_ref = AutoPeftModelForCausalLM.from_pretrained(
+    peft_model_path,  # same model as the main one
+    device_map=&quot;auto&quot;,
+    quantization_config=bnb_config,
+
+)
+
+print(&quot;Loading tokenizer:&quot;)
+
+tokenizer = AutoTokenizer.from_pretrained(
+    peft_model_path, use_auth_token=hf_auth, trust_remote_code=True, device_map=&quot;auto&quot;)
+
+
+output_dir = &quot;dpo/output/&quot;
+training_args = TrainingArguments(
+    output_dir=output_dir,
+    remove_unused_columns=True,
+    per_device_train_batch_size=4,
+)
+
+print(&quot;Lora config added&quot;)
+
+peft_config = LoraConfig(
+    lora_alpha=16,
+    lora_dropout=0.1,
+    r=64,
+    bias=&quot;none&quot;,
+    task_type=&quot;CAUSAL_LM&quot;,
+)
+
+print(&quot;DPO trainer initialized:&quot;)
+
+dpo_trainer = DPOTrainer(
+    model,
+    model_ref,
+    args=training_args,
+    beta=0.1,
+    train_dataset=dataset['train'],
+    # eval_dataset=eval_dataset,
+    tokenizer=tokenizer,
+    peft_config=peft_config,
+    max_length=1024,
+    max_prompt_length=512,
+)
+
+torch.set_grad_enabled(True)
+
+print(&quot;DPO trainer started:&quot;)
+
+dpo_trainer.train()
+print(&quot;Training done&quot;)
+</code></pre>
+<p>I am use G5 12X Large instance for this training it has following GPU's GPU 0: NVIDIA A10G GPU 1: NVIDIA A10G GPU 2: NVIDIA A10G GPU 3: NVIDIA A10G</p>
+<p>But with start of dpo_trainer.train() following error will occur:</p>
+<p>RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:3!</p>
+<hr />
+<p>Moreover i used <code>ref_model=None</code> and <code>device_map={&quot;&quot;: PartialState().process_index}</code> in both model and tokenizer. Then it gives :</p>
+<pre><code>output = torch.nn.functional.linear(A, F.dequantize_4bit(B, quant_state).to(A.dtype).t(), bias)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 172.00 MiB. GPU 0 has a total capacity of 22.02 GiB of which 142.19 MiB is free. Including non-PyTorch memory, this process has 21.88 GiB memory in use. Of the allocated memory 19.27 GiB is allocated by PyTorch, and 1.35 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+</code></pre>
+","llm"
+"{
+  ""id"": 128163,
+  ""title"": ""RAG - how to deal with numerical data""
+}","RAG - how to deal with numerical data","2024-03-05 12:41:01","","0","145","<machine-learning><nlp><llm>","<p>I have a car marker companies data . I am creating chunks for different car models in llama index and using vector store index and it is giving decent outputs when asked questions . It fails poorly when i ask questions like suggest car models below $xyz . I have tried many embedders but problem is that it language model doesn't seem to have sense of amounts/price and it matches against more expensive models . In general , how do you deal with such cases . Do you use llama index tools to deal with numerical questions . Please guide and let me know if more details are required</p>
+","llm"
+"{
+  ""id"": 128132,
+  ""title"": ""Does Google DeepMind's Gemma 7B models specs have inconsistent dimensions?""
+}","Does Google DeepMind's Gemma 7B models specs have inconsistent dimensions?","2024-03-03 03:43:27","","1","44","<transformer><llm><google>","<p>In Google DeepMind's Gemma technical paper (<a href=""https://storage.googleapis.com/deepmind-media/gemma/gemma-report.pdf"" rel=""nofollow noreferrer"">https://storage.googleapis.com/deepmind-media/gemma/gemma-report.pdf</a>), the 7B Gemma model specs are given as d_model = 3072, num_heads = 16 and head_size = 256 for the 7B model. They don't seem consistent (16 * 256 != 3072).
+Since the dimension is distributed across h heads, I think this should hold true -</p>
+<pre><code>#heads * #head_size = d_model
+</code></pre>
+<p>This is also explained in the original Transformers paper, &quot;Attention Is All You Need&quot;.</p>
+<p>This equation holds for the specs provided for Gemma 2B model in the same paper.
+Am I missing something with the 7B Gemma specs? Or does this paper have an error?</p>
+","llm"
+"{
+  ""id"": 128126,
+  ""title"": ""Applicability of RAG for enterprise datasets""
+}","Applicability of RAG for enterprise datasets","2024-03-02 14:59:19","","0","22","<information-retrieval><llm>","<p>there are 2 basic queries that i haven't been able to find answers to on reddit / DSE.. hopefully someone can enlighten / educate me
+To populate/ ingest the data, typically its broken into chunks and during retrieval you retrieve the top-k results and use a bunch of techniques by combining all of the retrieved chunks
+a) first of all, the sheer difference between the context available in the query and the vectors stored is quite large. The query is typically 40-50 tokens at max as opposed to 1024 or whatever the chunk size is. Now whatever embeddings you were to use, the distance between these 2 will typically be large right ?</p>
+<p>b) even if i were to dismiss the above problem, i m still stuck with judging the quality of the retrieval. All i would have is a score ( whether its generated using cosine / dot / euc is immaterial ) .. wont i have to use some sort of a thresholding mechanism OR another set of algorithms to ensure that a score of 0.4 is ok to proceed to dump into LLM context ?</p>
+<p>i experimented with (a) using bert sentence embeddings and a qdrant database and found the results to be sub par in terms of the results returned. In some cases the top-k did not contain any relevant answers ..any idea how practitioners solve this ?</p>
+","llm"
+"{
+  ""id"": 128094,
+  ""title"": ""How can I get the list of pretrained large language models?""
+}","How can I get the list of pretrained large language models?","2024-02-29 09:35:39","128156","0","39","<nlp><language-model><finetuning><llm>","<p>Is there any place I can get the list of pre-trained large language models in a neat way? Despite the most common ones like gpt, BARD, llama2, which llm do you suggest that can be used for RAG and fine-tuning? Especially I am looking forward multilingual models.</p>
+","llm"
+"{
+  ""id"": 128083,
+  ""title"": ""How to check the license of a LLM for specific use?""
+}","How to check the license of a LLM for specific use?","2024-02-28 18:15:42","128085","0","51","<language-model><llm>","<p>How to check if a large language model has a license allowing to fine tune the model and then publish it publicly? How can I be sure that I can use and fine-tune a large language model without requiring permission issues?</p>
+","llm"
+"{
+  ""id"": 128037,
+  ""title"": ""Resources on website summarization using LLMs""
+}","Resources on website summarization using LLMs","2024-02-26 11:17:34","","0","15","<nlp><llm><automatic-summarization>","<p>I am working on a problem where I have to summarize business websites. I have to generate a short 100 word summary of the primary function of a given website.</p>
+<p>I am familiar with langchain url summarization and langchain document summrization. Using these tools can someone suggest some high level ideas regarding website summarization design or point to some resources regarding the same.</p>
+<p>Any other related ideas are also welcome.</p>
+","llm"
+"{
+  ""id"": 127013,
+  ""title"": ""How to design a writing assistive system that can do writing style guide check like how Grammarly does for gramma checking""
+}","How to design a writing assistive system that can do writing style guide check like how Grammarly does for gramma checking","2024-02-23 22:17:13","","1","10","<sequence-to-sequence><llm>","<p>I have a style guide that specifies the use of punctuations, line length, and how to break up a line (e.g. before prepositions). I have a dataset that contains original text and the version of the text are conformed to this style guide.</p>
+<p>Now, how do I design a system that can recommend to user how to conform a given text to the style guide? More specifically,</p>
+<ul>
+<li>How do I frame this task as?  Is this a type of sequence-to-sequence modeling task?</li>
+<li>Is fine-tuning a LLM with my data a good approach? How to deal with hallucinations?</li>
+<li>How can this system also tell users that what style guide rules are used in the recommendations?</li>
+</ul>
+","llm"
+"{
+  ""id"": 126998,
+  ""title"": ""Details about Pre-existing knowledge database in RAG for LLMs""
+}","Details about Pre-existing knowledge database in RAG for LLMs","2024-02-23 08:33:40","","0","31","<generative-models><ai><text-generation><llm>","<p>In RAG, As part of retriever model- we are retrieving the relevant information from external knowledge source (i.e. vector database) and this database is always updating with new updates.</p>
+<p>In application implementation, are we storing data in databse (with relevant information)?
+if 'yes' then how we maintating this database as updated?</p>
+","llm"
+"{
+  ""id"": 126981,
+  ""title"": ""How to choose ideal pretrained model for fine-tuning?""
+}","How to choose ideal pretrained model for fine-tuning?","2024-02-22 15:07:39","","0","23","<nlp><language-model><finetuning><llm><pretraining>","<p>I started to work with LLMs lately and want to know how people choose their pre-trained models in their fine-tuning tasks? What is the criteria to choose the base model and which factors affect?</p>
+","llm"
+"{
+  ""id"": 126980,
+  ""title"": ""Can I fine tune MedPaLM model""
+}","Can I fine tune MedPaLM model","2024-02-22 14:22:59","","0","69","<nlp><language-model><finetuning><llm>","<p>Is it possible to fine-tune MedPaLM and MedPaLM2; Google's llms trained using PaLM specialized for medical domain. Can we fine-tune these models further to get more specialized models?</p>
+","llm"
+"{
+  ""id"": 126935,
+  ""title"": ""How to Detect and Identify German Compound Words in a Text using Python""
+}","How to Detect and Identify German Compound Words in a Text using Python","2024-02-19 14:58:45","","0","66","<nlp><data-mining><data-science-model><ai><llm>","<p>I would like to know if there is any python libraries or packages available which can help me detect and extract German compound words. I took a look at nltk and spacy packages and they don't seem to have such libraries. I have given a sample paragraph that contains some compound words and then I listed those compound words.</p>
+<p>PS: compound words are made of two or more nouns, verbs, adjectives, or adverbs.</p>
+<p>&quot;Das Fahrradfahren ist eine beliebte Freizeitaktivität in Deutschland. Viele Menschen fahren gerne mit dem Fahrrad zur Arbeit oder nutzen es für lange Radtouren durch die malerische Landschaft. Einige bevorzugen sogar das Mountainbiking oder das Rennradfahren, um das Adrenalin zu spüren. Andere wiederum schätzen das E-Bikefahren für eine entspannte Fahrt ohne große Anstrengung.&quot;</p>
+<p>Fahrradfahren
+Freizeitaktivität
+Radtouren
+Mountainbiking
+Rennradfahren
+E-Bikefahren</p>
+","llm"
+"{
+  ""id"": 126764,
+  ""title"": ""Create a gpt-3.5 API request that determines whether any time range in a list intersects with a given time range""
+}","Create a gpt-3.5 API request that determines whether any time range in a list intersects with a given time range","2024-02-07 11:48:16","","0","12","<gpt><llm><chatgpt>","<p>I've created a prompt that should select a requested number of employees from the list. But the <strong>step 1</strong> doesn't work properly. Sometimes GPT takes in account only the time range and ignores the date. I tried to describe this step in a different way many times, tried different time formats including UTC, but didn't succeed. Maybe experienced prompt creators can tell what's wrong with my prompt?</p>
+<hr />
+<p><strong>User message:</strong></p>
+<pre><code>{
+  &quot;employees&quot;: [
+    {
+      &quot;id&quot;: 1,
+      &quot;name&quot;: &quot;Bender Rodriguez&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;middle&quot;,
+      &quot;interviews_conducted&quot;: 0,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 06:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 07:00&quot;},
+        {&quot;start_time&quot;: &quot;February 11 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 11 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 2,
+      &quot;name&quot;: &quot;Philip Fry&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;middle&quot;,
+      &quot;interviews_conducted&quot;: 2,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 13:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 14:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 3,
+      &quot;name&quot;: &quot;John Zoidberg&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;junior&quot;,
+      &quot;interviews_conducted&quot;: 1,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 4,
+      &quot;name&quot;: &quot;Turanga Leela&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;senior&quot;,
+      &quot;interviews_conducted&quot;: 1,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 5,
+      &quot;name&quot;: &quot;Amy Wong&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;senior&quot;,
+      &quot;interviews_conducted&quot;: 0,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    }
+  ]
+}
+
+Do step-by-step:
+
+1. Remove from the &quot;employees&quot; list above each employee if any time interval in 
+&quot;busy_date_time&quot; list overlaps with &quot;required_date_time&quot;.
+
+2. If the number of employees left in the &quot;employees&quot; list is less than 
+&quot;required_employees_number&quot;, set the new value to &quot;required_employees_number&quot; equal 
+to the number of employees left in the &quot;employees&quot; list.
+
+3. Select &quot;required_employees_number&quot; employees with &quot;required_experience&quot; and lower 
+&quot;interviews_conducted&quot; value. You shouldn't find the one with the lowest 
+&quot;interviews_conducted&quot; value among all, but a required number of employees which is 
+&quot;required_employees_number&quot;.
+
+4. Check the previous step where you usually make the mistake of selecting 1 employee
+with minimum &quot;interviews_conducted&quot; value among all employees when you need to select 
+a list of &quot;required_employees_number&quot; employees.
+
+required_date_time = '''{&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}'''
+required_employees_number = 1
+required_experience = &quot;middle&quot;
+</code></pre>
+<hr />
+<p><strong>System message:</strong>
+You are a computer program that strictly follows the user's instructions. Your output is always only a list of employee's id. Any other notes or comments are forbidden.</p>
+<hr />
+<p><strong>GPT settings:</strong></p>
+<ul>
+<li>Temperature: 0</li>
+<li>Top P: 0</li>
+<li>Frequency penalty: 0</li>
+<li>Presence penalty: 0</li>
+</ul>
+<hr />
+<ul>
+<li><strong>Expected result:</strong> [1]</li>
+<li><strong>Actual result:</strong> [2]</li>
+</ul>
+","llm"
+"{
+  ""id"": 126743,
+  ""title"": ""How to improve performance of a Retrieval Augmented Generative (RAG) model?""
+}","How to improve performance of a Retrieval Augmented Generative (RAG) model?","2024-02-06 10:15:40","","0","97","<generative-models><information-retrieval><text-generation><llm>","<p>I had implemented a Retrieval Augmented generation (RAG) model on the Healthcare CSV file. The model has to give answers to natural language queries based on the data provided. After implementing the model, when the questions asked it was performing well for all questions except the following type of questions:</p>
+<ol>
+<li>How many patients are there?</li>
+<li>How many male patients are there?</li>
+<li>List all the patients who checked out today</li>
+</ol>
+<p>These type of counting questions are not answering well. Is there any improvements or additions I can make so that my model would run fine!</p>
+<p>BTW, I am implementing it using langchain and huggingface embeds. I am also using google's palm AI as llm.</p>
+","llm"
+"{
+  ""id"": 126731,
+  ""title"": ""Train Reward Model using Llama2:""
+}","Train Reward Model using Llama2:","2024-02-05 14:44:54","126793","1","136","<deep-learning><llm><reward>","<p>this is my code that use to train reward model:</p>
+<pre><code>import os
+import torch
+from datasets import load_dataset,Dataset
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    TrainingArguments,
+    pipeline,
+    logging,
+    HfArgumentParser
+)
+import pandas as pd
+from peft import LoraConfig, TaskType
+from trl import RewardConfig, RewardTrainer
+
+df = pd.read_csv('data.csv')
+raw_dataset = Dataset.from_pandas(df[:3])
+
+model_id = 'meta-llama/Llama-2-7b-hf'
+
+compute_dtype = getattr(torch, &quot;float16&quot;)
+
+quant_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type=&quot;nf4&quot;,
+    bnb_4bit_compute_dtype=compute_dtype,
+    bnb_4bit_use_double_quant=False,
+)
+
+model = AutoModelForCausalLM.from_pretrained(model_id,use_auth_token=hf_auth)
+model.config.use_cache = False
+model.config.pretraining_tp = 1
+tokenizer = AutoTokenizer.from_pretrained(model_id,use_auth_token=hf_auth)
+tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+def formatting_func(examples):
+    kwargs = {
+        &quot;padding&quot;: &quot;max_length&quot;,
+        &quot;truncation&quot;: True,
+        &quot;max_length&quot;: 256,
+        &quot;return_tensors&quot;: &quot;pt&quot;
+    }
+
+    # Prepend the prompt and a line break to the chosen and rejected responses.
+    prompt_plus_chosen_response = examples[&quot;prompt&quot;] + &quot;\n&quot; + examples[&quot;chosen&quot;]
+    prompt_plus_rejected_response = examples[&quot;prompt&quot;] + &quot;\n&quot; + examples[&quot;rejected&quot;]
+    
+
+    # Tokenize the modified fields.
+    tokens_chosen = tokenizer.encode_plus(prompt_plus_chosen_response, **kwargs)
+    tokens_rejected = tokenizer.encode_plus(prompt_plus_rejected_response, **kwargs)
+
+    return {
+        &quot;input_ids&quot;: tokens_chosen[&quot;input_ids&quot;][0],
+        &quot;attention_mask&quot;: tokens_chosen[&quot;attention_mask&quot;][0],
+        &quot;labels&quot;: tokens_rejected[&quot;input_ids&quot;][0],  # Use rejected as labels for causal LM
+        &quot;input_ids_chosen&quot;: tokens_chosen[&quot;input_ids&quot;][0],
+        &quot;attention_mask_chosen&quot;: tokens_chosen[&quot;attention_mask&quot;][0],
+        &quot;input_ids_rejected&quot;: tokens_rejected[&quot;input_ids&quot;][0],
+        &quot;attention_mask_rejected&quot;: tokens_rejected[&quot;attention_mask&quot;][0],
+    }
+raw_datasets = raw_dataset.map(formatting_func)
+
+OUTPUT_DIR = &quot;/kaggle/working/&quot;
+training_args = RewardConfig(
+           output_dir=OUTPUT_DIR,
+    num_train_epochs=10,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=1,
+    optim=&quot;paged_adamw_32bit&quot;,
+    save_steps=25,
+    logging_steps=25,
+    learning_rate=2e-4,
+    weight_decay=0.001,
+    fp16=False,
+    bf16=False,
+    max_grad_norm=0.3,
+    max_steps=-1,
+    warmup_ratio=0.03,
+    group_by_length=True,
+    lr_scheduler_type=&quot;constant&quot;,
+    no_cuda=False,
+    report_to=&quot;wandb&quot;,
+    run_name=&quot;reward_model&quot;,
+    )
+
+peft_config = LoraConfig(
+    task_type=TaskType.SEQ_CLS,
+    inference_mode=False,
+    r=8,
+    lora_alpha=32,
+    lora_dropout=0.1,
+)
+
+ trainer = RewardTrainer(
+        model=model,
+        tokenizer=tokenizer,
+        args=training_args,
+        train_dataset=raw_datasets,
+        peft_config=peft_config,
+        #  max_length=None
+    )
+
+trainer.train()
+</code></pre>
+<p>This code gives IndexError: index out of range in self in google colab.
+And im also use Kaggle notebooks with T4x2. I cannot load this models in boths GPU's
+Can anyone tell me what is the issue??</p>
+<p>Kaggle:
+RuntimeError: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with <code>TORCH_USE_CUDA_DSA</code> to enable device-side assertions.</p>
+<p>I load this model into the CPU without quantization. Then it shows:</p>
+<p>IndexError: index out of range in self</p>
+","llm"
+"{
+  ""id"": 126628,
+  ""title"": ""AI tools/LLM models to analyze excel data""
+}","AI tools/LLM models to analyze excel data","2024-01-29 06:38:50","","0","1233","<python><nlp><data-analysis><excel><llm>","<p>I have a bunch of excel files containing information of employee attendance. I want to use NLP-based search to ask questions like: Which employee has taken most leaves?; What dates witness a high number of leave requests?; Which gender accounts for most leaves?, etc.</p>
+<p>Are there any AI tools or LLM models that I can use to get answers to such queries by studying excel data?</p>
+<p>NOTE: The tool should provide python APIs such that I can integrate it with my application.</p>
+","llm"
+"{
+  ""id"": 126535,
+  ""title"": ""using llama2 on windows""
+}","using llama2 on windows","2024-01-22 17:19:13","","0","11","<nlp><llm>","<p>does llama2 work by downloading the .bin file locally and running on CPU without install llama.cpp or any other dependencies. I am using theblokes llama2 models</p>
+","llm"
+"{
+  ""id"": 126521,
+  ""title"": ""Getting a free and unknown answer to a question against a fine-tuned text generation model trained on many essays and their few questions and answers""
+}","Getting a free and unknown answer to a question against a fine-tuned text generation model trained on many essays and their few questions and answers","2024-01-21 22:01:30","126751","0","53","<transformer><finetuning><text-generation><llm><question-answering>","<h4>Aim</h4>
+<p>I want to fine-tune a text generation model with essays of changing size and then ask each of these input texts a few questions. I already have a wider range of question-answer pairs at hand for each essay, which should be enough to make a first prototype. Yet, my aim is not to get the answers that I fed during training. This is not to build a chat for a bank client who may need such a clear and learnt answer. This is more about a free speech opinion, judgement, understanding that I myself might have missed while I read the text.</p>
+<h4>Example: do I need 50 models to get answers for each essay?</h4>
+<p>Thus, if I have 50 essays and each of them has 5 questions with 5 answers during training, I cannot just train all of them with all question-answer pairs. If I ask one essay a question, I do not want to get the answer that it already knows. I want to get a new answer, as if the model had never seen the answer during training. I can train the model with all essays, but not with all question-answer pairs. I have to train the model with <strong>all question-answer pairs but the one that I want to ask questions to</strong> for which I can feed the model only with the questions, and <strong>not with the answers</strong>. Only then, I get free answers to those questions while it still generalizes from all the 49 other answers of the dataset. If the answers were known during training, it would just give me the answers that it knows from training.</p>
+<p><strong>My aim is to get new answers from a model that does not know the answers but tries to find them from the <strong>given essay</strong> and the generalization of 49 other essays and their question-answer pairs.</strong></p>
+<blockquote>
+<p>Essay 1:</p>
+<ul>
+<li>Question 1 of 5: What is the plot of the main person.</li>
+<li>Answer: Santa Claus is stressed and tries to skip Christmas. By chance, he brings the world the most comfortable Christmas ever.</li>
+</ul>
+<p>Essay 2:</p>
+<ul>
+<li>Question 1 of 5: What is the plot of the main person.</li>
+<li>Answer: Frank Franklin is a wildlife activist who gets almost shot by a jungle company but survives and fights back.</li>
+</ul>
+<p>Essay 3:</p>
+<ul>
+<li>Question 1 of 5: What is the historical background of the story.</li>
+<li>Answer: The story plays in the 19th century during the upcoming industrialization when there was a boom that made some people rich in
+a short time through the first stocks markets and speculation.</li>
+</ul>
+<p>Essay 4:<br />
+...</p>
+<p>Essay 50:<br />
+...</p>
+</blockquote>
+<p>Now When I train with essay 1 to 50, and I take essay 2 and want to get answers in free speech, I should train essay 1 and essay 3 - 50 <strong>with question-answer pairs</strong> while I would take essay 2 <strong>only with the 5 questions (without the 5 answers, so that they will be open answers if I ask!)</strong>:</p>
+<blockquote>
+<p>Essay 1:</p>
+<ul>
+<li>Question 1 of 5: What is the plot of the main person.</li>
+<li>Answer: Santa Claus is stressed and tries to skip Christmas. By chance, he brings the world the most comfortable Christmas ever.</li>
+</ul>
+<p>Essay 2:</p>
+<ul>
+<li>Question 1 of 5: What is the plot of the main person.</li>
+<li><strong>NO ANSWER HERE so that the model will answer it during fine-tuning</strong></li>
+</ul>
+<p>Essay 3:</p>
+<ul>
+<li>Question 1 of 5: What is the historical background of the story.</li>
+<li>Answer: The story plays in the 19th century during the upcoming industrialization when there was a boom that made some people rich in
+a short time through the first stocks markets and speculation.</li>
+</ul>
+<p>Essay 4:<br />
+...</p>
+<p>Essay 50:<br />
+...</p>
+</blockquote>
+<p>But I wonder whether there is a way to train just one model that can answer everything in free speech and as if it had not seen its own answers but only the answers of all other essays' questions.</p>
+<p>If I trained the whole model again with the rest of the essays with all question-answer pairs, and if I did not give the answers to the one essay that I want to ask questions to, then I would have to train the fine-tuning model each time I change the essay, which is quite a waste of energy and machine time.</p>
+<h4>Tweaking the text generation model</h4>
+<ul>
+<li><p>I tried a text generation model (german-gpt2) and fed it with just one chosen essay and its 5 questions. This very small fine-tuning model had bad answers (trained without the answers). One essay is clearly not enough to have a generalizing text generation model.</p>
+</li>
+<li><p>I made the same text generation model, but then without the questions, and when I then asked it to write text after the prompt, the new text was not good enough, mostly too abstract or too far away from the essay, and a bit weird.</p>
+</li>
+<li><p>Should I add <code>eos_token</code> as argument of the <code>tokenizer.encode_plus()</code> and also &quot;end of sentence&quot; [EOS] tokens in the input text as well? Would that make the model any better? Does the model give better answers when there are padding [PAD] tokens as <code>pad_token</code> argument of the <code>tokenizer.encode_plus()</code>? Which other tweaks and tricks should give better answers?</p>
+</li>
+</ul>
+<p>What could help the most to get a better text generation? Up to now, the text output of the text generation model is not good.</p>
+<h4>Fine-tuning code with just one file as the text input</h4>
+<p>I train the text generation model with the code that you find at <a href=""https://datascience.stackexchange.com/a/126389/97556"">How can you get a Huggingface fine-tuning model with the Trainer class from your own text where you can set the arguments for truncation and padding?</a>:</p>
+<pre><code>from datasets import load_dataset
+from transformers import AutoModelForCausalLM, AutoTokenizer, DataCollatorForLanguageModeling, Trainer, TrainingArguments
+
+from transformers import AutoTokenizer
+from datasets import load_dataset
+
+model_name = &quot;dbmdz/german-gpt2&quot;
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+file_path = './myfile.txt'
+bln_truncation = False
+num_train_epochs = 1
+per_device_train_batch_size = 1
+save_steps = 10_000
+
+dataset = load_dataset(&quot;text&quot;, data_files={&quot;train&quot;: file_path})
+
+block_size = 512
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+def tokenize_function(examples):
+    return tokenizer(
+        examples[&quot;text&quot;], padding=&quot;max_length&quot;, truncation=bln_truncation)
+
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+</code></pre>
+<p>And here begins the fine-tuning with the transformer PyTorch Trainer class that seems to be first choice on Huggingface, see <a href=""https://huggingface.co/docs/transformers/training#train-with-pytorch-trainer"" rel=""nofollow noreferrer"">Train with PyTorch Trainer</a>.</p>
+<pre class=""lang-py prettyprint-override""><code>model_folder = f&quot;./{model_name}&quot;
+
+training_args = TrainingArguments(
+    output_dir=model_folder,
+    overwrite_output_dir=True,
+    num_train_epochs=num_train_epochs,
+    per_device_train_batch_size=per_device_train_batch_size,
+    save_steps=save_steps,
+)
+
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    data_collator=data_collator,
+    train_dataset=tokenized_datasets[&quot;train&quot;],
+)
+
+trainer.train()
+model.module.save_pretrained(model_folder)
+tokenizer.save_pretrained(model_folder)
+</code></pre>
+<h4>Question</h4>
+<p>How do I get a good answer, at best in free speech, to a question about an essay, with the generalized knowledge of all other essays and their question-answer pairs, but without the knowledge of the answers of that chosen essay?</p>
+<p>How should I set up the training or model if I want to get answers for each essay, but always with the training knowledge of the whole input of all essays and all question-answer pairs but without the answers of the chosen essay that I want to ask questions about and only within the boundaries of that chosen essay? Do I have to train 50 models if I have 50 essays?</p>
+<h4>Other models</h4>
+<ul>
+<li><p>There might be better models to reach this aim, I read of Retrieval-Augmented Generation (RAG) models at <a href=""https://datascience.stackexchange.com/q/123904/97556"">How does fine-tuning work in question answering for custom documents</a>. But that question is already asked, so I do not want to make a duplicate here.</p>
+</li>
+<li><p>I also tried a Question Answering model, but it answers with cut text from the essay, thus, not in free speech, at least if I train it with just one essay. It might generalize better with more input. But such a question is already asked at <a href=""https://datascience.stackexchange.com/q/121866/97556"">Fine-tuning a pre-trained LLM for question-answering</a>, and I do not want to make a duplicate here.</p>
+</li>
+</ul>
+","llm"
+"{
+  ""id"": 126508,
+  ""title"": ""Outdated Transformers TextDataset class drops last block when text overlaps. Replace by datasets Dataset class as input of Trainer train_dataset?""
+}","Outdated Transformers TextDataset class drops last block when text overlaps. Replace by datasets Dataset class as input of Trainer train_dataset?","2024-01-21 00:43:54","126509","0","196","<dataset><transformer><huggingface><finetuning><llm>","<h3>Why I try to replace the <code>transformers</code> TextDataset class with <code>datasets</code> Dataset class</h3>
+<p>I stumbled upon this when I tried to make the <code>train_dataset</code> of the Transformers Trainer class from a text file, see <a href=""https://datascience.stackexchange.com/q/126382/97556"">How can you get a Huggingface fine-tuning model with the Trainer class from your own text where you can set the arguments for truncation and padding?</a>.</p>
+<p>The TextDataset of the transformers package is</p>
+<ul>
+<li>buggy (next heading) and</li>
+<li>outdated (overnext heading).</li>
+</ul>
+<h4>Transformers TextDataset drops the last block of the split text</h4>
+<p>The TextDataset class drops the last block of the text that was split into blocks by means of the <code>block_size</code> parameter, in the following example, <code>512</code> tokens (~ words and other things) per block:</p>
+<pre class=""lang-py prettyprint-override""><code>from transformers import AutoTokenizer, TextDataset
+
+model_name = &quot;dbmdz/german-gpt2&quot;
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+file_path = './myfile.txt'
+
+train_dataset = TextDataset(
+    tokenizer=tokenizer,
+    file_path=file_path,
+    block_size=512,
+    overwrite_cache=True,
+)
+</code></pre>
+<p>If I check the last block, I see that it cuts the very last block that has the tail of the text. This code shows only the second last block, the last block gets dropped by the TextDataset class:</p>
+<p><code>tokenizer.decode(train_dataset['input_ids'][-1])</code></p>
+<p>Instead, the Trainer class does not drop the last batch by default, but you see from this that there is such a parameter also for the Auto dataloader arguments of the Trainer class, see <a href=""https://huggingface.co/docs/transformers/main_classes/trainer#transformers.Seq2SeqTrainingArguments.dataloader_drop_last"" rel=""nofollow noreferrer"">class transformers Training Arguments</a>:</p>
+<blockquote>
+<p>dataloader_drop_last (bool, optional, defaults to False) — Whether to drop the last incomplete batch (if the length of the dataset is not divisible by the batch size) or not.</p>
+</blockquote>
+<h4>Transformers TextDataset is outdated</h4>
+<p>When I change the setting of a tokenizer and build the TextDataset object another time, sometimes a warning shows that you should take the Transformers datasets Dataset class instead.</p>
+<p>Here is the warning (there are two warnings in it):</p>
+<p>Warning 1:</p>
+<pre class=""lang-shell prettyprint-override""><code>&gt; /srv/home/my_user/.local/lib/python3.9/site-packages/transformers/data/datasets/language_modeling.py:54:
+&gt; FutureWarning: This dataset will be removed from the library soon,
+&gt; preprocessing should be handled with the 🤗 Datasets library. You can
+&gt; have a look at this example script for pointers:
+&gt; https://github.com/huggingface/transformers/blob/main/examples/pytorch/language-modeling/run_mlm.py
+</code></pre>
+<p>Warning 2:</p>
+<pre class=""lang-py prettyprint-override""><code>&gt; warnings.warn( Token indices sequence length is longer than the
+&gt; specified maximum sequence length for this model (31482 &gt; 512).
+&gt; Running this sequence through the model will result in indexing errors
+</code></pre>
+<p>Warning 2 is just from changing from one tokenizer to another, it comes from <a href=""https://github.com/huggingface/transformers/blob/3f69f415adcbdaedec154ba8eac220ef3276975d/examples/pytorch/language-modeling/run_mlm.py#L466C1-L470C14"" rel=""nofollow noreferrer"">this line in the given link of the warning</a>.</p>
+<pre class=""lang-py prettyprint-override""><code>        if data_args.max_seq_length &gt; tokenizer.model_max_length:
+            logger.warning(
+                f&quot;The max_seq_length passed ({data_args.max_seq_length}) is larger than the maximum length for the &quot;
+                f&quot;model ({tokenizer.model_max_length}). Using max_seq_length={tokenizer.model_max_length}.&quot;
+            )
+</code></pre>
+<p>It is enough to run the code again to get rid of warning 2. This question is only about warning 1 (&quot;FutureWarning: This dataset will be removed...&quot;).</p>
+<h3>Question</h3>
+<p>How do I replace the <code>transformers</code> Textdataset class with the <code>datasets</code> Dataset class so that the output is a dataset that can be the argument of the <code>train_dataset</code> parameter of the <code>transformers</code> Trainer class?</p>
+","llm"
+"{
+  ""id"": 126503,
+  ""title"": ""unable to download llama2 weights because of http error 416""
+}","unable to download llama2 weights because of http error 416","2024-01-20 14:20:21","","0","94","<nlp><llm>","<p>i am trying to download the weights for llama2 7b-chat but i always end up with &quot;Connecting to download.llamameta.net (52.84.205.116:443)
+wget: server returned error: HTTP/1.1 416 Requested Range Not Satisfiable&quot;
+i have requested the url multiple times but this doesnt resolve the issue.</p>
+","llm"
+"{
+  ""id"": 126478,
+  ""title"": ""How to perform inference on a finetuned falcon 7b model fine tuned on open assistant dataset""
+}","How to perform inference on a finetuned falcon 7b model fine tuned on open assistant dataset","2024-01-18 16:08:27","","0","17","<nlp><transformer><transfer-learning><huggingface><llm>","<p>I finetuned a falcon 7b model on the open assistant dataset using the official colab notebook provided by huggingface at <a href=""https://colab.research.google.com/drive/1BiQiw31DT7-cDp1-0ySXvvhzqomTdI-o?usp=sharing"" rel=""nofollow noreferrer"">https://colab.research.google.com/drive/1BiQiw31DT7-cDp1-0ySXvvhzqomTdI-o?usp=sharing</a>
+How do i perform inference on it?
+A sample row from the dataset it has been finetuned on is</p>
+<p>''### Human: Can you write a short introduction about the relevance of the term &quot;monopsony&quot; in economics? Please use examples related to potential monopsonies in the labour market and cite relevant research.### Assistant: &quot;Monopsony&quot; refers to a market structure where there is only one buyer for a particular good or service. In economics, this term is particularly relevant in the labor market, where a monopsony employer has significant power over the wages and working conditions of their employees. The presence of a monopsony can result in lower wages and reduced employment opportunities for workers, as the employer has little incentive to increase wages or provide better working conditions. Recent research has identified potential monopsonies in industries such as retail and fast food, where a few large companies control a significant portion of the market (Bivens &amp; Mishel, 2013). In these industries, workers often face low wages, limited benefits, and reduced bargaining power, leading to a situation where they are dependent on the employer for their livelihood. This dependence can result in further suppression of wages and a decline in working conditions. Overall, the concept of monopsony is essential to understanding the dynamics of labor markets and the impact of market power on workers. Further research is needed to understand the extent and impact of monopsonies on the economy and to develop policies to address this issue. References: Bivens, J., &amp; Mishel, L. (2013). The Pay of Corporate Executives and Financial Professionals as Evidence of Rents in Top 1 Percent Incomes. Journal of Economic Perspectives, 27(3), 57-78.### Human: Now explain it to a dog''</p>
+<p>What kind of prompt do i give this model for inference?
+Should i use tags like Human and Assistant</p>
+","llm"
+"{
+  ""id"": 126431,
+  ""title"": ""Falcon-7B llm giving random output""
+}","Falcon-7B llm giving random output","2024-01-15 14:21:16","126434","1","45","<nlp><transformer><huggingface><gpt><llm>","<p>I am using a falcon 7B model for a chatbot without any finetuning with the following code</p>
+<pre><code>model_name = &quot;ybelkada/falcon-7b-sharded-bf16&quot;
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type=&quot;nf4&quot;,
+    bnb_4bit_compute_dtype=torch.float16,
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    quantization_config=bnb_config,
+    trust_remote_code=True
+)
+model.config.use_cache = False
+from transformers import pipeline
+
+generator = pipeline(
+    &quot;text-generation&quot;,
+    model=model,
+    tokenizer=&quot;gpt2&quot;,
+)
+
+result = generator(&quot;Hi&quot;)
+print(result)
+</code></pre>
+<p>the result isnt as expected and it outputs
+[{'generated_text': 'Hi8\x10=:AHi8\x10&gt;Hi8\x10&gt;:AHi8\x10?'}].
+How can i fix this and make it output a proper response</p>
+","llm"
+"{
+  ""id"": 126430,
+  ""title"": ""Why does Mistral model or in general Large language models have very low percentage of trainable parameters compared to total number of parameters of?""
+}","Why does Mistral model or in general Large language models have very low percentage of trainable parameters compared to total number of parameters of?","2024-01-15 12:56:08","","0","30","<nlp><pytorch><llm>","<p>I am using the below function to print the trainable parameters. I am getting this output:</p>
+<blockquote>
+<p>trainable params: 262410240 || all params: 7241732096 || trainable%: 3.6235839233122604</p>
+</blockquote>
+<pre><code>
+def print_trainable_parameters(model):
+    &quot;&quot;&quot;
+    Prints the number of trainable parameters in the model.
+    &quot;&quot;&quot;
+    trainable_params = 0
+    all_param = 0
+    for param_name, param in model.named_parameters():
+        all_param += param.numel()
+        if param.requires_grad:
+            trainable_params += param.numel()
+            print(param_name)
+    print(
+        f&quot;trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}&quot;
+    )
+
+
+
+device = torch.device(&quot;cuda:0&quot;) # the device to load the model onto
+model = MistralForCausalLM.from_pretrained(model_path,torch_dtype=torch.float16,load_in_8bit=True,trust_remote_code=True)
+
+</code></pre>
+","llm"
+"{
+  ""id"": 126393,
+  ""title"": ""How does RAG query affect the similarity search?""
+}","How does RAG query affect the similarity search?","2024-01-12 20:26:47","126400","0","133","<similarity><information-retrieval><llm><semantic-similarity><rag>","<p>I have a RAG pipeline where I want to extract a piece of information called <code>&quot;X&quot;</code> In a regular RAG pipeline, there is a query entered by the user. Then, this query will be embedded, and the resulting embedding vector will be compared by some metric (cosine similarity) to other embeddings of the saved documents.</p>
+<p>If I write the query like this: <code>&quot;What information does this document contain about X?&quot;</code>. The result from the similarity search should be worse than using a query containing just <code>&quot;X&quot;</code></p>
+<p>My question is: why is the entered query in a question form? And if it is not in question form, will it produce better or worse results, and why?</p>
+","llm"
+"{
+  ""id"": 126388,
+  ""title"": ""RLHF fine-tune llama2 in vertex ai""
+}","RLHF fine-tune llama2 in vertex ai","2024-01-12 18:31:57","","0","66","<deep-learning><reinforcement-learning><finetuning><llm><google-cloud-platform>","<p>I have fine tune RLHF with Vertex AI Pipeline. But deployed model not showing in model registry. Why?</p>
+<p><a href=""https://i.sstatic.net/VuXOh.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/VuXOh.png"" alt=""Piplene templete of fine-tuning"" /></a></p>
+<p>code i have used:</p>
+<pre><code>!pip install google-cloud-pipeline-components
+!pip install kfp
+
+from google_cloud_pipeline_components.preview.llm import rlhf_pipeline
+
+from kfp import compiler
+
+RLHF_PIPELINE_PKG_PATH = &quot;rlhf_pipeline.yaml&quot;
+
+compiler.Compiler().compile(
+    pipeline_func=rlhf_pipeline,
+    package_path=RLHF_PIPELINE_PKG_PATH)
+
+parameter_values = {
+    &quot;preference_dataset&quot;:&quot;bucket link of jsonl file of pref dataset&quot;,
+    &quot;prompt_dataset&quot;:&quot;bucket link of jsonl file of prompt dataset&quot;,
+    &quot;eval_dataset&quot;:&quot;bucket link of jsonl file of eval dataset&quot;,
+    &quot;large_model_reference&quot;:&quot;llama-2-7b&quot;,
+    &quot;reward_model_train_steps&quot;:10,
+    &quot;reinforcement_learning_train_steps&quot;:5,
+    &quot;reward_model_learning_rate_multiplier&quot;:1.0,
+    &quot;reinforcement_learning_rate_multiplier&quot;:1.0,
+    &quot;kl_coeff&quot;:0.1,
+    &quot;instruction&quot;:&quot;Give Cultural Proficiency Continuum class: \n\n Explaination:&quot;
+}
+
+from google.auth.transport.requests import Request
+from google.oauth2.service_account import Credentials
+
+key_path = 'ai-model-408715-690c22f7c53c.json'
+
+credentials = Credentials.from_service_account_file(
+    key_path,
+    scopes=['https://www.googleapis.com/auth/cloud-platform'])
+
+if credentials.expired:
+    credentials.refresh(Request())
+PROJECT_ID = 'ai-model-id'
+REGION = 'us-central1'
+
+import google.cloud.aiplatform as aiplatform
+
+# Initialize vertex
+aiplatform.init(project = PROJECT_ID, location = REGION, credentials = credentials)
+
+job = aiplatform.PipelineJob(
+    display_name = 'vsort_rlhf_pipeline',
+    template_path = RLHF_PIPELINE_PKG_PATH,
+    pipeline_root = 'gs://ai_model_training_bucket/vsort_data/pipeline_root',
+    parameter_values=parameter_values
+    )
+
+job.run()
+</code></pre>
+","llm"
+"{
+  ""id"": 126382,
+  ""title"": ""How can you get a Huggingface fine-tuning model with the Trainer class from your own text where you can set the arguments for truncation and padding?""
+}","How can you get a Huggingface fine-tuning model with the Trainer class from your own text where you can set the arguments for truncation and padding?","2024-01-12 11:35:42","126389","0","669","<huggingface><finetuning><llm><parameter>","<p>I want to find out the role of truncation and padding in Huggingface Transformers pretrained models and any fine-tuning model on top of that. Therefore I played around with these parameters, but I could not find a way to set them for my own text input for the fine-tuning model.</p>
+<p>To see a default guide, the code that can help understand what this question is about is at <a href=""https://huggingface.co/docs/transformers/training"" rel=""nofollow noreferrer"">Huggingface - Transformers - Fine-tune a pretrained mode</a>. Here, you can pass the truncation parameter to a function that takes care of each example. If a dataset has 10 examples (10 quoted sentences, each in a new row), you will apply this function tokenize_function to each example.</p>
+<pre class=""lang-py prettyprint-override""><code>from datasets import load_dataset
+from transformers import AutoTokenizer
+
+dataset = load_dataset(&quot;yelp_review_full&quot;)
+
+tokenizer = AutoTokenizer.from_pretrained(&quot;bert-base-cased&quot;)
+
+
+def tokenize_function(examples):
+
+    return tokenizer(examples[&quot;text&quot;], padding=&quot;max_length&quot;, truncation=True)
+
+
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+</code></pre>
+<p>Afterwards, you can go on, the Trainer class takes care of the rest:</p>
+<pre class=""lang-py prettyprint-override""><code>from transformers import TrainingArguments, Trainer
+
+training_args = TrainingArguments(output_dir=&quot;test_trainer&quot;, evaluation_strategy=&quot;epoch&quot;)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=small_train_dataset,
+    eval_dataset=small_eval_dataset,
+    compute_metrics=compute_metrics,
+)
+
+trainer.train()
+</code></pre>
+<p>Now how would that be done if I did not load the dataset from the datasets module but if I had just an input text like &quot;A dog jumps over the wall&quot;? I want to take the German GPT2 and run a text generation model as a fine-tuning model on top of that.</p>
+<p>How could I tell the tokenizer that it should or should not truncate, and then take that output and run the fine-tuning model on it so that it runs through?</p>
+<pre class=""lang-py prettyprint-override""><code>from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
+
+text = &quot;Wie ist das Wetter heute?&quot;
+
+tokenizer = AutoTokenizer.from_pretrained(&quot;dbmdz/german-gpt2&quot;)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+# Unclear why, I had to add these two lines of code:
+# Check if the tokenizer has a padding token
+if tokenizer.pad_token is None:
+    # If not, assign the eos_token as the padding token
+    tokenizer.pad_token = tokenizer.eos_token
+
+###
+#   HERE: --&gt; make the text a dataset that can be tokenized with or without truncation
+#   THIS BLOCK NEEDS TO BE REPLACED BY THE NEEDED CODE
+#   output object: dataset
+### 
+
+# And here is again the function of the guide above that is called by the map function 
+# of the dataset object. This is likely not the only way to get the text above 
+# tokenized with or without truncation.
+def tokenize_function(examples):
+
+    return tokenizer(examples[&quot;text&quot;], padding=&quot;max_length&quot;, truncation=True)
+
+tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+training_args = TrainingArguments(output_dir=&quot;test_trainer&quot;)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=small_train_dataset,
+)
+
+trainer.train()
+</code></pre>
+<p>I could make a dataset object by loading the text from a text file instead, like this:</p>
+<pre class=""lang-py prettyprint-override""><code>from transformers import AutoModelForCausalLM, AutoTokenizer, DataCollatorForLanguageModeling, TextDataset, Trainer, TrainingArguments
+
+model_name = &quot;dbmdz/german-gpt2&quot;
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+file_path = './myfile.txt'
+
+train_dataset = TextDataset( #LineByLineTextDataset(
+    tokenizer=tokenizer,
+    file_path=file_path,
+    block_size=512,
+    overwrite_cache=True,
+    # truncation=True, # cannot be done in this object
+    # padding=True, # cannot be done in this object
+)
+
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+
+training_args = TrainingArguments(
+    output_dir=&quot;./output&quot;,
+    overwrite_output_dir=True,
+    num_train_epochs=num_train_epochs,
+    per_device_train_batch_size=per_device_train_batch_size,
+    save_steps=save_steps,
+)
+
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    data_collator=data_collator,
+    train_dataset=train_dataset,
+)
+</code></pre>
+<p>But then I do not know how to set the truncation or padding arguments, uncommenting <code>truncation=True</code>
+leads to <code>TypeError: __init__() got an unexpected keyword argument 'truncation'</code>, same with padding.</p>
+<p>And when I try the truncation afterwards:</p>
+<pre class=""lang-py prettyprint-override""><code>    train_dataset = dataset.map(
+        lambda examples: tokenize_function(examples, tokenizer, bln_truncation),
+        batched=True,
+    )
+</code></pre>
+<p>It throws an error:</p>
+<pre class=""lang-shell prettyprint-override""><code>AttributeError: 'TextDataset' object has no attribute 'map'
+</code></pre>
+<p>The same with</p>
+<pre class=""lang-py prettyprint-override""><code>    dataset = LineByLineTextDataset( #LineByLineTextDataset( #TextDataset(
+        tokenizer=tokenizer,
+        file_path='myfile.txt',
+        block_size=128,
+#         truncation=True, # cannot be done in this object
+#         padding=True, # cannot be done in this object
+    )
+</code></pre>
+<p>Out:</p>
+<pre class=""lang-shell prettyprint-override""><code>AttributeError: 'LineByLineTextDataset' object has no attribute 'map'
+</code></pre>
+<p>Therefore, I tried it with the load_dataset module of the datasets package to get the <code>map()</code> method of the class:</p>
+<pre class=""lang-py prettyprint-override""><code>    from datasets import load_dataset
+
+    dataset = load_dataset(&quot;text&quot;, data_files=file_path)
+
+    # with this `['train']` key as a first test
+    train_dataset = dataset['train']
+</code></pre>
+<p>But the fine-tuning at <code>trainer.train()</code> throws:</p>
+<pre class=""lang-shell prettyprint-override""><code>File ~/.local/lib/python3.9/site-packages/datasets/dataset_dict.py:48, in DatasetDict.__getitem__(self, k)
+     44 available_suggested_splits = [
+     45     str(split) for split in (Split.TRAIN, Split.TEST, Split.VALIDATION) if split in self
+     46 ]
+     47 suggested_split = available_suggested_splits[0] if available_suggested_splits else list(self)[0]
+---&gt; 48 raise KeyError(
+     49     f&quot;Invalid key: {k}. Please first select a split. For example: &quot;
+     50     f&quot;`my_dataset_dictionary['{suggested_split}'][{k}]`. &quot;
+     51     f&quot;Available splits: {sorted(self)}&quot;
+     52 )
+
+KeyError: &quot;Invalid key: 0. Please first select a split. For example: `my_dataset_dictionary['train'][0]`. Available splits: ['train']&quot;
+</code></pre>
+<p>And if I code it without this <code>['train']</code> key since I want to have the full data and not a slice:</p>
+<pre class=""lang-py prettyprint-override""><code>    from datasets import load_dataset
+
+    dataset = load_dataset(&quot;text&quot;, data_files=file_path)
+
+    train_dataset = dataset
+</code></pre>
+<p>The fine-tuning at <code>trainer.train()</code> throws:</p>
+<pre class=""lang-shell prettyprint-override""><code>File /srv/home/seid/miniconda3/lib/python3.9/site-packages/torch/_utils.py:644, in ExceptionWrapper.reraise(self)
+    640 except TypeError:
+    641     # If the exception takes multiple arguments, don't try to
+    642     # instantiate since we don't know how to
+    643     raise RuntimeError(msg) from None
+--&gt; 644 raise exception
+
+RuntimeError: Caught RuntimeError in replica 0 on device 0.
+Original Traceback (most recent call last):
+  File &quot;/srv/home/seid/miniconda3/lib/python3.9/site-packages/torch/nn/parallel/parallel_apply.py&quot;, line 64, in _worker
+    output = module(*input, **kwargs)
+  File &quot;/srv/home/seid/miniconda3/lib/python3.9/site-packages/torch/nn/modules/module.py&quot;, line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File &quot;/srv/home/tester/.local/lib/python3.9/site-packages/transformers/models/gpt2/modeling_gpt2.py&quot;, line 1046, in forward
+    transformer_outputs = self.transformer(
+  File &quot;/srv/home/seid/miniconda3/lib/python3.9/site-packages/torch/nn/modules/module.py&quot;, line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File &quot;/srv/home/tester/.local/lib/python3.9/site-packages/transformers/models/gpt2/modeling_gpt2.py&quot;, line 889, in forward
+    outputs = block(
+  File &quot;/srv/home/seid/miniconda3/lib/python3.9/site-packages/torch/nn/modules/module.py&quot;, line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File &quot;/srv/home/tester/.local/lib/python3.9/site-packages/transformers/models/gpt2/modeling_gpt2.py&quot;, line 390, in forward
+    attn_outputs = self.attn(
+  File &quot;/srv/home/seid/miniconda3/lib/python3.9/site-packages/torch/nn/modules/module.py&quot;, line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File &quot;/srv/home/tester/.local/lib/python3.9/site-packages/transformers/models/gpt2/modeling_gpt2.py&quot;, line 312, in forward
+    query, key, value = self.c_attn(hidden_states).split(self.split_size, dim=2)
+  File &quot;/srv/home/seid/miniconda3/lib/python3.9/site-packages/torch/nn/modules/module.py&quot;, line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File &quot;/srv/home/tester/.local/lib/python3.9/site-packages/transformers/pytorch_utils.py&quot;, line 107, in forward
+    x = torch.addmm(self.bias, x.view(-1, x.size(-1)), self.weight)
+RuntimeError: CUDA error: CUBLAS_STATUS_NOT_INITIALIZED when calling `cublasCreate(handle)`
+</code></pre>
+<p>All of this coding runs in circles when I ask ChatGPT 3.5 for help (I did not test a higher version). It will begin to subclass classes like <code>class MyTrainer(Trainer)</code> or <code>class MyDataCollator(DataCollatorForLanguageModeling)</code> and tries new functions like <code>collate_function(batch, tokenizer)</code> or overrides or overloads methods. After trying this for hours, I do not get to any code where I can just set the truncation, to begin with, let alone the padding, <em>and</em> get a working fine-tuned text generation model from this tokenized short input text.</p>
+<p>How should I code a Huggingface fine-tuning model with the Trainer class where I can set the arguments for the truncation and padding parameters to tokenize my own short input text and where afterwards <code>trainer.train()</code> runs through?</p>
+<h4>PS: why I ask</h4>
+<p>I want to know this since I feed a text generation fine-tuning model with a short essay and ask it questions (even if it is not a Question Answering model). I do this since a Question Answering model is only cutting pieces from the text, there is no free speech, and even though the answers are not bad either, they are not as if a human being would make judgements, it is more a fishing for some keywords and their embedding. In short, the output is not good, I already tried a lot of hyperparameters. I do not split the text into sentences but load the whole text as one so-called &quot;example&quot; of the dataset. I do not know whether this is good, I just hope that the model understands the text better if it is one full text in one &quot;example&quot;.</p>
+<p>I ask it questions regarding the whole text, not just some split sentences. Therefore, I want to make sure that the tokenizer works such that the whole text is read and tokenized without dropping any text. To check this, I want to change truncation from the default <code>False</code> to <code>True</code> only to see whether the output is worse. If it is not worse, I would know that it gets truncated to the max_length of the model. In short, I want to find out with this question here whether I need to change the code and split the text into many examples or not, but I also want to play around with the parameters and want to know whether truncation plays any role for the output at all.</p>
+","llm"
+"{
+  ""id"": 126380,
+  ""title"": ""Should you care about truncation and padding in an LLM even if it has a very large tokenizer.max_length so that truncation will never happen?""
+}","Should you care about truncation and padding in an LLM even if it has a very large tokenizer.max_length so that truncation will never happen?","2024-01-12 10:27:01","126381","2","1466","<huggingface><finetuning><llm><parameter>","<p>I want to find out the role of truncation and padding in Huggingface Transformers pretrained models and/or any fine-tuning models on top. Taking a large language model like the German GPT2 shows that the <code>max_length</code> is very large so that truncation should not play a role in the code - if I am not mistaken:</p>
+<pre class=""lang-py prettyprint-override""><code>tokenizer = AutoTokenizer.from_pretrained(&quot;dbmdz/german-gpt2&quot;)
+tokenizer.truncate_sequences
+</code></pre>
+<p>Out:</p>
+<pre class=""lang-shell prettyprint-override""><code>&gt; &lt;bound method PreTrainedTokenizerBase.truncate_sequences of
+&gt; PreTrainedTokenizerFast(name_or_path='dbmdz/german-gpt2',
+&gt; vocab_size=50265, model_max_len=1000000000000000019884624838656,
+&gt; is_fast=True, padding_side='right', truncation_side='right',
+&gt; special_tokens={'bos_token': '&lt;|endoftext|&gt;', 'eos_token':
+&gt; '&lt;|endoftext|&gt;', 'unk_token': '&lt;|endoftext|&gt;'})&gt;
+</code></pre>
+<p>Checking only the <code>max_length</code>:</p>
+<pre class=""lang-py prettyprint-override""><code>tokenizer.model_max_length
+</code></pre>
+<p>Out:</p>
+<pre class=""lang-shell prettyprint-override""><code>1000000000000000019884624838656
+</code></pre>
+<p>We can see that the <code>max_length</code> is so utterly large that I doubt any full document will ever reach it - and this is just the length of each example, row by row, in the dataset. I guess that truncation does not play a role at all anymore if such a large <code>max_length</code> is set. &quot;Set the truncation parameter to True to truncate a sequence to the maximum length accepted by the model&quot; is what the Huggingface guide says about truncation, see <a href=""https://huggingface.co/docs/transformers/preprocessing#truncation"" rel=""nofollow noreferrer"">Truncation</a>.</p>
+<p>That does not sound as if I ever can truncate the text or ever wanted to since that would lead to a worse understanding of the text. And that seems right since <a href=""https://huggingface.co/docs/transformers/pad_truncation#padding-and-truncation"" rel=""nofollow noreferrer"">Padding and truncation</a> shows that:</p>
+<blockquote>
+<p><code>False</code> or 'do_not_truncate': no truncation is applied. This is the default behavior.<br />
+...<br />
+<code>False</code> or 'do_not_pad': no padding is applied. This is the default behavior.</p>
+</blockquote>
+<p>The default for truncation is <code>False</code> anyway, why should I care about truncation? Should I care at all? If the <code>tokenizer.max_length</code> is so very very large, is truncation not just never happening anyway? Will the change to <code>True</code> change the output of the model or not?</p>
+","llm"
+"{
+  ""id"": 126252,
+  ""title"": ""How does RAG (Retrieval Augmented Generation ) work around limited context length?""
+}","How does RAG (Retrieval Augmented Generation ) work around limited context length?","2024-01-02 22:24:45","","1","774","<information-retrieval><llm><text-generation><prompt-engineering><rag>","<p>My understanding of the RAG pipeline can be summarized with the following diagram:<img src=""https://raw.githubusercontent.com/chatchat-space/Langchain-Chatchat/master/img/langchain%2Bchatglm.png"" alt=""diagram"" /></p>
+<p>I understand steps 1-7 splits and vectorizes an external text data source into chunks and steps 8-11 retrieves <strong>n</strong> relevant chunks based off the user input query and some measure of vector similarity between text chunks and query.</p>
+<p>What I'm not sure of is steps 12-13.</p>
+<p>I am currently building a RAG chatbot using llama 2 and have tried prompting using the following
+format:</p>
+<blockquote>
+<p>Given the following context: {<em><strong>insert text chunks</strong></em>} and no other information, answer the question:{<em><strong>user input query</strong></em>}.</p>
+</blockquote>
+<p>The issue I'm running into is that I run into max prompt length errors due to the size and number of retrieved text chunks used in the prompt. What solutions are available?</p>
+<p>Note- I'm trying not to use APIs like replicate.com to host the model.</p>
+","llm"
+"{
+  ""id"": 126237,
+  ""title"": ""Why is temperature necessary in the loss function for Model Distillation?""
+}","Why is temperature necessary in the loss function for Model Distillation?","2024-01-01 04:24:52","","0","201","<llm>","<p>I'm studying the LLMs course on Coursera. In one video on model distillation, the lecturer says (from the transcript):</p>
+<blockquote>
+<p>Model Distillation is a technique that focuses on having a larger teacher model train a smaller student model. The student model learns to statistically mimic the behavior of the teacher model, either just in the final prediction layer or in the model's hidden layers as well. You'll focus on the first option here. You start with your fine tune LLM as your teacher model and create a smaller LLM for your student model. You freeze the teacher model's weights and use it to generate completions for your training data. At the same time, you generate completions for the training data using your student model. The knowledge distillation between teacher and student model is achieved by minimizing a loss function called the distillation loss. To calculate this loss, distillation uses the probability distribution over tokens that is produced by the teacher model's softmax layer. <strong>Now, the teacher model is already fine tuned on the training data. So the probability distribution likely closely matches the ground truth data and won't have much variation in tokens. That's why Distillation applies a little trick adding a temperature parameter to the softmax function.</strong> As you learned in lesson one, a higher temperature increases the creativity of the language the model generates. With a temperature parameter greater than one, the probability distribution becomes broader and less strongly peaked. This softer distribution provides you with a set of tokens that are similar to the ground truth tokens.</p>
+</blockquote>
+<p>I've highlighted the sentences I'm having trouble with. The issue is that I understand the teacher model is already fine tuned on the training data, but I don't see why that's an issue:</p>
+<ul>
+<li>You clearly want as good performance for the teacher model as possible. But since the teacher is likely to be very big, the goal is to reduce it so it's more manageable, which is why there's a student model.</li>
+<li>Because you want the teacher to have as good performance as possible, you should apply fine tuning, hence the teacher model is &quot;already fine tuned on the training data&quot;. It's therefore not surprising that the teacher model's output closely matches the ground truth data.</li>
+<li>But why is this a problem? You are training a student model to emulate the teacher model (via supervised learning, I presume). The student model has fewer parameters than the teacher, so it should show larger variation with the teacher model's output. If the student model predicts results as good as the teacher model, then there's no need for the teacher in the first place since the student model is strictly superior.</li>
+</ul>
+<p>The video goes on to say that the loss function is the difference between the student model's output with temperature &gt; 1 and with temperature = 1. I do not understand why we might want to minimize this difference. It surely does something, but that something does not look like the original goal. Can anyone explain?</p>
+","llm"
+"{
+  ""id"": 126197,
+  ""title"": ""Multilingual sentence generation with Hugging Face""
+}","Multilingual sentence generation with Hugging Face","2023-12-28 12:08:54","126217","0","38","<huggingface><text-generation><llm><t5>","<p>For an application I need to generate some random sentences, i.e. I don't need the output sentences to have any specific link to the prompt other than using the same language. If possible I need this process to be multilingual, i.e. to accept and generate in as many languages as possible. I also need to be able to run this process as many times as I want, this is why a dataset isn't suitable (fixed size).</p>
+<p>I tried using <a href=""https://huggingface.co/docs/transformers/model_doc/mt5"" rel=""nofollow noreferrer"">mT5</a> which seems to be the most suitable model for my requirements, right? but I can't get anything out of it. Is it because it needs to be fine-tuned, as I read in different places? If so, any advice how I do this in my case?</p>
+<p>Ideally I would also need this not to require too much computation, even at the cost of grammaticality/meaning of sentences.</p>
+","llm"
+"{
+  ""id"": 126172,
+  ""title"": ""How to find proper context in open book question answering?""
+}","How to find proper context in open book question answering?","2023-12-25 15:33:13","","0","64","<machine-learning><nlp><information-retrieval><llm><question-answering>","<p>I want to make an <a href=""https://huggingface.co/tasks/question-answering"" rel=""nofollow noreferrer"">Open Book Question Answering</a> / <a href=""https://ai.meta.com/blog/retrieval-augmented-generation-streamlining-the-creation-of-intelligent-natural-language-processing-models/"" rel=""nofollow noreferrer"">Retrieval Augmented Generation</a> system. The major concern here is the proper context selection. There are some fundamental issues related to this. For example, you want to make a chatbot for an E-commerce site. So, you have downloaded the crawl of the whole site, and the crawl looks something like this:</p>
+<pre><code>Product Name: ABC
+Description: [A moderately large description]
+Price: $100
+
+Product Name: DEF
+Description: [A moderately large description]
+Price: $200
+
+...
+</code></pre>
+<p>Now, you have to chunk the whole corpus and generate embeddings for each of them. The difficulties start from here. You cannot generate embedding for an arbitrarily large text. Also, even if you could do so, it would have a performance hit, as the passage will no longer be anything specific. Now, in the depicted scenario, after chunking there can be thousands of contexts that are very similar although they are referring to different products. Now during conversation, how do you ensure you are fetching the appropriate context for the correct product? As, after chunking the whole crawled data, the chunked passages may not contain any reference to the product at all and for many products, the passages can become almost equivalent.</p>
+<p>A similar situation happens when you work on documents. Like if you have a PDF content like:</p>
+<pre><code>An Overview of Machine Learning Techniques
+
+.........
+
+SVM
+[A description of SVM]
+
+Working Example
+[An implementation of it]
+
+Pros
+[Benefit of using this algorithm]
+
+Cons
+[Describes when this is not applicable]
+
+.........
+
+Neural Network
+[A description of Neural Network]
+
+Working Example
+[An implementation of it]
+
+Pros
+[Benefit of using this algorithm]
+
+Cons
+[Describes when this is not applicable]
+
+</code></pre>
+<p>Let's assume, someone is chatting on a Neural Network topic. Now the user is asking the bot about its pros and cons. Now, there is no guarantee that the Pros and Cons related sections will contain the term &quot;Neural Network&quot; in them. The distance between the section and the last time the term &quot;Neural Network&quot; was mentioned can be so large that they cannot be inside of a single context. How do you handle this case? How do you carry forward the topic information on which the subsequent contexts are talking about? Also, there are some catches. There can be multiple levels of hierarchies (section, subsection, etc.), choosing the higher level can make the context too generalized, and choosing the lower level can make it too specialized. Taking all of them into consideration without hierarchy can be misleading.</p>
+<p>I have for example tried the <code>PyMuPDF</code> library to parse the headers and bold texts from a PDF. My target is to attach the most recent header to every other chunk where there is no header available. But in reality, you cannot always assume this will work. Even this approach fails in my local testing when I want to apply them to PDFs in the wild. Either the selected topic headers are too large in number or too less in number or they are simply generated as an artifact as people may not follow standard while writing documents, they can use those headers in inappropriate ways.</p>
+<p>I have been searching through the Internet for weeks, but most of the tutorials are only addressing the happy path, and almost no one is discussing this real issue that will arise when you want to apply it in wild situations.</p>
+<p>Is there any solution to this problem? Or is there any appropriate data structure to handle this kind of data? Is not Retrieval Augmented Generation applicable to this scenario? Any paper, algorithm, tutorial, or idea relevant to it will be helpful. Thanks.</p>
+","llm"
+"{
+  ""id"": 126169,
+  ""title"": ""Using activations at a specific layer as an input for an LLM such as OPT-350m""
+}","Using activations at a specific layer as an input for an LLM such as OPT-350m","2023-12-25 11:48:04","","0","74","<deep-learning><transformer><llm>","<p>I'm working with the OPT-350m model and aiming to utilize embeddings from different layers as inputs for generating data. I've encountered issues when trying to feed these embeddings back into the model using the provided methods.</p>
+<pre><code># Import necessary libraries (e.g., PyTorch, Hugging Face Transformers)
+import torch
+from transformers import AutoTokenizer, OPTForCausalLM
+
+model_name = &quot;facebook/opt-350m&quot;
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = OPTForCausalLM.from_pretrained(model_name)
+
+# Encode the input text
+inputs = tokenizer(&quot;hello&quot;, return_tensors=&quot;pt&quot;)
+
+# Get model output including hidden states
+outputs = model(**inputs, output_hidden_states=True)
+
+# Extract embeddings from a specific layer (e.g., the second layer)
+embeddings = outputs.hidden_states[1] 
+
+output = model(inputs_embeds=embeddings)
+</code></pre>
+<p>However, the code above resulted in a shape error:</p>
+<pre><code>RuntimeError: mat1 and mat2 shapes cannot be multiplied (2x1024 and 512x1024)
+</code></pre>
+<p>Additionally, I attempted to use <strong>'get_input_embeddings()'</strong> to extract embeddings, but it only provided embeddings from the initial stage, lacking the layer diversity I intended to explore.</p>
+<pre><code># Insert a dummy input sentence
+input_sentence = &quot;London is the capital of&quot;
+
+# Tokenize the input sentence and get embeddings of the first layer
+inputs = tokenizer(input_sentence, return_tensors=&quot;pt&quot;, padding=True, truncation=True)
+with torch.no_grad():
+    embeddings = model.get_input_embeddings()(inputs.input_ids)
+
+# Use the embeddings as input to the same model
+with torch.no_grad():
+    output = model.generate(inputs_embeds=embeddings, max_length=10)
+</code></pre>
+<p>Is there a reliable method to effectively utilize embeddings from different layers as input to the OPT-350m model without encountering shape errors or limitations in layer selection?</p>
+","llm"
+"{
+  ""id"": 126058,
+  ""title"": ""Using LLM in low memory (CPU) local environnements""
+}","Using LLM in low memory (CPU) local environnements","2023-12-15 12:17:29","126244","2","346","<llm>","<p>Kind of a generic question, but I wonder if there is any solution on using LLM in low-memory environments, that is CPU environments that can't fit the whole model in memory. I am mostly thinking about Mistral Instruct and its MoE version, Mixtral.</p>
+<p>I am generally interested in demo code.</p>
+","llm"
+"{
+  ""id"": 126051,
+  ""title"": ""Open-source library suggestion: Semantic Role Labeling""
+}","Open-source library suggestion: Semantic Role Labeling","2023-12-15 00:46:00","","0","26","<llm><parsing>","<p>Can I be referred to a SOTA model/script/pipeline with a commercially open-source license for  Semantic Role Labeling or semantic parsing? I prefer it to be based on the most recent LLM to achieve high accuracy.</p>
+","llm"
+"{
+  ""id"": 126025,
+  ""title"": ""Do we really need a very large dataset to train GPTs?""
+}","Do we really need a very large dataset to train GPTs?","2023-12-13 07:20:33","","0","108","<transformer><gpt><llm><chatgpt>","<p>Do we really need a very large dataset to train GPTs?
+If this dataset is not big, won't GPT work well? Or will it still work better than conventional learning models in this situation?
+And is it possible to quantitatively determine the minimum number of dataset samples suitable for this work? For example, if we talk about malware samples, we can say, for example, that the dataset suitable for GPTs should not be less than a certain number?</p>
+","llm"
+"{
+  ""id"": 124988,
+  ""title"": ""How can I leverage machine learning for log analysis?""
+}","How can I leverage machine learning for log analysis?","2023-12-10 08:33:26","","1","440","<machine-learning><nlp><training><language-model><llm>","<p>I am new to data science and trying to find possibilities of using datascience in tasks. I have a set of logs which I want to convert to json. The logs are more or less of same format and I can write a script which parse them or aggregate them but instead of doing it manually I want to use help of machine learning. This thought is also inspired by the fact that at sometime some new log line may come. I guess pre-trained LLM models can identify the context and information from logs. But I am not sure how exactly can ML be used for for this purpose? The question may sound stupid but please pardon.</p>
+","llm"
+"{
+  ""id"": 124962,
+  ""title"": ""Higher level sentence similarity (meaning instead of 'just' embeddings)""
+}","Higher level sentence similarity (meaning instead of 'just' embeddings)","2023-12-08 10:39:49","124963","4","250","<nlp><transformer><similarity><llm>","<p>I am looking for the correct model / approach for the task of checking if two sentences have the same <em>meaning</em></p>
+<p>I know I can use embeddings to check similarity, but that is not what I am after. I suspect BERT style LLM have nice higher level vector that mights be useful, but I'm not sure how to apply that.</p>
+<p>For example this sentence:</p>
+<ul>
+<li>I am very lazy</li>
+</ul>
+<p>Has a somewhat similar meaning as:</p>
+<ul>
+<li>I don't like to work hard</li>
+</ul>
+<p>But not</p>
+<ul>
+<li>A lazy horse is not very useful</li>
+</ul>
+<p>Using 'just' embeddings (for example HF: allMiniLM-L6-v2) gives results that are not useful.</p>
+<p><a href=""https://i.sstatic.net/7pKtJ.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/7pKtJ.png"" alt=""enter image description here"" /></a></p>
+<p>What would be a good appoarch?</p>
+","llm"
+"{
+  ""id"": 124801,
+  ""title"": ""Decision Metrics for Selecting Promopt Structures: Creating a Prompt-Based System""
+}","Decision Metrics for Selecting Promopt Structures: Creating a Prompt-Based System","2023-11-28 11:17:35","","0","11","<llm><prompt-engineering>","<p>I'm currently working on developing a system that generates various prompts structures (such as tree of thoughts, chain of thoughts, etc.) in response to user prompts. However, I'm facing a challenge in determining the most suitable thought structure for a given prompt.
+in machine learning, metrics like accuracy, F1 score, precision, and recall aid in choosing the best model. Similarly, I'm exploring if there exist analogous metrics or approaches that can provide numerical guidance in selecting between different thought structures.</p>
+<p>If anyone has insights into potential metrics, methodologies, or even analogous concepts from other fields that might help in objectively determining which thought structure (tree, chain, etc.) is best suited for a particular prompt, I would greatly appreciate your input.</p>
+<p>Ex:-</p>
+<p>User Prompt:- I Want To Learn About Elephent.
+In Output One Prompt Based On Chain Of Thoughts
+Other Is Based On Tree Of Thoughts</p>
+<p>We Will Have Two Output How To Consider Which One Is Best?</p>
+<p>Thank you for your time and expertise!&quot;</p>
+","llm"
+"{
+  ""id"": 124742,
+  ""title"": ""Fine-tuning Hugging Face’s Llama Model with Unlabelled Data from PDFs from niche domain""
+}","Fine-tuning Hugging Face’s Llama Model with Unlabelled Data from PDFs from niche domain","2023-11-24 19:17:19","","1","127","<transformer><huggingface><finetuning><llm>","<p>I’m unsure about the next steps. Specifically, I have the following questions:</p>
+<ul>
+<li><p>How can I prepare my unlabelled data for the fine-tuning process?</p>
+</li>
+<li><p>What’s the best way to fine-tune the Llama model with my specific dataset?</p>
+</li>
+<li><p>Are there any specific considerations or best practices I should be aware of when fine-tuning a model with unlabelled data?</p>
+</li>
+</ul>
+<p>I have a large amount of raw text data scraped from thousands of PDFs in a specific domain. I want to use this unlabelled data to fine-tune the Llama model from Hugging Face’s Transformers library.</p>
+<p>Here’s what I’ve done so far:</p>
+<p>I’ve successfully scraped the text from the PDFs and have it stored in a suitable format.</p>
+","llm"
+"{
+  ""id"": 124642,
+  ""title"": ""Open-Source Large Language Models (LLM): Your experience and recommendation""
+}","Open-Source Large Language Models (LLM): Your experience and recommendation","2023-11-17 22:53:07","","0","178","<transformer><language-model><huggingface><llm>","<p>I’m looking for an open-source LLM for a new project. I want to use it for instructions and to fine-tune the model to a specific domain like legal and rights. Some LLMs are open-source, but they didn’t document, on which training data they trained their model. This makes it a bit complicated in my case.</p>
+<p>I’m looking for models, that are open-source and the community knows on which datasets the model was trained.</p>
+<p>Do you know open-source LLMs like that and do you have experience with them?</p>
+<p>Thank you in advance.</p>
+","llm"
+"{
+  ""id"": 124584,
+  ""title"": ""Why is 0.7, in general, the default value of temperature for LLMs?""
+}","Why is 0.7, in general, the default value of temperature for LLMs?","2023-11-14 15:47:29","","1","1304","<sampling><language-model><reference-request><parameter><llm>","<p>I have recently read through a lot of documentation and articles about Large Language Models (LLMs), and I have come to the conclusion that <strong>0.7 is, most of the time, the default value for the temperature parameter</strong>.</p>
+<p>See a few quick reference examples where the default value is either 0.7 or 0.75:</p>
+<ul>
+<li><a href=""https://platform.openai.com/docs/api-reference"" rel=""nofollow noreferrer"">https://platform.openai.com/docs/api-reference</a></li>
+<li><a href=""https://algowriting.medium.com/gpt-3-temperature-setting-101-41200ff0d0be"" rel=""nofollow noreferrer"">https://algowriting.medium.com/gpt-3-temperature-setting-101-41200ff0d0be</a></li>
+<li><a href=""https://rasa.com/docs/rasa/next/llms/llm-intent/"" rel=""nofollow noreferrer"">https://rasa.com/docs/rasa/next/llms/llm-intent/</a></li>
+</ul>
+<p>However, I am struggling to find any reference that would explain the rationale for using 0.7.</p>
+<p>I understand that lower values of the temperature result in more deterministic outputs and that higher values result in more random outputs.</p>
+<p>Nonetheless, why is it more recommended to select temperature=0.7 rather than temperature=0.6 or temperature=0.4 for instance?</p>
+<p>In contrast, in &quot;GPT-4 Technical Report&quot;, a value of 0.6 is used as the &quot;best-guess&quot; by the authors. See <a href=""https://arxiv.org/pdf/2303.08774.pdf"" rel=""nofollow noreferrer"">https://arxiv.org/pdf/2303.08774.pdf</a>, p.24.</p>
+<p>So my question would boil down to:</p>
+<p><strong>- Is it purely empirical or are there either benchmarks, or mathematical equations, which would substantiate the approach of selecting a temperature close to 0.7?</strong></p>
+<p><strong>- <em>If</em> it is purely empirical, what were the empirical reasons leading to the adoption of values close to 0.7? (E.g., is it due to the default parameters used in a highly cited paper?, in a highly used library?, etc.)</strong></p>
+<p>Thank you</p>
+","llm"
+"{
+  ""id"": 124542,
+  ""title"": ""How to download and fine tune a large language model locally?""
+}","How to download and fine tune a large language model locally?","2023-11-11 20:13:57","124558","2","3089","<finetuning><llm><artificial-intelligence>","<p>I want to fine tune a model locally, not using HuggingFace or any other third party tool. Basically, I want:</p>
+<p>Download a trained model (Llama-2, Falcon, whatever is easiest).
+Fine-tune it locally with my own data (maybe a set of mathematical theorems with proofs or customer service interactions, whatever)
+Then be able to ask questions on the new trained data without losing what the model had pre-learned
+I want to understand what model I should download (this is to learn, so it does not have to be the best available). Can I do it on a regular PC (I understand it may run for several hours)? How do I test to see if it has learned correctly?</p>
+<p>I understand this is more than can be answered here, so I am asking for links, videos, something that addresses this exercise explicitly. I am not looking for a generic course on LLMs or Transformers. I know the theory, I want practical steps on how to fine-tune a model, locally, on my own machine, with some data I have or downloaded from the internet. Something that can go further than the videos by Andrej Karpathy that I have already seen, suggesting a pre-trained LLM and going through the steps I described.</p>
+","llm"
+"{
+  ""id"": 124538,
+  ""title"": ""Fine-tuning MT5 for making it more like ChatGPT""
+}","Fine-tuning MT5 for making it more like ChatGPT","2023-11-11 05:32:07","","0","77","<nlp><text-generation><finetuning><llm><chatgpt>","<p>I am trying to fine-tune a model which works like ChatGPT for Punjabi language, using the mt5-base, however I am not sure if I should go ahead with it since it does not even generate text and when I try to use it, I just get a response as &lt;extra_pad&gt; 0. I have checked the tokenizers, they work fine with Punjabi language, can anyone please tell how may I go on about it?
+The dataset I will be using is an instruction following dataset in the format of alpaca and is of high quality.
+I have tried fine-tuning indic-gpt before, however it has a very small token size i.e.1024 so I changed my base model.
+Thanks in advance!</p>
+","llm"
+"{
+  ""id"": 124530,
+  ""title"": ""F1 and Exact-Match (EM) Score in Extractive QA NLP""
+}","F1 and Exact-Match (EM) Score in Extractive QA NLP","2023-11-10 15:51:39","","0","59","<nlp><bert><huggingface><llm><question-answering>","<p>I have a question as to how the F1 should be calculated in NLP and whether the text normalization is optional or not.</p>
+<p>So I have been working on a project where we created a closed-domain extractive QA dataset from scratch, and we are trying to finetune and assess the performance of several LLMs in this new dataset. I came across different definitions of the F1 score, sometimes with text normalization (<a href=""https://qa.fastforwardlabs.com/no%20answer/null%20threshold/bert/distilbert/exact%20match/f1/robust%20predictions/2020/06/09/Evaluating_BERT_on_SQuAD.html#Exact-Match"" rel=""nofollow noreferrer"">like in here</a>) and sometimes not. I have run all my experiments without the normalization step for both the EM and F1 scores. Should I rerun all experiments?</p>
+<p>Is the</p>
+","llm"
+"{
+  ""id"": 124441,
+  ""title"": ""Reinforcement learning""
+}","Reinforcement learning","2023-11-06 13:33:23","","0","45","<neural-network><reinforcement-learning><sentiment-analysis><gpt><llm>","<p>I am working on a sentiment analysis project. I used BERT model for training but lack of data it gives huge overfitting. So after i moved LLM approach to do that. Using LLM finally i  got good results. But sometimes it gives wrong outputs. So now i want to use some Reinforcement leaning approach. If model gives correct answer, user give thumbs up or else thumbs down like that. I want some guide to do that. I'm using gpt 3.5 turbo as my model.</p>
+","llm"
+"{
+  ""id"": 124347,
+  ""title"": ""Is there a Language Model that can accept huge corpse of tabular data and answr questions about?""
+}","Is there a Language Model that can accept huge corpse of tabular data and answr questions about?","2023-10-31 10:49:19","","3","136","<nlp><llm>","<p>I have been researching Language Models that can work with tabular data. My main goal is to have a model to answer simple questions about my data. An example is having household sales data and asking simple questions like &quot;What was the average sales during the last 2 months?&quot;. One of the best models I have found so far is <a href=""https://huggingface.co/docs/transformers/model_doc/tapas"" rel=""nofollow noreferrer"">TAPAS</a>. However, it has limitations regarding the size of tabular data. My data size is approximately 1 million rows with 10 columns. Is there a robust model that can perform the mentioned task or is there an alternative approach to this problem?</p>
+","llm"
+"{
+  ""id"": 124329,
+  ""title"": ""For Finetuning Llama 2, what form of data is required?""
+}","For Finetuning Llama 2, what form of data is required?","2023-10-30 07:03:56","","0","29","<machine-learning><dataset><finetuning><chatbot><llm>","<p>I am working on a customer service chatbot project. I have files of different product's manuals on which i need to train the LLM which is Llama 2. As these are manuals so they not in Q/A form. In this case, can i finetune it on these same manuals or do i require info in specific format for finetuning.</p>
+","llm"
+"{
+  ""id"": 124304,
+  ""title"": ""Is there an online Vicuana model demo that supports plugging in embeddings directly?""
+}","Is there an online Vicuana model demo that supports plugging in embeddings directly?","2023-10-27 19:40:22","","0","7","<machine-learning><llm>","<p>I'm doing some work with using multi-modal data with LLMs like LLaMA and Vicuana. For example, something similar to Video-LLaMA, which converts images/videos into embeddings, concatenates it with the text embeddings, and feeds the embeddings into LLaMA. It's difficult for me to run some of the models myself because of computational constraints (and I just want to do a few inferences anyways). I'm wondering if there is an online demo or API that supports inputting embeddings directly (as opposed to text tokens).</p>
+","llm"
+"{
+  ""id"": 124293,
+  ""title"": ""Since LLMs only provide output in text, how can LLMs do 'action' such as search, run code etc?""
+}","Since LLMs only provide output in text, how can LLMs do 'action' such as search, run code etc?","2023-10-27 05:23:59","","0","25","<language-model><llm>","<p>Since LLMs only provide output in text, I wonder how LLMs can do 'action' such as search, run code etc. I try to delve deep into how langchain agent works and what I got is that the used prompt is something like this</p>
+<pre><code>Assistant is a large language model trained by OpenAI.
+
+Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
+
+Assistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.
+
+Overall, Assistant is a powerful tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.
+
+TOOLS:
+------
+
+Assistant has access to the following tools:
+
+&gt; Search: useful for when you need to answer questions about current events
+&gt; Calculator: useful for when you need to do arithmetic task
+
+To use a tool, please use the following format:
+
+```
+Thought: Do I need to use a tool? Yes
+Action: the action to take, should be one of [Search, Calculator]
+Action Input: the input to the action
+Observation: the result of the action
+```
+
+When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+
+```
+Thought: Do I need to use a tool? No
+AI: [your response here]
+```
+
+Begin!
+
+Previous conversation history:
+{chat_history}
+
+New input: {input}
+{agent_scratchpad}
+</code></pre>
+<p>I don't understand what happen when LLMs say 'Action: Search. How the Search function was called ?</p>
+","llm"
+"{
+  ""id"": 124287,
+  ""title"": ""Leverage LLMs to classify sentence similarity""
+}","Leverage LLMs to classify sentence similarity","2023-10-26 21:09:13","","0","69","<classification><nlp><semantic-similarity><llm>","<p>This is intended to be mainly a reference request in the vast world of NLP and LLMs.</p>
+<h2>Context</h2>
+<p>A certain <em>protocol</em> is given in the form of text. This can be, for instance, the general description of a program in natural language or a statement regarding a legal or financial matter.</p>
+<p>There is also a given set of <em>basic protocols</em>, which could be best-practices and/or basic algorithms for programming or basic regulations.</p>
+<h2>Goal</h2>
+<p>The protocol is supposed to implement or satisfy, at least partially, some of the basic protocols. The goal is to test the protocol against every basic protocol in order to get a binary classification:</p>
+<p>1 - The protocol implements/satisfies (at least to some extent) the basic protocol.</p>
+<p>0 - The protocol does not implement/satisfy (almost at all) the basic protocol.</p>
+<h2>Example</h2>
+<p>A very simple data science protocol could be the following.</p>
+<blockquote>
+<p>Extract the data and check for completeness and consistency. Scale the numerical features, input the data types expected by data validation and load the dataset into the DW. Organize the scaling and data type inputting in two functions documented following Google style docstring.</p>
+</blockquote>
+<p>Some basic protocols for this context and the related classification could be:</p>
+<div class=""s-table-container"">
+<table class=""s-table"">
+<thead>
+<tr>
+<th>Basic Protocol</th>
+<th>Implemented</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Check data accuracy</td>
+<td>False</td>
+</tr>
+<tr>
+<td>Check data completeness</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Check data consistency</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Check data timeliness</td>
+<td>False</td>
+</tr>
+<tr>
+<td>Check data validity</td>
+<td>False</td>
+</tr>
+<tr>
+<td>Check data uniqueness</td>
+<td>False</td>
+</tr>
+<tr>
+<td>Check data quality</td>
+<td><em>Probably True</em> (Depends on &quot;threshold&quot;)</td>
+</tr>
+<tr>
+<td>Set expected data types</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Convert string features with less that 20% unique entries to category</td>
+<td>False</td>
+</tr>
+<tr>
+<td>Follow numpy docstring</td>
+<td>False</td>
+</tr>
+<tr>
+<td>Follow Google docstring</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Use a data catalog</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div><h2>Problems</h2>
+<ol>
+<li>The basic protocols could come from different sources and so have very different styles and potentially conflicting terminology and/or various degree of verbosity.</li>
+<li>Fine-tuning seems out of reach given the small amount of examples at hand.</li>
+</ol>
+<h2>Questions</h2>
+<p>Could you point me to some attempt to leverage LLMs in order to deal with similar problems?</p>
+<p>I imagine that it may make sense to create some middle layer in which basic protocols are uniformized according to some well-chosen examples, to brake the protocol into smaller components and for the classification to possibly use a mixture of similarity measures and a majority voting given by a bunch of Yes/No questions given to the LLM.</p>
+<p>For the case I am interested in, a simple vectorization of the protocol and basic protocols gave pretty poor results. I kind of expected it, given that all the basic protocols belong to the same context of the protocol.</p>
+","llm"
+"{
+  ""id"": 124109,
+  ""title"": ""To extend or not to extend vocabulary for instruction tuning""
+}","To extend or not to extend vocabulary for instruction tuning","2023-10-12 20:36:44","","0","46","<nlp><llm>","<p>I want to fine tune a base llm using an instruction dataset. In order to minimize VRAM footprint I want to use SFTTrainer and QLora. My prompt can take the following structure:</p>
+<pre><code>    [INST] &lt;&lt;SYS&gt;&gt;\nSystem_Message_Here\n&lt;&lt;/SYS&gt;&gt;\n\nUser_Msg_1 [/INST]_Msg_1 [INST] User_Msg_2 [/INST] Asst_Msg_2 [INST] User_Msg_3 [/INST]
+</code></pre>
+<p>I am wondering if I shall add to my tokenizer new tokens <em>[INST]</em> <em>&lt;&lt; SYS&gt;&gt;</em> <em>&lt;&lt;/ SYS&gt;&gt;</em> or <em>[/INST]</em> - or if I shall keep the base model vocabulary ?</p>
+","llm"
+"{
+  ""id"": 124098,
+  ""title"": ""Decreasing the summary length from langchain load_summarize_chain?""
+}","Decreasing the summary length from langchain load_summarize_chain?","2023-10-12 05:41:38","","0","105","<machine-learning><language-model><llm><chatgpt>","<p>How can i reduce the output size of the summarization in langchain map reduce method ?</p>
+","llm"
+"{
+  ""id"": 124012,
+  ""title"": ""Pre-trained text classifier to check whether a document is business or personal""
+}","Pre-trained text classifier to check whether a document is business or personal","2023-10-06 10:01:05","","0","14","<data><machine-learning-model><llm>","<p>I need a pre-trained classifier that checks if a document is either a business or personal document. I don't have time to train one myself so if anyone knows of a classifier that is pre-trained and they think it's good, please let me know.</p>
+<p>Here is an example of a document it would have to classify: # Relationship Notes</p>
+<h2>With Alex (Partner)</h2>
+<h3>Date Ideas</h3>
+<ul>
+<li><p>[ ] Plan a romantic weekend getaway to the mountains.</p>
+<ul>
+<li>Alex loves the mountains. It's been a while since our last escape to nature. 🏞️❤️</li>
+</ul>
+</li>
+<li><p>[ ] Surprise Alex with tickets to his favorite band's concert.</p>
+<ul>
+<li>Found out they're coming to town next month. It'll be a great surprise! 🎶🎫</li>
+</ul>
+</li>
+<li><p>[ ] Cook a special dinner together and have a movie night at home.</p>
+<ul>
+<li>Sometimes, the simplest evenings are the most memorable. 🍽️🎥</li>
+</ul>
+</li>
+<li><p>[ ] Organize a picnic in the park for a relaxing day outdoors.</p>
+<ul>
+<li>We used to do this a lot when we started dating. Time to bring back those moments. 🌳☀️</li>
+</ul>
+</li>
+<li><p>[ ] Write heartfelt love letters to each other on our anniversary.</p>
+<ul>
+<li>It's our 5th anniversary next week. A handwritten letter can express so much. 💌💑</li>
+</ul>
+</li>
+</ul>
+<h3>Vacation Plans</h3>
+<ul>
+<li><p>[ ] Research and book our next international adventure.</p>
+<ul>
+<li>Thinking about Greece or Costa Rica. We both need a break from work. ✈️🏝️</li>
+</ul>
+</li>
+<li><p>[ ] Discuss potential travel destinations for our summer vacation.</p>
+<ul>
+<li>We have conflicting ideas. Need to sit down and find a destination that excites both of us. 🌞🏖️</li>
+</ul>
+</li>
+<li><p>[ ] Create a shared calendar to coordinate our schedules better.</p>
+<ul>
+<li>Our schedules have been chaotic lately. A shared calendar might help us plan quality time together. 🗓️❤️</li>
+</ul>
+</li>
+</ul>
+","llm"
+"{
+  ""id"": 123893,
+  ""title"": ""What options do I have when performing RAG on similarly phrased chunks?""
+}","What options do I have when performing RAG on similarly phrased chunks?","2023-09-28 11:02:44","","0","27","<information-retrieval><llm>","<p>I'm building a RAG pipeline to extract real estate phrases from excel documents. These phrases are short (2-5 words) and are often phrased differently.</p>
+<p>I've manually added in different phrases to each prompt to suggest the LLM to look for them.</p>
+<p>What else could I do? What more powerful options do I have?</p>
+<ul>
+<li>Search for each term manually? -&gt; slow due to loads of calls</li>
+<li>Embed the terms in the excel doc and similarity search the embedding of 'Total Income' against those in the excel doc?</li>
+</ul>
+<pre class=""lang-py prettyprint-override""><code># Example prompt with 4 similar terms
+income = f&quot;&quot;&quot;What is the Total Income? 
+
+It may also be called: 
+- Total Revenue
+- Effective Gross Income
+- Total Operating Receipts
+- Total Operating Income
+
+Or something similar
+
+Return a signed number or nan. Do not write anything else.&quot;&quot;&quot;
+&quot;&quot;&quot;
+<span class=""math-container"">```</span>
+</code></pre>
+","llm"
+"{
+  ""id"": 123891,
+  ""title"": ""Errors in results after saving model vs using directly from memory""
+}","Errors in results after saving model vs using directly from memory","2023-09-28 09:52:51","","0","30","<pytorch><transformer><huggingface><llm><serialisation>","<p>I am trying to save a Fine Tuned model using <code>trainer.save_model()</code> but after I load the saved_model it just responds with the input back again and does not give any new output.</p>
+<p>But, when I don't save the model and use the one with changed weights from FT from memory. It gives expected responses.  (Jupyter notebook)</p>
+<p>Example Code:</p>
+<pre><code>model_name = &quot;bigcode/starcoder&quot;
+
+packing = False
+base_model = AutoModelForCausalLM.from_pretrained(model_name, device_map='auto', load_in_8bit =True)
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token
+tokenizer.padding_side = &quot;right&quot;
+
+training_arguments = TrainingArguments(
+    output_dir=&quot;/tmp/output&quot;,
+    num_train_epochs=num_train_epochs,
+    per_device_train_batch_size=per_device_train_batch_size,
+    gradient_accumulation_steps=gradient_accumulation_steps,
+    optim=optim,
+    save_steps=save_steps,
+    logging_steps=logging_steps,
+    learning_rate=learning_rate,
+    weight_decay=weight_decay,
+    fp16=fp16,
+    bf16=bf16,
+    max_grad_norm=max_grad_norm,
+    max_steps=max_steps,
+    warmup_ratio=warmup_ratio,
+    group_by_length=group_by_length,
+    lr_scheduler_type=lr_scheduler_type,
+    evaluation_strategy=&quot;steps&quot;,
+    eval_steps=25
+)
+
+# Set supervised fine-tuning parameters
+trainer = SFTTrainer(
+    model=base_model,
+    train_dataset=dataset[&quot;train&quot;],
+    eval_dataset=dataset[&quot;test&quot;],
+    dataset_text_field=&quot;text&quot;,
+    max_seq_length=max_seq_length,
+    tokenizer=tokenizer,
+    args=training_arguments,
+    packing=packing,
+)
+
+trainer.train()
+
+trainer.save_model('xxx')
+
+def infer(model, ip):
+    inputs = tokenizer.encode(ip, return_tensors=&quot;pt&quot;).to(&quot;cuda&quot;)
+    outputs = model.generate(inputs, max_new_tokens=300, pad_token_id=tokenizer.eos_token_id)
+    return tokenizer.decode(outputs[0])
+
+</code></pre>
+<p>Not sure what the issue is as not being able to save model is a bottleneck and it also does not release memory used within FT. (Jupyter)</p>
+","llm"
+"{
+  ""id"": 123765,
+  ""title"": ""Can LLM fine-tuning be used to improve a language?""
+}","Can LLM fine-tuning be used to improve a language?","2023-09-19 17:11:58","","0","87","<language-model><finetuning><llm>","<p>I'm Danish, and with all the excitement around open LLM models, I'm feeling a little left out.</p>
+<p>Take Llama 2, for example - it was trained on a very small Danish dataset. Just enough to learn the words and be terrible at Danish.</p>
+<p>My question is, can fine-tuning (with LORA or QLORA) be used to improve the Danish skills of an existing pretrained language model?</p>
+<p>Llama 2, for example, knows Danish words, and so (one would hope) perhaps that's why they exposed it to Danish at all?</p>
+<p>Full-on pretraining isn't financially realistic for an individual, and (to my knowledge) we don't have a good open model in Danish yet.</p>
+<p>We do however have a pretty large open source training data set. But whoever is using that (if anyone) they're not sharing.</p>
+","llm"
+"{
+  ""id"": 123706,
+  ""title"": ""Parsing response from llama2""
+}","Parsing response from llama2","2023-09-15 02:50:25","","0","149","<machine-learning><deep-learning><nlp><llm>","<p>I want to extract phone numbers from a given text and i am prompting a llama2 model for that ..I want the output in form of a list but i am getting unnecessary output like sure here are the phone numbers etc etc...can anyone help how to only extract the phone numbers from the response?</p>
+","llm"
+"{
+  ""id"": 123564,
+  ""title"": ""Segregation of a finance interview based on topic discussed""
+}","Segregation of a finance interview based on topic discussed","2023-09-05 10:23:29","","0","10","<nlp><data-cleaning><text-classification><semantic-segmentation><llm>","<p>I have a video interview of 5 people, which i have transcribed to text (example corpus given below). Considering the fact that we know SPEAKER_00 is the interviewer and rest are guests. I want to know the <strong>start time</strong> details when the interviewer has asked one question and what was the <strong>end time</strong> when all the other guests have finished replying to that question. The interviewer can counter question on the same topic which should be between the start time and end time of our output.</p>
+<p>Basically help me to make multiple text file from single text croupous based on the number of questions asked by the interviewer.</p>
+<pre><code>[ 00:00:01.290 -- 00:00:01.763 ] SPEAKER_00: No.
+
+[ 00:00:01.290 -- 00:00:20.595 ] SPEAKER_01: The framework that we work with in that if there is a surplus government land, that it is put to the market for disposal. So I suppose there was that little bit of conflict, perceived conflict with what we do and the policy that exists.
+
+[ 00:00:09.576 -- 00:00:10.724 ] SPEAKER_00: market.
+
+[ 00:00:20.595 -- 00:00:35.682 ] SPEAKER_02: So it's probably quite variable, I guess, depending on the politics of the day. You mentioned that there's a framework you're working with in there. Would you say you're more guarded by that framework or the politics of the day when you're making those decisions? It is the framework. Yeah.
+
+[ 00:00:33.775 -- 00:00:47.190 ] SPEAKER_03: It is the framework. So the Government Land Transaction Guidelines dictate that we are selling government land. Or surplus government land, I should say. So that's what we work within.
+</code></pre>
+","llm"
+"{
+  ""id"": 123471,
+  ""title"": ""coversational AI chatbot using langchain and chatgpt 3.5?""
+}","coversational AI chatbot using langchain and chatgpt 3.5?","2023-08-30 08:02:35","","-3","96","<nlp><language-model><chatbot><llm>","<p>can we develop end to end hotel booking coversational AI chatbot using langchain and chatgpt 3.5 ?</p>
+","llm"
+"{
+  ""id"": 123456,
+  ""title"": ""Fine-tuning LLM with limited documents and hierarchy""
+}","Fine-tuning LLM with limited documents and hierarchy","2023-08-29 11:59:38","","0","320","<finetuning><labelling><llm>","<p>Hello LLM enthusiasts.</p>
+<p>I am wondering w.r.t. a neighbouring project if there are state of the art approaches to fine tune a model if:</p>
+<ol>
+<li>the realm of documents is limited (still more than just a few),</li>
+<li>these documents are regularly in a relationship.</li>
+</ol>
+<p>Actually all legal people should have this challenge with 2., too.
+Shouldn't fine tuning be a lot more efficient if one had <strong>sth like a document entity relationship model</strong> to add granularity and weights from the very start?</p>
+<p>In the end for all applications that rely on a minimum of hallucination it should be important to get as much accuracy as possible to be able or allowed to use the model at all.</p>
+<p>(As mentioned this should be a thing for all legal staff but also medical ppl.)</p>
+<p>Thank you for your ideas, feel free to course correct me w/o mincing words.</p>
+<p>Or am I just using wrong words here and what I mean is &quot;simply&quot; a <strong>knowledge graph</strong>?</p>
+","llm"
+"{
+  ""id"": 123430,
+  ""title"": ""Training embeddings on own dataset""
+}","Training embeddings on own dataset","2023-08-28 06:04:11","","0","1451","<machine-learning><python><nlp><word-embeddings><llm>","<p>In my project I follow the retrieval augmented generation (RAG) approach.
+I want to create embeddings for my own dataset and use it in combination with llama-2.
+In the dataset are german annual reports, 548 reports as pdf-files with about 300 sites per report. Next, I want to load the data in a vector store, but first I think I have to create the embeddings.</p>
+<p>And now, there are serveral questions and I need some best-practice:</p>
+<ol>
+<li><p>Do I have to train my own embeddings model or can I use models like word2vec of the gensim package or a pretrained model like BERT and take the hidden state?</p>
+</li>
+<li><p>Can I use any embeddings model? I think they train on a specific corpus and if my words aren't in the training corpus, I will get bad result or what do you think?</p>
+</li>
+</ol>
+","llm"
+"{
+  ""id"": 123377,
+  ""title"": ""Implementation of spBLEU""
+}","Implementation of spBLEU","2023-08-24 12:50:52","123379","2","433","<nlp><model-evaluations><metric><language-model><llm>","<p>I was looking for a way to explore evaluation metrics for language translation models and I came across spBLEU. I can’t find any implementations/examples that would help me start. Does anyone have a lead on what I can pursue?</p>
+<p>thanks in advance!</p>
+","llm"
+"{
+  ""id"": 123271,
+  ""title"": ""NER Named Entity Recognition using LLMs Like tranF5 or LLAMA2""
+}","NER Named Entity Recognition using LLMs Like tranF5 or LLAMA2","2023-08-16 17:10:56","","0","1098","<named-entity-recognition><llm>","<p>I am trying to do NER (Named entity recognition) using Large language models like Trans-F5 or LLAMA2. Till now, I found the ways of using prompt engineering. Which means we need to specify what to find in the text.<br />
+Can we fine tune and use these LLMs using the old NER techniques, like providing the label for entity and then doing inference phase to find the entity value.<br />
+Any code reference would be really helpful.</p>
+","llm"
+"{
+  ""id"": 123229,
+  ""title"": ""Understanding alpha parameter tuning in LORA paper""
+}","Understanding alpha parameter tuning in LORA paper","2023-08-14 08:52:24","","3","10057","<transformer><finetuning><llm>","<p>I was reading the LORA paper <a href=""https://arxiv.org/pdf/2106.09685.pdf"" rel=""nofollow noreferrer"">https://arxiv.org/pdf/2106.09685.pdf</a> a thing I don’t understand is section 4.1, where the updates are updated by alpha, where alpha is a constant in r. It is said that alpha is set to the first r tried. Then if I understand correctly, the authors say that this makes it unnecesary to tune the learning rate alpha. I would really appreciate if someone could explain this concept to me. To start with I don’t understand, why the need to scale the weight update by a constant. I mean, all the weights of the updates are optimized in the fine tuning process.</p>
+<p>I also wanted to understand why is A initialized randomly and B to zero. Would it make a difference if it would be the other way around (A zero, B random?). Also, what would go wrong if both would be set to zero?</p>
+","llm"
+"{
+  ""id"": 123184,
+  ""title"": ""How to add knowledge to the LLM using LangChain (at a high level)?""
+}","How to add knowledge to the LLM using LangChain (at a high level)?","2023-08-11 08:11:55","","0","1032","<embeddings><knowledge-base><llm><vector-database>","<p>At a super high level, I would like to <a href=""https://github.com/hwchase17/langchainjs/discussions/2236"" rel=""nofollow noreferrer"">create a fantasy language AI tutor</a>. For this question, however, I would like to better understand how, generally speaking, you add your own custom data/knowledge to the LLM.</p>
+<p>In my case, I have a spreadsheet of ~4,000 dictionary terms, with fantasy word and English definition. I would like to &quot;teach the AI&quot; about these terms, so it can respond with the definition when asked about a term (and, eventually later, can speak using these terms using the fantasy language grammar). In this sense, I need to &quot;add to the LLM&quot; it seems like, but I'm not sure where this fits into the LangChain/AI puzzle.</p>
+<p>How do I add my own custom knowledge to the AI?</p>
+<p>I have read a little about vector databases, such as Pinecone, but I'm not sure that's what I need to do. Is that how you customize the knowledge an AI assistant would have? Why not just customize the LLM directly? Is a vector database memory essentially a knowledge plugin to an LLM I guess? What am I missing in terms of understanding this picture correctly?</p>
+<p>I need to add my dictionary definitions to the AI and have it remember them, do I just create &quot;system&quot; prompts to the AI, one prompt per term, to &quot;teach&quot; it the terms? Or convert the term + definition into vector embeddings, and store that in Pinecone? Not quite sure how the pieces fit together yet, looking for some guidance at a high level, don't really need the actual code snippets at this point, just what goes where generally speaking.</p>
+<p><a href=""https://colab.research.google.com/github/pinecone-io/examples/blob/master/docs/langchain-retrieval-augmentation.ipynb#scrollTo=dQRA1HWOJYbU"" rel=""nofollow noreferrer"">This</a> &quot;langchain retrieval augmentation&quot; notebook says:</p>
+<blockquote>
+<p>Large Language Models (LLMs) have a data freshness problem. The most powerful LLMs in the world, like GPT-4, have no idea about recent world events.</p>
+<p>The world of LLMs is frozen in time. Their world exists as a static snapshot of the world as it was within their training data.</p>
+<p>A solution to this problem is <strong>retrieval augmentation</strong>. The idea behind this is that we retrieve relevant information from an external knowledge base and give that information to our LLM. In this notebook we will learn how to do that.</p>
+</blockquote>
+<p>That sort of helps, but if you could paint a slightly richer picture of what needs to happen, that would help.</p>
+","llm"
+"{
+  ""id"": 123182,
+  ""title"": ""Teach LLM to generate code using a specific library""
+}","Teach LLM to generate code using a specific library","2023-08-11 06:54:48","","0","257","<llm>","<p>I am curious to know after seeing good code examples generated by Github copilot.</p>
+<p>I am wondering if I can create an Agent which basically takes commands as plain English and generates code based on one particular framework.</p>
+<p>Lets say I have a basic web library like jQuery
+or even simpler one library which only has two functions <code>makeCircle(radius)</code> and <code>makeRectangle(a,b)</code></p>
+<p>Now I want to build a system, which if I command it like this - &quot;Create a big rectangle of size 8 X 10 and fit as many 2 radius circles keeping a gap of 1 unit between the circles as well as the rectangle&quot;</p>
+<p>and it does the calculation and generates code or even pseudo code like -</p>
+<pre><code>makeRectangle(8X10);
+for (int i=0;.....
+checkOverlap()
+........
+</code></pre>
+<p>and so on</p>
+<p>Is it possible to achieve this on a particular library? without a lot of training data?</p>
+","llm"
+"{
+  ""id"": 123002,
+  ""title"": ""How to measure accuracy of GPT model""
+}","How to measure accuracy of GPT model","2023-07-29 17:34:29","123003","1","705","<accuracy><gpt><llm><chatgpt>","<p>I am working on a model to build questions automatically from some text</p>
+<p>My model will analyse provided article and ask authors questions that can help improving their articles</p>
+<p>How can we measure the accuracy of these ML-generated questions?</p>
+<p>There is the relevance part of the questions as these questions represent an area of improvement in the article</p>
+<p>How to measure that?</p>
+<p>Any previous work on similar models would be a great help too</p>
+<p>Thanks</p>
+","llm"
+"{
+  ""id"": 122904,
+  ""title"": ""Falcon 7B LLM Evaluation using TruLens""
+}","Falcon 7B LLM Evaluation using TruLens","2023-07-24 05:27:59","","-1","129","<python><model-evaluations><llm>","<p>The problem I am facing is after defining the prompt template, creating a chain using Langchain, defining the huggingface evaluation module from trulens_eval to check the toxicity of the response and then when finally passing the prompt through truchain, the response that I am getting is incomplete response like truncated response.</p>
+<pre><code>import os
+os.environ[&quot;HUGGINGFACE_API_KEY&quot;]='&lt;YOUR_OWN_API_KEY&gt;'
+os.environ[&quot;HUGGINGFACEHUB_API_TOKEN&quot;]='&lt;YOUR_OWN_API_KEY&gt;'
+from langchain import PromptTemplate
+from langchain.chains import  LLMChain
+from langchain.prompts.chat import (ChatPromptTemplate,HumanMessagePromptTemplate)
+from langchain import HuggingFaceHub
+from langchain.chat_models import ChatOpenAI
+from trulens_eval import TruChain
+
+full_prompt = HumanMessagePromptTemplate(
+    prompt=PromptTemplate(
+        template=&quot;Please provide detailed helpful response with relevant background information for the following: {prompt}. Provide a complete paragraph of the response&quot;,
+            input_variables=[&quot;prompt&quot;],
+        )
+    )
+chat_prompt_template = ChatPromptTemplate.from_messages([full_prompt])
+model = HuggingFaceHub(repo_id='tiiuae/falcon-7b-instruct', model_kwargs={&quot;temperature&quot;:0.5})
+chain = LLMChain(llm=model, prompt=chat_prompt_template)
+
+from trulens_eval import Feedback, Huggingface, Query
+hugs=Huggingface()
+f_toxicity=Feedback(hugs.not_toxic).on(text=Query.RecordOutput)
+
+truchain=TruChain(chain,app_id=&quot;testapp_validation&quot;,feedbacks=[f_toxicity])
+llm_response3=truchain(&quot;What is Machine Learning and Artificial Intelligence&quot;)
+display(llm_response3)
+</code></pre>
+<p>In this code above, before starting the code I have defined by API keys.</p>
+","llm"
+"{
+  ""id"": 122718,
+  ""title"": ""Can I run falcon-7b on a free google colab?""
+}","Can I run falcon-7b on a free google colab?","2023-07-13 03:24:13","122720","0","845","<huggingface><google><llm><artificial-intelligence>","<p>I'm a beginner at ML and AI.</p>
+<p><strong>Background:</strong></p>
+<p>I wanted to try out falcon-7b, the example I'm trying out: <a href=""https://colab.research.google.com/drive/1BiQiw31DT7-cDp1-0ySXvvhzqomTdI-o?usp=sharing"" rel=""nofollow noreferrer"">https://colab.research.google.com/drive/1BiQiw31DT7-cDp1-0ySXvvhzqomTdI-o?usp=sharing</a> (Falcon-Guanaco example by hugging face team) . But I'm not able to use this due to disk space restrictions. Colab is offering 75GB of disk space and when running the final code block of <code>trainer.train()</code>, the colab's VM runs out of all the disk space it has and fails.</p>
+<p><strong>Questions:</strong></p>
+<ol>
+<li>Is there anything I can change in that example's code and make it work on a free google colab. I can't get the paid one.</li>
+<li>If that's not possible are there any other open source models that I can run on a free google colab that are close to falcon-7b's abilities?</li>
+</ol>
+","llm"
+"{
+  ""id"": 122707,
+  ""title"": ""Does Negative Prompting Exist?""
+}","Does Negative Prompting Exist?","2023-07-12 12:29:48","","1","363","<llm><prompt-engineering>","<p>All the prompt engineering techniques I've seen seem to focus on telling the model what to do e.g. Few-Shot Prompting.</p>
+<p>Is there any value in giving the model examples of what not to do? Can you link me to any papers/techniques on the topic?</p>
+<p><strong>Example</strong></p>
+<p>I am building a bot to improve students' foreign language writing skills.</p>
+<pre><code>Bad output: Corrected spelling of 'heisse' to 'heiße' because 'heiße' is the correct spelling in German.
+
+Better output: Corrected spelling of 'heisse' to 'heiße' because 'ss' can be combined to form 'ß' in German.
+</code></pre>
+<p>I could solve this specific problem using few-shot prompting. But really, I want to tell the model &quot;don't give answers like 'this is how it is done in German', instead explain what is being done and the reasons for it&quot;.</p>
+<p>I may have answered my own question there... just put it what I said above in the system prompt?</p>
+","llm"
+"{
+  ""id"": 122568,
+  ""title"": ""Is it a problem to store your vector database in memory?""
+}","Is it a problem to store your vector database in memory?","2023-07-05 12:51:46","","0","756","<vector-database><llm><chatgpt>","<p>I'm learning ChatGPT/LLM Development and am regularly coming across all different kinds of vector database implementations.</p>
+<p>Some of them, e.g. <a href=""https://docs.trychroma.com/"" rel=""nofollow noreferrer"">Chroma</a>, currently only support in-memory implementations for Python.</p>
+<p>My initial reaction when I read that is &quot;how can that be enough memory?&quot;. For what use cases are in-memory vector databases suitable?</p>
+","llm"

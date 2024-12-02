@@ -1,0 +1,1321 @@
+Post Link,Title,CreationDate,AcceptedAnswerId,Score,ViewCount,Tags,Body,TagName
+"{
+  ""id"": 129757,
+  ""title"": ""How to convert messy dictionary definition string to array of short/summarized definitions as JSON, using open source AI tools?""
+}","How to convert messy dictionary definition string to array of short/summarized definitions as JSON, using open source AI tools?","2024-07-22 22:16:17","129794","0","66","<nlp><gpt><automatic-summarization><open-source>","<p>I am able to convert messy dictionary data to a JSON array of definitions, a summary definition (i.e. a &quot;gloss&quot;), and perhaps the part of speech (&quot;role&quot;), using OpenAI's Node.js API like so:</p>
+<pre><code>import OpenAI from 'openai'
+import 'dotenv/config'
+import fs from 'fs/promises'
+
+const PATH = `cleaned.json`
+
+const openai = new OpenAI({
+  apiKey: process.env.OPEN_AI_API_KEY,
+})
+
+async function main() {
+  let i = 0
+  const records = JSON.parse(await fs.readFile(`messy.json`, `utf-8`))
+
+  const outputs = JSON.parse(await fs.readFile(PATH, 'utf-8'))
+
+  for (const record of records) {
+    if (outputs.find(o =&gt; o.term === record.word)) {
+      i++
+      continue
+    }
+    let text = await getText(record.def)
+    try {
+      if (typeof text === 'string') {
+        try {
+          text = text
+            .split(/```json/)[1]
+            .split(/```/)[0]
+            .trim()
+        } catch (e) {}
+        // console.log(text)
+        const output = JSON.parse(text)
+
+        outputs.push({
+          term: record.word,
+          ...output,
+        })
+        console.log(i, i / records.length, record.word, output)
+
+        await fs.writeFile(PATH, JSON.stringify(outputs, null, 2))
+      } else {
+        console.log(i)
+      }
+    } catch (e) {
+      console.error(e)
+      console.log(i)
+    }
+
+    i++
+
+    async function getText(instructions: string) {
+      const completion = await openai.chat.completions.create({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful text summarizer.',
+          },
+          {
+            role: 'user',
+            content:
+              `Extract the definitions from this set of messy definitions. Strip out the Tamil text and junk, and make the final set of definitions a small set. Don't include the definition if it says &quot;See x&quot;, linking to other definitions. Simplify each definition if it's not already simplified, to ideally 1-3 word definitions, removing or merging duplicate or similar definitions where applicable. Omit otherwise meaningless text from the input, which doesn't appear to be English. It's okay if the definition is longer than 3 words if it can't easily be shortened. Send the definitions as a JSON array of strings under the &quot;definitions&quot; key. Finally, take your summarized definitions, and summarize those into one short definition (ideally also 1-3 words), and return that under the &quot;gloss&quot; JSON key. Format all definitions and the gloss in lowercase unless it is a proper name, and don't use abbreviations where they can be easily expanded to the normal word. And then also, add the part of speech of the word that's being defined in the &quot;role&quot; field. Also, be conservative. If you can't figure it out clearly and simply, then return empty JSON (i.e. return nothing). Better to be safe than sorry. That's it. Here is the input as JSON: ` +
+              JSON.stringify(instructions.split(/\s*;\s*/), null, 2),
+          },
+        ],
+        model: 'gpt-4o',
+      })
+
+      return completion.choices[0].message.content
+    }
+  }
+}
+
+main()
+</code></pre>
+<p>Here is the main prompt:</p>
+<blockquote>
+<p>Extract the definitions from this set of messy definitions. Strip out the Tamil text and junk, and make the final set of definitions a small set. Don't include the definition if it says &quot;See x&quot;, linking to other definitions. Simplify each definition if it's not already simplified, to ideally 1-3 word definitions, removing or merging duplicate or similar definitions where applicable. Omit otherwise meaningless text from the input, which doesn't appear to be English. It's okay if the definition is longer than 3 words if it can't easily be shortened. Send the definitions as a JSON array of strings under the &quot;definitions&quot; key. Finally, take your summarized definitions, and summarize those into one short definition (ideally also 1-3 words), and return that under the &quot;gloss&quot; JSON key. Format all definitions and the gloss in lowercase unless it is a proper name, and don't use abbreviations where they can be easily expanded to the normal word. And then also, add the part of speech of the word that's being defined in the &quot;role&quot; field. Also, be conservative. If you can't figure it out clearly and simply, then return empty JSON (i.e. return nothing). Better to be safe than sorry. That's it. Here is the input as JSON: <code>[jsonArrayOfDefinitions]</code>.</p>
+</blockquote>
+<p>It costs about $100 per 20,000 API calls to do this sort of summarization/cleaning + return results as JSON, using OpenAI's API.</p>
+<p>Is there a way to accomplish this same thing using open source tools in Node.js (such as huggingface's transformers.js), or Python, for free, using open source models? If so, what is the general approach? Or if it's not possible, what is the state of the art of open source versions in comparison with OpenAIs paid-for API?</p>
+<p>Here is an example of a definition <strong>input</strong>:</p>
+<blockquote>
+<p>*அக்கடி akkaṭi , n. cf. akka + அடி. Difficulty, trouble in a voyage or journey, peril; அலைவு. எனக்கு அக்கடியா யிருக்கிறது. (R.)</p>
+</blockquote>
+<p>And here is what OpenAI's API spit out:</p>
+<pre><code>{
+  &quot;term&quot;: &quot;அக்கடி&quot;,
+  &quot;definitions&quot;: [
+    &quot;difficulty&quot;,
+    &quot;trouble&quot;,
+    &quot;peril&quot;
+  ],
+  &quot;gloss&quot;: &quot;difficulty&quot;,
+  &quot;role&quot;: &quot;noun&quot;
+}
+</code></pre>
+<p>Can it be done with open source? If so, what are the rough steps and/or pseudocode to get there?</p>
+","gpt"
+"{
+  ""id"": 129623,
+  ""title"": ""How to capture values of cypher and context from GraphCypherQAChain while it is running in a loop""
+}","How to capture values of cypher and context from GraphCypherQAChain while it is running in a loop","2024-07-05 21:17:16","","0","27","<python><gpt><neo4j><rag>","<p>I am using opensource LLama3 without OpenAI or Groq and need to use GraphCypherQAChain to get the cypher and context and use it to generate an answer. But I am unable to capture the values while it is running. I want to recursively run the chain until I have values for both cypher and Full context.</p>
+<p>I am thinking here to store the logs in a file and then parse it to get cypher and context. Fyi, I am running this on Sagemaker Jupyter notebook instance. Need suggestions</p>
+<p>Relevant code:</p>
+<pre><code>CYPHER_GENERATION_PROMPT = PromptTemplate(
+    input_variables=[&quot;schema&quot;, &quot;question&quot;], template=CYPHER_GENERATION_TEMPLATE
+)
+
+# Function to extract Cypher from logs
+def extract_cypher_from_logs(logs):
+    pattern = r&quot;Generated Cypher:(.*?)Full Context:&quot;
+    match = re.search(pattern, logs, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return None
+
+# Function to extract context from logs
+def extract_context_from_logs(logs):
+    pattern = r&quot;Full Context:(.*)&quot;
+    match = re.search(pattern, logs, re.DOTALL)
+    if match:
+        context_str = match.group(1).strip()
+        try:
+            context = eval(context_str)  # Safely evaluate the context list from string
+            return context
+        except Exception as e:
+            print(f&quot;Error extracting context: {e}&quot;)
+    return None
+
+# Function to run chain and collect valid cypher and context
+def generate_valid_cypher_and_context(chain, question, max_iterations=10):
+    for _ in range(max_iterations):
+        try:
+            result = chain.invoke(question)['result']
+            logs = sys.stdout.getvalue()
+            sys.stdout.flush()  # Flush stdout to ensure prints are visible immediately
+            
+            cypher = extract_cypher_from_logs(logs)
+            context = extract_context_from_logs(logs)
+            
+            if cypher and context:
+                return cypher, context
+            
+            # Reduce or eliminate sleep time based on performance needs
+            time.sleep(0.5)  # Adjust sleep time as needed
+            
+        except Exception as e:
+            print(f&quot;Error invoking chain: {e}&quot;)
+            time.sleep(0.5)  # Adjust sleep time as needed
+    
+    return None, None
+
+# Example usage
+schema = graph.schema  # Replace with your actual schema object
+chain = GraphCypherQAChain.from_llm(graph=graph, llm=llm, cypher_prompt=CYPHER_GENERATION_PROMPT, verbose=True, validate_cypher=True)
+
+questions = &quot;What Departments are present in the Org. Dav?&quot;
+valid_cypher, valid_context = generate_valid_cypher_and_context(chain, questions)
+
+if valid_cypher and valid_context:
+    print(&quot;Valid Cypher Query:&quot;)
+    print(valid_cypher)
+    print(&quot;\nValid Context:&quot;)
+    print(valid_context)
+else:
+    print(&quot;No valid Cypher query and context found within the specified iterations.&quot;)
+</code></pre>
+","gpt"
+"{
+  ""id"": 129155,
+  ""title"": ""does DALL-E api use Microsoft account info while generating responses?""
+}","does DALL-E api use Microsoft account info while generating responses?","2024-05-21 23:07:20","","0","13","<machine-learning><generative-models><llm><gpt><image-generation>","<p>I have read some work regarding occupational gender bias in AI image generation and it seemed. According to my research, tools like DALL-E generated more images of men when trying out for images with high paying jobs (lawyers, doctors etc). However, when I tried it via my openAI account, the results were shockingly different. I am a female, which probably reflects in my account info. When I generate images of these professions, I get almost all females. Which is quite opposite to what I get when I try Stable diffusion locally. Is there any proof/study that shows that the DALL-E api might use our account info while generating responses?</p>
+","gpt"
+"{
+  ""id"": 128963,
+  ""title"": ""How OpenAI embeddings work?""
+}","How OpenAI embeddings work?","2024-05-06 00:38:26","128967","1","254","<nlp><word-embeddings><embeddings><gpt>","<p>I was looking at the <a href=""https://www.youtube.com/playlist?list=PLoROMvodv4rOSH4v6133s9LFPRHjEmbmJ"" rel=""nofollow noreferrer"">Stanford CS224N NLP with Deep Learning lecture</a>, and in the first two videos, we are introduced to word2vec models. The high-level idea mentioned was that we have a 'big corpus' of text, and then we use SG or CBOW to generate the embeddings (There will of course be many more models). While watching the video I was comparing the approach with how we generate embeddings from OpenAI and this raised a few questions for me</p>
+<ol>
+<li><p>What is the 'big corpus' of text that OpenAi uses? Is it only my input? If I send only one word like 'cat' it gives an output, so where does the context come from? If OpenAI doesn't use this approach how does it generate the output? And how is it so fast?</p>
+</li>
+<li><p>Are the OpenAI embedding models substitutes for SG or CBOW?</p>
+</li>
+<li><p>How does the vector embedding generation differ from words, compared to that of sentences or paragraphs? Are they entirely different techniques or extensions of the same approach?</p>
+</li>
+</ol>
+","gpt"
+"{
+  ""id"": 128796,
+  ""title"": ""Tips for pre-processing long unstructured text?""
+}","Tips for pre-processing long unstructured text?","2024-04-22 08:38:41","","0","14","<data-cleaning><preprocessing><gpt><ocr><javascript>","<p>I'm working on a React-Node project where I'm trying to pre-process some text before passing it to GPT-4 to perform information extraction out of it, the flow of the project is:</p>
+<ol>
+<li>User uploads document</li>
+<li>OCR is performed on the document and text is produced</li>
+<li>Results are organized as an array of objects where each object is a message with 'role' and 'content' keys, where 'content' has the text from each page. And this is used to construct a GPT prompt.</li>
+<li>GPT should produce a JSON with keys representing specific information to be extracted out of the text and values containing the extracted information</li>
+</ol>
+<p>The issue I am running into is that the data that is going in is too big, some documents are poorly formatted and not split properly. Documents can be part of one of two categories, each category's documents contain different kinds of information, for the sake of the question I'll define the following 2 categories:</p>
+<ol>
+<li>Category 1: monetary information regarding different categories</li>
+<li>Category 2: categorical information describing different situations and the process for each situation</li>
+</ol>
+<p>And usually documents are split where one document exists for each category, in these cases, data is small and doesn't require pre-processing. However, some cases exist where both categories' documents are mashed into one and the data is very large for the token limit available. I should add that when constructing the prompt, the category matters because each category has a different prompt and different output JSON structure.</p>
+<p>My question is: what is some generic pre-processing I can do to help lessen the size of the data but not lose semantic relationships? For context, the OCR produces some unreadable symbols that show as &quot;?&quot; and some random symbols. Another thing, is it possible to trim out some sections of the OCR result based on section title? I've been trying to think of how to do this, but different documents have different naming conventions for these sections.</p>
+","gpt"
+"{
+  ""id"": 128634,
+  ""title"": ""How do I prompt GPT-4 to look at a PDF in Jupyter Notebook?""
+}","How do I prompt GPT-4 to look at a PDF in Jupyter Notebook?","2024-04-11 04:16:55","128635","4","1425","<nlp><jupyter><gpt><llm><api>","<p>I am a beginner. I purchased tokens to use GPT-4 and finally figured out how to import the GPT-4 model into my Jupyter Notebook.</p>
+<pre><code>%env OPENAI_API_KEY= (my key goes here)
+
+!pip install --upgrade openai wandb
+
+from openai import OpenAI
+
+LLM = OpenAI()
+
+response = LLM.chat.completions.create(
+
+model='gpt-4',
+
+messages=[{'role': 'user', 'content': 'What is 1+1?'}],)
+
+response
+</code></pre>
+<p>Now, I would like to upload a PDF document and prompt GPT-4 to extract important headings from the document. Can you provide the code for how to do this? Specifically the part where you upload the PDF, and prompt GPT-4 with an example instruction.</p>
+<p>If I'm not mistaken, I don't need to process the PDF into text format because GPT-4 can work directly with PDFs? That's why I wanted to use GPT-4, because when I was converting the PDF to text, it was very messy due to tables, headers, footers, etc.</p>
+","gpt"
+"{
+  ""id"": 128400,
+  ""title"": ""How is openAI embedding models trained?""
+}","How is openAI embedding models trained?","2024-03-22 04:31:48","128401","1","865","<deep-learning><nlp><embeddings><gpt><artificial-intelligence>","<p>how it the embedding model trained? Are the embeddings simply extracted from chatGPT4 or are they trained differently from the beginning (pre-training stage)?</p>
+","gpt"
+"{
+  ""id"": 128377,
+  ""title"": ""Stream response from custom RASA actions to the chatbot""
+}","Stream response from custom RASA actions to the chatbot","2024-03-20 11:18:11","","0","73","<machine-learning><nlp><gpt><chatbot><software-development>","<p>I am using RASA PRO with CALM.
+I was thinking of using openai api within a custom action and stream the streaming response coming from openai to my chatbot. Openai is giving me streaming response and i am doing “dispatcher.utter_message(openai_res_chunk)” from actions, but the response is not getting streamed in chunks to my bot and is available only after last chunk from openai. I am also passing “stream”: True while sending request to rasa server, but nothing is working. How to achieve this?</p>
+","gpt"
+"{
+  ""id"": 128259,
+  ""title"": ""What is system prompt in fine tuning of GPT3.5 for natural language to sql queries""
+}","What is system prompt in fine tuning of GPT3.5 for natural language to sql queries","2024-03-12 11:58:46","","0","16","<language-model><sql><gpt><prompt-engineering>","<p>What exactly is a system prompt while finetuning GPT3.5 or a language model in general? How can I build system prompt for the task of converting natural language to SQL queries</p>
+","gpt"
+"{
+  ""id"": 128043,
+  ""title"": ""What ML model is best suited for an intelligent search assistant?""
+}","What ML model is best suited for an intelligent search assistant?","2024-02-26 18:22:36","","0","37","<machine-learning><python><nlp><ai><gpt>","<p>I'm working on my thesis project, and want to make an intelligent search assistant that understands context and, of course, processes and repsonds in natural languaje. The data I want to train this model on is from the Virtual Observatory and a <a href=""https://pyvo.readthedocs.io/en/latest/"" rel=""nofollow noreferrer"">python library</a> that can be used to retrieve data from it.</p>
+<p>I thought on Open AI's GPT-3 API, but the knowledge to which it has access to is outdated. The I thought about IBM's Wattson Discovery, but I feel that using their solution would limit the response type or the training process very much.</p>
+<p>What ML model(s) would work better in my case? Or what software/solution would be useful?</p>
+","gpt"
+"{
+  ""id"": 126841,
+  ""title"": ""predict next career suggestion""
+}","predict next career suggestion","2024-02-13 03:52:58","","0","19","<nlp><recommender-system><word2vec><gensim><gpt>","<p>I have a dataset having job and description. i want to make model which can predict what are the thing that user needs to improve when the user inputs his skills.</p>
+<p>For an example,</p>
+<p>If he has skills - Python, Data Visualization, and etc
+The model should predict - DataScience, Machine Learning etc..</p>
+<p>Note : The dataset contains the job description which contains various skills a candidate needs to have. model needs to predict from those data,</p>
+<p>fine tune the dataset on GPT model is not recommended.</p>
+<p>If you have any idea how to approach to this problem, I am all ears.</p>
+","gpt"
+"{
+  ""id"": 126803,
+  ""title"": ""How can I use Time-GPT for pretraining my model""
+}","How can I use Time-GPT for pretraining my model","2024-02-10 08:15:49","","1","69","<deep-learning><time-series><transformer><transfer-learning><gpt>","<p>I am mentioning Time-GPT here as a placeholder example. It can be any pretrained model.</p>
+<p>Suppose I have a dataset that requires some time series prediction. How can I leverage a well-trained model and transfer that learning to make a better prediction for my model?</p>
+<p>Asking this because, in almost all cases the I/P and O/P dimensions of Time-GPT and my dataset would be different. Then how can I use it?</p>
+<p>Could you share some resourceful git repo with similar examples?</p>
+","gpt"
+"{
+  ""id"": 126764,
+  ""title"": ""Create a gpt-3.5 API request that determines whether any time range in a list intersects with a given time range""
+}","Create a gpt-3.5 API request that determines whether any time range in a list intersects with a given time range","2024-02-07 11:48:16","","0","12","<gpt><llm><chatgpt>","<p>I've created a prompt that should select a requested number of employees from the list. But the <strong>step 1</strong> doesn't work properly. Sometimes GPT takes in account only the time range and ignores the date. I tried to describe this step in a different way many times, tried different time formats including UTC, but didn't succeed. Maybe experienced prompt creators can tell what's wrong with my prompt?</p>
+<hr />
+<p><strong>User message:</strong></p>
+<pre><code>{
+  &quot;employees&quot;: [
+    {
+      &quot;id&quot;: 1,
+      &quot;name&quot;: &quot;Bender Rodriguez&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;middle&quot;,
+      &quot;interviews_conducted&quot;: 0,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 06:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 07:00&quot;},
+        {&quot;start_time&quot;: &quot;February 11 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 11 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 2,
+      &quot;name&quot;: &quot;Philip Fry&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;middle&quot;,
+      &quot;interviews_conducted&quot;: 2,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 13:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 14:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 3,
+      &quot;name&quot;: &quot;John Zoidberg&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;junior&quot;,
+      &quot;interviews_conducted&quot;: 1,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 4,
+      &quot;name&quot;: &quot;Turanga Leela&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;senior&quot;,
+      &quot;interviews_conducted&quot;: 1,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    },
+    {
+      &quot;id&quot;: 5,
+      &quot;name&quot;: &quot;Amy Wong&quot;,
+      &quot;position&quot;: &quot;developer&quot;,
+      &quot;experience&quot;: &quot;senior&quot;,
+      &quot;interviews_conducted&quot;: 0,
+      &quot;busy_date_time&quot;: [
+        {&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}
+      ]
+    }
+  ]
+}
+
+Do step-by-step:
+
+1. Remove from the &quot;employees&quot; list above each employee if any time interval in 
+&quot;busy_date_time&quot; list overlaps with &quot;required_date_time&quot;.
+
+2. If the number of employees left in the &quot;employees&quot; list is less than 
+&quot;required_employees_number&quot;, set the new value to &quot;required_employees_number&quot; equal 
+to the number of employees left in the &quot;employees&quot; list.
+
+3. Select &quot;required_employees_number&quot; employees with &quot;required_experience&quot; and lower 
+&quot;interviews_conducted&quot; value. You shouldn't find the one with the lowest 
+&quot;interviews_conducted&quot; value among all, but a required number of employees which is 
+&quot;required_employees_number&quot;.
+
+4. Check the previous step where you usually make the mistake of selecting 1 employee
+with minimum &quot;interviews_conducted&quot; value among all employees when you need to select 
+a list of &quot;required_employees_number&quot; employees.
+
+required_date_time = '''{&quot;start_time&quot;: &quot;February 10 2024 10:00&quot;, &quot;end_time&quot;: &quot;February 10 2024 11:00&quot;}'''
+required_employees_number = 1
+required_experience = &quot;middle&quot;
+</code></pre>
+<hr />
+<p><strong>System message:</strong>
+You are a computer program that strictly follows the user's instructions. Your output is always only a list of employee's id. Any other notes or comments are forbidden.</p>
+<hr />
+<p><strong>GPT settings:</strong></p>
+<ul>
+<li>Temperature: 0</li>
+<li>Top P: 0</li>
+<li>Frequency penalty: 0</li>
+<li>Presence penalty: 0</li>
+</ul>
+<hr />
+<ul>
+<li><strong>Expected result:</strong> [1]</li>
+<li><strong>Actual result:</strong> [2]</li>
+</ul>
+","gpt"
+"{
+  ""id"": 126435,
+  ""title"": ""How are GPT2 token embedding vectors processed internally?""
+}","How are GPT2 token embedding vectors processed internally?","2024-01-15 16:44:52","","0","21","<transformer><embeddings><gpt>","<p>I am experimenting with the GPT2-XL model and trying to understand the internal structure. While I understand most of the components and how they affect the size of the activation tensors (such as multi-headed self-attention), I do not fully understand how the embeddings are processed.</p>
+<p>When extracting the embeddings at a specific point of a forward pass, i.e. between two transformer layers, I get a vector of size token length x context length (so let's say 4 vectors of length 1600 for the first forward pass with input size of 4 tokens).</p>
+<p>I understand that each token is represented by an embedding vector. But I do not understand, how these are then processed. Are they calculated one after one for each transformer layer before the new 4x1600 tensor is passed to the next step? Or is each embedding vector processed in an own forward pass? If so, how does the last forward pass play a role in the next one? Are they computed in parallel? If so, do they share weights? This is quite confusing to me at the moment.</p>
+<p>Thanks!</p>
+","gpt"
+"{
+  ""id"": 126431,
+  ""title"": ""Falcon-7B llm giving random output""
+}","Falcon-7B llm giving random output","2024-01-15 14:21:16","126434","1","45","<nlp><transformer><huggingface><gpt><llm>","<p>I am using a falcon 7B model for a chatbot without any finetuning with the following code</p>
+<pre><code>model_name = &quot;ybelkada/falcon-7b-sharded-bf16&quot;
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type=&quot;nf4&quot;,
+    bnb_4bit_compute_dtype=torch.float16,
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    quantization_config=bnb_config,
+    trust_remote_code=True
+)
+model.config.use_cache = False
+from transformers import pipeline
+
+generator = pipeline(
+    &quot;text-generation&quot;,
+    model=model,
+    tokenizer=&quot;gpt2&quot;,
+)
+
+result = generator(&quot;Hi&quot;)
+print(result)
+</code></pre>
+<p>the result isnt as expected and it outputs
+[{'generated_text': 'Hi8\x10=:AHi8\x10&gt;Hi8\x10&gt;:AHi8\x10?'}].
+How can i fix this and make it output a proper response</p>
+","gpt"
+"{
+  ""id"": 126025,
+  ""title"": ""Do we really need a very large dataset to train GPTs?""
+}","Do we really need a very large dataset to train GPTs?","2023-12-13 07:20:33","","0","108","<transformer><gpt><llm><chatgpt>","<p>Do we really need a very large dataset to train GPTs?
+If this dataset is not big, won't GPT work well? Or will it still work better than conventional learning models in this situation?
+And is it possible to quantitatively determine the minimum number of dataset samples suitable for this work? For example, if we talk about malware samples, we can say, for example, that the dataset suitable for GPTs should not be less than a certain number?</p>
+","gpt"
+"{
+  ""id"": 124678,
+  ""title"": ""data verctorizing of a free text field to get better responses of the prompt""
+}","data verctorizing of a free text field to get better responses of the prompt","2023-11-21 12:34:17","","0","29","<gpt><vector-database><prompt-engineering>","<p>wonder if best practices are existing to approach the solution &quot;what kind of vectorizing of a input filed&quot; is the best for my use-case. Model, size and others can have a significant impact to the results if they are combined by a prompt by genAI. Someone of you know good articles, guidance related on that?
+Grre Eric</p>
+","gpt"
+"{
+  ""id"": 124441,
+  ""title"": ""Reinforcement learning""
+}","Reinforcement learning","2023-11-06 13:33:23","","0","45","<neural-network><reinforcement-learning><sentiment-analysis><gpt><llm>","<p>I am working on a sentiment analysis project. I used BERT model for training but lack of data it gives huge overfitting. So after i moved LLM approach to do that. Using LLM finally i  got good results. But sometimes it gives wrong outputs. So now i want to use some Reinforcement leaning approach. If model gives correct answer, user give thumbs up or else thumbs down like that. I want some guide to do that. I'm using gpt 3.5 turbo as my model.</p>
+","gpt"
+"{
+  ""id"": 124200,
+  ""title"": ""What is the \""Extract\"" token and how is the final Linear layer applied in GPT?""
+}","What is the ""Extract"" token and how is the final Linear layer applied in GPT?","2023-10-22 04:08:28","124202","0","252","<nlp><transformer><transfer-learning><gpt>","<p>In the manuscript of GPT, the authors have given the following image:</p>
+<p><a href=""https://i.sstatic.net/QYquD.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/QYquD.png"" alt=""enter image description here"" /></a></p>
+<p>Questions:</p>
+<ol>
+<li>What is the final &quot;Extract&quot; (token?)? Is it the &quot;END&quot; token?</li>
+<li>How is the final linear layer applied? We would get a tensor of shape (N,L,D) out of the transformer (tranformer's final layer would itself be a pointwise feedforward) where N is the number of samples, L is the sequence length and D is the output dimension for every token. Taking just one sample it would be (1,L,D). How is the linear layer applied on top of this? The output of the final linear layer would have to be a vector with dimensions equal to the number of decisions at hand (n in case of n-way-classifier, vocabulary size in case of cloze task etc)</li>
+</ol>
+","gpt"
+"{
+  ""id"": 124163,
+  ""title"": ""Is openAI text generation models an extension of embedding models?""
+}","Is openAI text generation models an extension of embedding models?","2023-10-18 03:24:40","","1","48","<nlp><word-embeddings><embeddings><gpt><stanford-nlp>","<p>we can creating embeddings using below code</p>
+<pre><code>import openai
+response = openai.Embedding.create(
+  input=&quot;porcine pals say&quot;,
+  model=&quot;text-embedding-ada-002&quot;
+)
+</code></pre>
+<p>And we can generate text using below code</p>
+<pre><code>def get_completion(prompt, model=&quot;text-davinci-003&quot;):
+messages = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}]
+response = openai.ChatCompletion.create(
+model=model,
+messages=messages,
+temperature=0,
+)
+return response.choices[0].message[&quot;content&quot;]
+</code></pre>
+<p>are text completions models extension of embeddings generation models, I mean is it like the embeddings generation models are further finetuned for chat/text generation?</p>
+<p>or is it like both models are completely different in terms of their training and architecture?</p>
+","gpt"
+"{
+  ""id"": 124127,
+  ""title"": ""A question about contextual embeddings in the decoder only transformer architecture (gpt)""
+}","A question about contextual embeddings in the decoder only transformer architecture (gpt)","2023-10-15 16:00:13","124133","1","312","<nlp><word-embeddings><transformer><gpt><context-vector>","<p>I am reading up on the <a href=""https://stanford-cs324.github.io/winter2022/lectures/training/#decoder-only-models"" rel=""nofollow noreferrer"">decoder only architecture</a></p>
+<p>Relevant excerpts:</p>
+<p>We can use any model that maps token sequences into contextual embeddings (e.g., LSTMs, Transformers):</p>
+<p><span class=""math-container"">$$\phi : V^L \to R^{d \times L}$$</span></p>
+<p>Recall that an autoregressive language model defines a conditional distribution:</p>
+<p><span class=""math-container"">$$p(x_i∣x_{1:i−1})$$</span></p>
+<p>We define it as follows:</p>
+<ul>
+<li>Map <span class=""math-container"">$x_{1:i-1}$</span> to contextual embeddings <span class=""math-container"">$\phi(x_{1:i-1})$</span></li>
+<li>Apply an embedding matrix <span class=""math-container"">$E \in R^{V×d}$</span>to obtain scores for each token <span class=""math-container"">$E\phi(x_{1:i-1})_{i-1}$</span></li>
+<li>Exponentiate and normalize it to produce the distribution over xi</li>
+</ul>
+<p>Succinctly:
+<span class=""math-container"">$$p(x_{i+1} \mid x_{1:i}) = softmax(E \phi(x_{1:i})_i)$$</span></p>
+<p>Questions:</p>
+<ol>
+<li>What is the meaning of the second subscript on <span class=""math-container"">$\phi$</span> in <span class=""math-container"">$ E \phi (x_{1:i-1})_{i-1}$</span></li>
+<li>I think  <span class=""math-container"">$softmax(E \phi(x_{1:i})_i)$</span> just takes the dot product of the context embedding for the word at the position <span class=""math-container"">$i$</span> with the embeddings <span class=""math-container"">$E$</span> of the entire vocabulary. This means that for the word at <span class=""math-container"">$i$</span>, we are basically just trying to learn the context embeddings as something that would essentially be equal to the embedding of the next token (if the model learns perfectly) in <span class=""math-container"">$E$</span>. Why is that the case? Should there not be a feed-forward between the final context embeddings and the embedding <span class=""math-container"">$E$</span> for the next token and then the similarity should be checked? This way, in the best case scenario, the contextual embeddings learned would just be the vector that appeared for the word at <span class=""math-container"">$i$</span> in <span class=""math-container"">$E$</span>. Please help me understand how we are not just asking the contextual embedding to be equal to the embedding <span class=""math-container"">$E$</span> for the word at <span class=""math-container"">$i$</span>?</li>
+</ol>
+","gpt"
+"{
+  ""id"": 123996,
+  ""title"": ""what is the difference between window size and context length of language model?""
+}","what is the difference between window size and context length of language model?","2023-10-05 12:43:10","123997","2","748","<nlp><training><gpt><pretraining><chatgpt>","<p>is window size and context length of language model one and the same thing?</p>
+<p>******** following text is added as question with ONLY above text was not allowed *****
+I am trying to understand how GPT model is trained and this question to my mind.
+I tried to search answer on google but couldn't find an answer thus asking here.</p>
+","gpt"
+"{
+  ""id"": 123659,
+  ""title"": ""How does supervised fine-tuning work in InstructGPT?""
+}","How does supervised fine-tuning work in InstructGPT?","2023-09-11 17:38:19","","1","216","<machine-learning><nlp><supervised-learning><gpt><finetuning>","<p>See Figure 2 from the <a href=""https://arxiv.org/pdf/2203.02155.pdf#page=3"" rel=""nofollow noreferrer"">InstructGPT paper</a>:
+<a href=""https://i.sstatic.net/zmnla.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/zmnla.png"" alt=""Figure 2 from the InstructGPT paper"" /></a></p>
+<p>I want to know how Step 1 works. Here is one possible algorithm.</p>
+<ol>
+<li>Pass the prompt through the model, and compute the negative log of the probability of the first token in the desired output. Update the model weights to minimize this loss.</li>
+<li>Pass the prompt through the model, followed by the first token from the desired output, and compute the negative log of the probability of the second token in the desired output. Update the model weights.</li>
+<li>Pass the prompt through the model, followed by the first two tokens from the desired output, and compute the negative log of the probability of the third token in the desired output. Update the model weights.</li>
+<li>Continue until the model has attempted to predict every token in the desired output, updating the weights after each attempt.</li>
+</ol>
+<p>After reading the SFT section of the <a href=""https://arxiv.org/pdf/2307.09288.pdf#subsection.3.1"" rel=""nofollow noreferrer"">Llama 2 paper</a>, I think this is almost correct. However, instead of updating the weights multiple times, we can run the model on the prompt and the desired output together, to get all the aforementioned negative log results at once. Then, we can sum all these results, and do one weight update to minimize this loss. Is that correct?</p>
+","gpt"
+"{
+  ""id"": 123149,
+  ""title"": ""Why do GPT models use a transpose of the embedding matrix to convert outputs to logits?""
+}","Why do GPT models use a transpose of the embedding matrix to convert outputs to logits?","2023-08-09 06:45:56","123152","0","624","<machine-learning><nlp><gpt><chatgpt>","<p>According to <a href=""https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf#subsection.3.1"" rel=""nofollow noreferrer"">section 3.1</a> of the original GPT paper, GPT right-multiplies the final output vectors (after applying a Transformer decoder model) by the transpose of the embedding matrix, before applying a softmax. See <a href=""https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens?commentId=Xh7HKWimSPmJqZcnc"" rel=""nofollow noreferrer"">this comment</a> for further verification.</p>
+<p>Why? I feel like it would be simpler to learn a separate matrix for this task. Doing so wouldn't be particularly computationally expensive, and it wouldn't significantly increase the parameter count. Additionally, I don't see any mathematical link between the matrix and its transpose in this context; I don't think the dual space is going to matter here... Overall, I see very little connection between embedding tokens and obtaining logits. So what's the point of using the transpose? Does it just tend to perform well empirically / in practice?</p>
+","gpt"
+"{
+  ""id"": 123053,
+  ""title"": ""Why does everyone use BERT in research instead of LLAMA or GPT or PaLM, etc?""
+}","Why does everyone use BERT in research instead of LLAMA or GPT or PaLM, etc?","2023-08-03 01:11:29","123060","9","12125","<nlp><bert><language-model><gpt><research>","<p>It could be that I'm misunderstanding the problems space and the iterations of LLAMA, GPT, and PaLM are all based on BERT like many language models are, but every time I see a new paper in improving language models it takes BERT as a based an adds some kind of fine-tuning or filtering or something. I don't understand why BERT became the default in research circles when all anyone hears about publicly is GPT-2,3,4 or more recently LLAMA-2. I have a feeling it has something to do with BERT being open-source, but that can't be the whole story. This question might not be specific enough, please let me know. Thanks.</p>
+","gpt"
+"{
+  ""id"": 123002,
+  ""title"": ""How to measure accuracy of GPT model""
+}","How to measure accuracy of GPT model","2023-07-29 17:34:29","123003","1","705","<accuracy><gpt><llm><chatgpt>","<p>I am working on a model to build questions automatically from some text</p>
+<p>My model will analyse provided article and ask authors questions that can help improving their articles</p>
+<p>How can we measure the accuracy of these ML-generated questions?</p>
+<p>There is the relevance part of the questions as these questions represent an area of improvement in the article</p>
+<p>How to measure that?</p>
+<p>Any previous work on similar models would be a great help too</p>
+<p>Thanks</p>
+","gpt"
+"{
+  ""id"": 122498,
+  ""title"": ""How was the token library constructed for ChatGPT / other GPT systems?""
+}","How was the token library constructed for ChatGPT / other GPT systems?","2023-06-30 18:27:29","122499","2","166","<ai><gpt><tokenization>","<p>I have found literally hundreds of articles on Google with titles like 'What are tokens and how to use them,' but haven't been able to find any information at all on how the token libraries themselves were made. OpenAI state that GPT-3.5 uses a token library of 50,257 tokens, which presumably can represent any string in their training library. But how were these tokens selected? I assume there was some kind of optimization algorithm that found the most common strings in the training library? Was the tokenizer trained alongside the GPT models to optimize both for one another? There are a lot of strange cases, particularly around how spaces are handled (see below for a few examples I made of closely related words represented by different tokens), so I'm really curious what the methodology of making a token set is. Obviously how tokens are made will have a huge impact on how the system as a whole performs, yet unlike the attention mechanism very little seems to have been written about it.</p>
+<p><a href=""https://i.sstatic.net/fbIF7.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/fbIF7.png"" alt=""enter image description here"" /></a></p>
+","gpt"
+"{
+  ""id"": 122347,
+  ""title"": ""Are there any studies on the actual loss of quality in a quantized GPT model? (eg GPTQ)""
+}","Are there any studies on the actual loss of quality in a quantized GPT model? (eg GPTQ)","2023-06-23 16:48:24","","0","31","<gpt>","<p>I've been trying to think of how different a GPT would perform if we swapped from floats to 8-bit. Given that we take say the top 10 words, how much fidelity is actually lost? How many tokens are actually in the top selection?  Especially if something like beam selection is implemented, I would imagine there are few, but I really don't know. Has anyone looked into it?</p>
+","gpt"
+"{
+  ""id"": 122264,
+  ""title"": ""Training GPT Model with Swagger Documents, Need Help with Model Fit""
+}","Training GPT Model with Swagger Documents, Need Help with Model Fit","2023-06-20 11:38:04","122284","2","654","<dataset><training><ai><gpt><chatbot>","<p>We are currently developing an application that performs actions based on user input using 'gpt-3.5-turbo-0613'.</p>
+<p>For example, if a user enters the prompt &quot;create a user with the name Potter and the role wizard,&quot;
+it should call the <code>add_admin</code> method available in our SDK.</p>
+<p>To enhance the capabilities of the application, we would like to train the underlying GPT model using our Swagger document(of the API which the SDK internally calls).
+The Swagger document contains valuable information about the API endpoints and request/response structures.
+However, we are facing difficulties in adapting the current GPT model to incorporate this specific training data.</p>
+","gpt"
+"{
+  ""id"": 122004,
+  ""title"": ""Why is the target output in GPT (Andrej Karpathy's course) contains copies of tokens from the input?""
+}","Why is the target output in GPT (Andrej Karpathy's course) contains copies of tokens from the input?","2023-06-07 14:58:58","122005","1","102","<neural-network><pytorch><transformer><gpt>","<p>The question is based on Andrej Karpathy lecture on training a toy GPT model on Tiny Shakespeare dataset (<a href=""https://www.youtube.com/watch?v=kCc8FmEb1nY&amp;list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&amp;index=10&amp;t=5003s&amp;ab_channel=AndrejKarpathy"" rel=""nofollow noreferrer"">youtube link</a>). In this model, tokens are single characters with a dictionary of around 60 elements. He creates training and validation datasets as follows</p>
+<pre><code>def get_batch(...):
+    ...
+    ix = torch.randint(len(data) - block_size, (batch_size,))
+    x = torch.stack([data[i:i+block_size] for i in ix])
+    y = torch.stack([data[i+1:i+block_size+1] for i in ix])
+    ...
+    return x, y
+</code></pre>
+<p>Why does he make the target output <code>y</code> a sequence of bytes <code>data[i+1:i+block_size+1]</code> instead of just a single byte <code>data[i+block_size+1]</code>? We are trying to predict the next <strong>single</strong> byte (token) after all.</p>
+<p>It looks to me like gpt is trained to predict N (N is the <code>block_size</code>) characters of <code>Y</code> from N characters of <code>X</code>, but the first (N-1) characters in <code>Y</code> are just a copy of (N-1) characters in <code>X</code>. Surely the NN can be trained to do that, but isn't it a waste of weights and GPU cycles on essentially just copying (N-1) characters?</p>
+<p>I ran the script in debugger to confirm that's what indeed happens in training. In the code, after the first breakpoint</p>
+<pre><code>class GPTLanguageModel(nn.Module):
+
+    ...
+    def forward(self, idx, targets=None):
+&gt;&gt;&gt;     B, T = idx.shape
+</code></pre>
+<p><code>idx</code> is something like <code>tensor([[ 1, 16, 24, 40, 26, 32, 43, 41],...])</code>, while <code>target</code> is <code>tensor([[16, 24, 40, 26, 32, 43, 41,  1],...])</code></p>
+","gpt"
+"{
+  ""id"": 121213,
+  ""title"": ""Creating LLM chatbot using llama-index + langchain""
+}","Creating LLM chatbot using llama-index + langchain","2023-04-28 12:30:25","","1","747","<machine-learning><python><transformer><gpt><huggingface>","<p>As the title suggests: I'm trying to build a chatbot which his goal should be sort of like &quot;chatgpt&quot;.</p>
+<p>The chatbot will be installed on Slack workspace and I'm struggling with <strong>which scope</strong> I should create the documents on for building the index.</p>
+<p>At the moment the document scope is &quot;<strong>per channel</strong>&quot; (i.e. <strong>every channel is a whole document</strong>), but I'm not sure it's the right approach (maybe it should be far <strong>smaller</strong> - does it make any difference at all?)</p>
+<p>I'm also using huggingface transformers library, but since I'm newbie to this whole new evolving technology, I'm not sure what <strong>type of model should I use</strong>:</p>
+<ol>
+<li>text2text</li>
+<li>text-generation</li>
+<li>summarization</li>
+<li>quiestion-answering</li>
+</ol>
+<p>I want the bot to address all (maybe I'm a bit naive).</p>
+<p>... so overall, 2 questions:</p>
+<ol>
+<li>What should the Document scope be?</li>
+<li>Which type of model should I look at? Any specific recommended one?</li>
+</ol>
+","gpt"
+"{
+  ""id"": 121200,
+  ""title"": ""Passing target text to gpt2 and T5 for fine tuning to learn text generation task""
+}","Passing target text to gpt2 and T5 for fine tuning to learn text generation task","2023-04-27 20:33:02","121201","0","266","<nlp><language-model><gpt><huggingface><t5>","<p>I have text with each line in following format:</p>
+<pre><code>&lt;text-1&gt; some text-1 &lt;text-2&gt; some text-2 &lt;text-3&gt; some text-3
+</code></pre>
+<p>I want fine tune model to learn generate <code>some text-3</code> after reading <code>some text-1</code> and <code>some text-2</code>. In GPT2 and T5 text generation tutorials, we do specify <code>input-ids</code> for target text i.e. labels, but for GPT2 we dont.</p>
+<p>For example in <a href=""https://medium.com/nlplanet/a-full-guide-to-finetuning-t5-for-text2text-and-building-a-demo-with-streamlit-c72009631887"" rel=""nofollow noreferrer"">this T5 text generation tutorial</a>, we can find line:</p>
+<pre><code>model_inputs[&quot;labels&quot;] = labels[&quot;input_ids&quot;]
+</code></pre>
+<p>But I could not find any such line in these GPT2 text generation examples:</p>
+<ul>
+<li><p><a href=""https://colab.research.google.com/github/borisdayma/huggingtweets/blob/master/huggingtweets-demo.ipynb#scrollTo=6O-8Kr_m8AHE"" rel=""nofollow noreferrer"">huggingtweets demo</a>,</p>
+</li>
+<li><p><a href=""https://colab.research.google.com/github/AlekseyKorshuk/huggingartists/blob/master/huggingartists-demo.ipynb#scrollTo=L8kjz49JEa-5"" rel=""nofollow noreferrer"">huggingartists demo</a></p>
+</li>
+<li><p><a href=""https://towardsdatascience.com/how-to-fine-tune-gpt-2-for-text-generation-ae2ea53bc272"" rel=""nofollow noreferrer"">Finetune GPT2 for text generation</a></p>
+</li>
+</ul>
+","gpt"
+"{
+  ""id"": 120961,
+  ""title"": ""dolly v2 - how does it internally learn to follow instructions""
+}","dolly v2 - how does it internally learn to follow instructions","2023-04-16 12:18:06","","2","485","<language-model><gpt>","<p>this is more a curiosity query than anything else. The git repo for dolly gives us an easy way to swap, the training dataset , to train custom models, as long as we follow the format. I however have been through tons of content online BUT am unable to find ANY github repo which shows me exactly how the &quot;instruction&quot; and &quot;context&quot; are parsed in order to generate the final response. Here's my best guess</p>
+<ul>
+<li>use a pre trained model (gpt2 / gptj etc ) and create the mirror architecture. Now copy the weights from the pre trained model, hence initializing your custom model</li>
+<li>now pick the question &amp; input text ( aka instruction and context ), convert them using a tokenizer ( choosing any HF based api ) and MOST IMP concatenate the &quot;instrn&quot; and &quot;context&quot; using some sort of separator ( this is what i read on using distilbert to solve QnA datasets )</li>
+<li>for the target / answer, we again, tokenize this thing and ensure that the final layer of the custom model outputs the same dimensionality as the temporal dimension of the output. Meaning if the &quot;answer&quot; is curtailed to 128 words, then the penultimate dimension of the output will be 128.</li>
+<li>try some version of cross entropy loss to compare these 2 and then we have the usual loss minimization exercise</li>
+</ul>
+<p>i even read the InstructGPT paper and their git repo is basically an empty shell. Any pointers to git repos which show how this works, will be deeply appreciated.</p>
+","gpt"
+"{
+  ""id"": 120952,
+  ""title"": ""Where can I see a summary of tools and techniques for most updated transformer developments?""
+}","Where can I see a summary of tools and techniques for most updated transformer developments?","2023-04-16 05:13:39","","0","20","<nlp><transformer><gpt>","<p>Since the invention of chatGPT, there are many tools and techniques and variants invented ever since. I want to keep track of these developments and tools but I find no avail. May I know which resources/sites that showcases all these? Thanks in advance.</p>
+","gpt"
+"{
+  ""id"": 120886,
+  ""title"": ""Chromadb in my local system""
+}","Chromadb in my local system","2023-04-13 12:01:43","","1","4593","<machine-learning><python><gpt>","<p><a href=""https://i.sstatic.net/KfbVN.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/KfbVN.png"" alt=""Error Screenshot"" /></a></p>
+<p>I am trying to install chromadb on my local system but getting following error even after installing Microsoft C++ Build Tools:</p>
+<p>Is it because &quot;Chromadb&quot; can only be used in google Collab and there is no way I can use chromadb in my local system? If yes what other libraries can be used to store my vector database locally in my system?</p>
+<p>Further information: I am using &quot;langchain&quot; to search the nearest context in my vector database to send that context to OpenAI.</p>
+","gpt"
+"{
+  ""id"": 120793,
+  ""title"": ""Use a \""ChatGPT like\"" engine really locally without exposing sensitive data""
+}","Use a ""ChatGPT like"" engine really locally without exposing sensitive data","2023-04-07 17:20:51","","3","252","<python><gpt><chatbot>","<p>I was recently playing around with <code>llama_index</code> and <code>llama Hub</code> and found it very easy to be used on my own data set.
+While this is nice, I cannot expose sensitive data of my organization to external resources (such as OpenAI).</p>
+<p>I read there's a new local port called GPT4All, but wasn't able to find how (if any) to introduce a new data into its model.</p>
+<p>Can someone please recommend of a suitable alternative that can be used really locally?</p>
+","gpt"
+"{
+  ""id"": 120764,
+  ""title"": ""How does an LLM \""parameter\"" relate to a \""weight\"" in a neural network?""
+}","How does an LLM ""parameter"" relate to a ""weight"" in a neural network?","2023-04-06 21:53:54","120766","16","15638","<machine-learning><nlp><terminology><gpt>","<p>I keep reading about how the latest and greatest LLMs have billions of parameters. As someone who is more familiar with standard neural nets but is trying to better understand LLMs, I'm curious if a LLM parameter is the same as a NN weight i.e. is it basically a number that starts as a random coefficient and is adjusted in a way that reduces loss as the model learns? If so, why do so many researches working in the LLM space refer to these as parameters instead of just calling them weights?</p>
+","gpt"
+"{
+  ""id"": 120745,
+  ""title"": ""In ChatGPT, The difference of using reward to guide policy vs using the dataset of reward to train policy?""
+}","In ChatGPT, The difference of using reward to guide policy vs using the dataset of reward to train policy?","2023-04-06 00:42:41","","1","21","<deep-learning><nlp><gpt>","<p>In ChatGPT, What are the differences of <strong>using reward to guide policy</strong> vs <strong>using the dataset of reward to train policy</strong>?</p>
+","gpt"
+"{
+  ""id"": 120737,
+  ""title"": ""Is using GPT-4 to label data advisable?""
+}","Is using GPT-4 to label data advisable?","2023-04-05 19:53:24","","5","1322","<machine-learning><gpt><labelling>","<p>If I have a lot of text data that needs to be labeled (e.g. sentiment analysis), and given the high accuracy of GPT-4, could I use it to label data? Or would that introduce bias or some other issues?</p>
+","gpt"
+"{
+  ""id"": 120726,
+  ""title"": ""What should the numerical values of the <startofsentence> and <endofsentence> token vectors be?""
+}","What should the numerical values of the <startofsentence> and <endofsentence> token vectors be?","2023-04-05 11:53:38","120979","1","154","<nlp><word-embeddings><transformer><gpt><tokenization>","<p>I'm trying to build GPT2 from scratch. I understand how to convert each word in a sentence to its respective token index and each token is then converted to its respective word embedding vector. I also understand there needs to be a fixed length for each input vector e.g. the max length of all sentences input into the transformer are 50 tokens, and for all sentences shorter than that padding token vectors consisting of nothing but zeroes fill the space where the additional word vectors would be.</p>
+<p>I get that each input vector needs to have a start token at the beginning of the input vector, as well as a stop token after the last word and before the padding vectors. The integer values corresponding to the start and stop token indexes are somewhat arbitrary, but I still don't understand what the actual values of the start and stop token embeddings should be. Should they just also be vectors of zeroes? Are these values also arbitrary?</p>
+","gpt"
+"{
+  ""id"": 120682,
+  ""title"": ""What are the benefits of changing the temperature parameter in the chatgpt api?""
+}","What are the benefits of changing the temperature parameter in the chatgpt api?","2023-04-03 21:52:06","","0","438","<gpt><chatbot>","<p>(Cross-posted from: <a href=""https://ai.stackexchange.com/q/39813/57463"">https://ai.stackexchange.com/q/39813/57463</a> after a week of no satisfactory answer)</p>
+<p><strong>TLDR</strong>:</p>
+<p>What are the benefits of increasing the temperature in the chatGPT API ?</p>
+<hr />
+<p><strong>Context</strong> (can be skipped)</p>
+<p>I believe that it is recommended to have a tiny bit of temperature with GPT 3 even for noncreative tasks like 0.2 or something (I am not entirely sure why).</p>
+<p>Last I checked, and if I remember correctly, the examples from openai on their GitHub page use 0 temperature.</p>
+<p>Is there any benefit in choosing a non-zero temperature for the chatgpt API when the query does not request a creative task? If so, are there some categories or examples?</p>
+","gpt"
+"{
+  ""id"": 120504,
+  ""title"": ""Can I use LLM to explain codebase?""
+}","Can I use LLM to explain codebase?","2023-03-27 00:39:56","120510","2","2437","<nlp><data-mining><word-embeddings><language-model><gpt>","<p>I am a Data Engineer, and I am currently assigned a task to refactor an outdated code and rectify any bugs present. However, I am unable to comprehend the code written in the existing codebase. Furthermore, the developers who worked on this codebase did not provide any documentation. Consequently, I am inquiring if there is a feasible method to convert the entire codebase into an extensive text document. Subsequently, I would like to utilize ChatGPT to translate the codebase into a comprehensive document(very long text, with folder structure tree and code inside src) that I can use to embedding. I do not require an in-depth explanation of the code; rather, I am seeking a more abstract-level understanding, such as the purpose of specific files, the functionality of particular folders, etc.</p>
+","gpt"
+"{
+  ""id"": 120374,
+  ""title"": ""How do GPT models go from token probabilities to textual outputs?""
+}","How do GPT models go from token probabilities to textual outputs?","2023-03-20 16:44:36","120379","3","1316","<machine-learning><nlp><gpt>","<p>Suppose GPT-2 or GPT-3 is trying to generate the next token, and it has a probability distribution (after applying softmax to some output logits) for the different possible next tokens. How does it choose what token to use in its textual output?</p>
+<p>The <a href=""https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf"" rel=""nofollow noreferrer"">GPT-2 paper</a> mentions top-k random sampling (citing &quot;<a href=""https://arxiv.org/pdf/1805.04833.pdf"" rel=""nofollow noreferrer"">Hierarchical Neural Story Generation</a>&quot;) and never mentions beam search. The <a href=""https://arxiv.org/pdf/2005.14165.pdf"" rel=""nofollow noreferrer"">GPT-3 paper</a> mentions nucleus sampling (citing &quot;<a href=""https://arxiv.org/pdf/1904.09751.pdf"" rel=""nofollow noreferrer"">The Curious Case of Neural Text Degeneration</a>&quot;) and mentions beam search (citing &quot;<a href=""https://arxiv.org/pdf/1910.10683.pdf"" rel=""nofollow noreferrer"">Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer</a>&quot;).</p>
+","gpt"
+"{
+  ""id"": 120345,
+  ""title"": ""Where can I find gpt-35-turbo in the Microsoft Pricing calculator?""
+}","Where can I find gpt-35-turbo in the Microsoft Pricing calculator?","2023-03-19 20:36:15","124049","0","110","<gpt><azure-ml>","<p>Where can I find gpt-35-turbo in the <a href=""https://azure.microsoft.com/en-us/pricing/calculator/"" rel=""nofollow noreferrer"">Microsoft Pricing calculator</a>? I don't see gpt-35-turbo in the model list:</p>
+<p><a href=""https://i.sstatic.net/zBqts.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/zBqts.png"" alt=""enter image description here"" /></a></p>
+<p><a href=""https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/"" rel=""nofollow noreferrer"">https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/</a> says &quot;NA&quot;.</p>
+<p>However, I do see gpt-35-turbo on <a href=""https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models"" rel=""nofollow noreferrer"">https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models</a>. So I'm confused.</p>
+","gpt"
+"{
+  ""id"": 120321,
+  ""title"": ""ChatGPT: How to use long texts in prompt?""
+}","ChatGPT: How to use long texts in prompt?","2023-03-18 12:46:40","","4","17104","<transformer><gpt><tokenization><chatbot>","<p>I like the website <a href=""https://www.chatpdf.com"" rel=""nofollow noreferrer"">chatpdf.com</a> a lot. You can upload a PDF file and then discuss the textual content of the file with the file &quot;itself&quot;. It uses ChatGPT.</p>
+<p>I would like to program something similar. But I wonder how to use the content of long PDF files in a ChatGPT prompt, as ChatGPT only accepts 4096 tokens per conversation.</p>
+<p>How can I reduce the number of tokens needed?</p>
+","gpt"
+"{
+  ""id"": 120289,
+  ""title"": ""GPT-2 architecture question""
+}","GPT-2 architecture question","2023-03-17 13:29:09","120297","0","379","<machine-learning><neural-network><nlp><pytorch><gpt>","<p>I am currently working on a NLP model that compares two comments and determines which one would be more popular. I have already came up with an architecture - it will be based on GPT-2. But now I am struggling understanding what is the general format of an output of it. I inspected <a href=""https://github.com/graykode/gpt-2-Pytorch/blob/master/GPT2/model.py"" rel=""nofollow noreferrer"">this</a> PyTorch implementation of GPT-2 and here is what I understood:</p>
+<ul>
+<li><a href=""https://github.com/graykode/gpt-2-Pytorch/blob/401078fde5e85475590dc04c9ed11b79332b8717/GPT2/model.py#L126"" rel=""nofollow noreferrer"">GPT2Model</a> is the main transformer block, which uses stack of decoders (class Block).</li>
+<li><a href=""https://github.com/graykode/gpt-2-Pytorch/blob/401078fde5e85475590dc04c9ed11b79332b8717/GPT2/model.py#L110"" rel=""nofollow noreferrer"">Block</a> is just one decoder block with attention and convolution layers</li>
+<li><a href=""https://github.com/graykode/gpt-2-Pytorch/blob/401078fde5e85475590dc04c9ed11b79332b8717/GPT2/model.py#L175"" rel=""nofollow noreferrer"">GPT2LMHead</a> is just some number of fully-connected layers. Simple classification head.</li>
+</ul>
+<p>What I don't understand so far is:</p>
+<ol>
+<li>What is <code>presents</code> variable for? I looked inside and it is just list of tensors, but I can't really figure out what are they.</li>
+<li>If I want to get an embedding of my input sentence, which class I need to use? I thought it is GPT2Model that returns some hidden states, but it returns matrix with dimensions (batch_size, sentence_length + <em>smth</em>, 768). Why is it a matrix and how to get vector then?</li>
+<li>What is the purpose of <a href=""https://github.com/graykode/gpt-2-Pytorch/blob/401078fde5e85475590dc04c9ed11b79332b8717/GPT2/model.py#L181"" rel=""nofollow noreferrer"">set_embedding_weights</a> method? To be honest, I don't even understand what embedding weights really are.</li>
+<li>If I want to my output be of fixed shape, what placeholders do I need to use in case when an input sentence is smaller than max input size of the GPT-2 model?</li>
+</ol>
+<p>Please, can you help me to understand this? I would appreciate any help. Thank you in advance!</p>
+","gpt"
+"{
+  ""id"": 118767,
+  ""title"": ""What are the advantages of autoregressive over seq2seq?""
+}","What are the advantages of autoregressive over seq2seq?","2023-02-24 09:43:33","118768","0","1168","<deep-learning><nlp><transformer><sequence-to-sequence><gpt>","<p>Why are recent dialog agents, such as ChatGPT, BlenderBot3, and Sparrow, based on the decoder architecture instead of the encoder-decoder architecture?</p>
+<p>I know the difference between the attention of the encoder and the decoder, but in terms of dialogue, isn't the attention of the encoder-decoder better?</p>
+","gpt"
+"{
+  ""id"": 118534,
+  ""title"": ""Words limit using GPT-3 API and fine tune model""
+}","Words limit using GPT-3 API and fine tune model","2023-02-15 01:36:13","118542","0","574","<gpt>","<p>In the documentation for GPT-3 API, it says One limitation to keep in mind is that, for most models, a single API request can only process up to 2,048 tokens (roughly 1,500 words) between your prompt and completion.</p>
+<p>In the documentation for fine tuning model, it says The more training samples you have, the better. We recommend having at least a couple hundred examples. in general, we've found that each doubling of the dataset size leads to a linear increase in model quality.</p>
+<p>My question is, does the 1,500 words limit also apply to fine tune model? Does &quot;Doubling of the dataset size&quot; mean number of training datasets instead of size of each training dataset?</p>
+","gpt"
+"{
+  ""id"": 118522,
+  ""title"": ""Does GPT-3 remember data from prompts used to fine tune it?""
+}","Does GPT-3 remember data from prompts used to fine tune it?","2023-02-14 16:14:57","","2","239","<machine-learning><nlp><tokenization><gpt><finetuning>","<p>I am trying to fine tune a model using OpenAI's fine tuning API. I am passing bodies of text (for example, news paper articles) as prompts and the data I want from it as completions.</p>
+<p>Let us consider the following: if a newspaper article I passed as a prompt to fine tune the data, consists of some information that GPT did not know before, like 'lithium ores are found in India'. If I use the completion API after that to ask GPT 'are lithium ores found in India?' as a prompt, will GPT be able to answer 'yes'?</p>
+","gpt"
+"{
+  ""id"": 118428,
+  ""title"": ""Does OpenAI and ChatGPT use Scikit Learn?""
+}","Does OpenAI and ChatGPT use Scikit Learn?","2023-02-09 23:36:08","","3","2116","<python><scikit-learn><ai><gpt><chatbot>","<p>Scikit Learn is Python's go-to open source package for running common AI and machine learning algorithms. Does OpenAI and its product ChatGPT use or rely on Scikit Learn on its back-end at all? If not, what do they use?</p>
+","gpt"
+"{
+  ""id"": 118371,
+  ""title"": ""Some answers given by ChatGPT are just beyond ridiculous, what could be the reasons?""
+}","Some answers given by ChatGPT are just beyond ridiculous, what could be the reasons?","2023-02-08 08:52:56","","1","149","<nlp><language-model><gpt>","<p>Some answers given by ChatGPT are just beyond ridiculous, especially in Chinese (I am Chinese so I ask ChatGPT in both Chinese and English). Here is an example,</p>
+<p><a href=""https://i.sstatic.net/GxuvN.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/GxuvN.png"" alt=""castration"" /></a></p>
+<p>The last answer</p>
+<blockquote>
+<p>阉割政策是满清末期中国强制对男性实施阉割的政策。这一政策是为了限制人口增长和减少国家财政负担，但是它对受害者造成了巨大的心理和生理影响。阉割政策也破坏了中国传统文化中对男性身份和角色的认识，并对整个社会造成了深远的影响。该政策在1911年的中华民国成立后终止，但对中国文化和历史的影响一直持续到今天。</p>
+</blockquote>
+<p>which means</p>
+<blockquote>
+<p>The castration policy was a policy of mandatory castration of men in
+China in the late Qing Dynasty. This policy was intended to limit
+population growth and reduce the financial burden on the state, but it
+had a huge psychological and physical impact on the victims. The
+castration policy has also undermined traditional Chinese cultural
+understandings of masculinity and roles and has had a profound impact
+on society as a whole. The policy ended after the founding of the
+Republic of China in 1911, but its influence on Chinese culture and
+history continues to this day.</p>
+</blockquote>
+<p>That is just absurd! And I have many examples like that.</p>
+<p>Apparently, its Chinese corpus has something to do with it. What other things have gone wrong?</p>
+","gpt"
+"{
+  ""id"": 118356,
+  ""title"": ""Which Publicly Accessible Large Language Models are Very Similar to OpenAI's ChatGPT?""
+}","Which Publicly Accessible Large Language Models are Very Similar to OpenAI's ChatGPT?","2023-02-07 18:27:20","","3","179","<nlp><language-model><gpt>","<p>What other large language models exist or will soon exist that are VERY similar to OpenAI's ChatGPT in the sense of being fine-tuned or otherwise specifically created for conversational tasks including question answering? Such models can be free to use or require subscription. I'm preferably looking for models that can give companies API access. I am interested in models with fairly high quality question answering performance in terms of accuracy and not having too many &quot;hallucinations&quot;.</p>
+<p>Here are some examples I am currently familiar with:</p>
+<ul>
+<li><strong>InstructGPT</strong> from OpenAI: <a href=""https://openai.com/blog/instruction-following/"" rel=""nofollow noreferrer"">https://openai.com/blog/instruction-following/</a></li>
+<li><strong>OpenAssistant</strong> from LAION: <a href=""https://github.com/LAION-AI/Open-Assistant"" rel=""nofollow noreferrer"">https://github.com/LAION-AI/Open-Assistant</a></li>
+<li><strong>ChatSonic</strong> from WriteSonic: <a href=""https://writesonic.com/chat"" rel=""nofollow noreferrer"">https://writesonic.com/chat</a></li>
+<li><strong>Jasper Chat</strong>: <a href=""https://www.jasper.ai/chat"" rel=""nofollow noreferrer"">https://www.jasper.ai/chat</a></li>
+<li><strong>Google Bard</strong> (Google's soon to be released rival to ChatGPT): <a href=""https://blog.google/technology/ai/bard-google-ai-search-updates/"" rel=""nofollow noreferrer"">https://blog.google/technology/ai/bard-google-ai-search-updates/</a></li>
+<li><strong>ChatGenie</strong> via WriteCream: <a href=""https://www.writecream.com/chatgenie/"" rel=""nofollow noreferrer"">https://www.writecream.com/chatgenie/</a></li>
+<li><strong>YouChat</strong> from you.com: <a href=""https://www.you.com/chat"" rel=""nofollow noreferrer"">https://www.you.com/chat</a></li>
+<li><strong>Perplexity AI</strong>: <a href=""https://www.perplexity.ai"" rel=""nofollow noreferrer"">https://www.perplexity.ai</a></li>
+<li><strong>Bing Chat</strong> (literally uses ChatGPT): <a href=""https://www.bing.com/"" rel=""nofollow noreferrer"">https://www.bing.com/</a></li>
+</ul>
+","gpt"
+"{
+  ""id"": 118273,
+  ""title"": ""Specifics about ChatGPT's Architecture""
+}","Specifics about ChatGPT's Architecture","2023-02-03 16:47:49","","1","7132","<nlp><language-model><gpt>","<p>Does anyone know of reliable sources that have written about the architecture of OpenAI's ChatGPT - specifically regarding the following?:</p>
+<ul>
+<li><p>Number of hidden layers</p>
+</li>
+<li><p>Number of attention heads</p>
+</li>
+<li><p>Dimensions of its hidden layers</p>
+</li>
+<li><p>Sequence length in terms of number of tokens</p>
+</li>
+<li><p>Number of parameters in the version of the model currently free for public preview. My understanding is there are multiple versions of ChatGPT.</p>
+</li>
+</ul>
+<p>Please note: I'm familiar with GPT-3 already. However, I am not certain that ChatGPT's architecture is the same. Open to contrary evidence, if any.</p>
+","gpt"
+"{
+  ""id"": 118260,
+  ""title"": ""ChatGPT's Architecture - Decoder Only? Or Encoder-Decoder?""
+}","ChatGPT's Architecture - Decoder Only? Or Encoder-Decoder?","2023-02-03 08:57:21","","17","20872","<nlp><language-model><gpt>","<p>Does ChatGPT use an encoder-decoder architecture, or a decoder-only architecture? I have been coming across Medium and TowardsDataScience articles suggesting that it has an encoder-decoder architecture (see sources below):</p>
+<p>-- <a href=""https://medium.com/@sreedevr/chatgpt-architecture-explained-7fc0cbb7426c"" rel=""noreferrer"">https://medium.com/@sreedevr/chatgpt-architecture-explained-7fc0cbb7426c</a></p>
+<p>-- <a href=""https://towardsdatascience.com/how-chatgpt-works-the-models-behind-the-bot-1ce5fca96286"" rel=""noreferrer"">https://towardsdatascience.com/how-chatgpt-works-the-models-behind-the-bot-1ce5fca96286</a></p>
+<p>-- <a href=""https://leoneperdigao.medium.com/chatgpt-a-deep-dive-1feade9c4d77"" rel=""noreferrer"">https://leoneperdigao.medium.com/chatgpt-a-deep-dive-1feade9c4d77</a></p>
+<p>I even asked ChatGPT myself whether it uses an encoder and decoder, or just a decoder, and it told me it has both an encoder and decoder. Here is one of its responses to the question:</p>
+<p><em>&quot;As a language model, ChatGPT does not have a decoder-only architecture, it has an encoder-decoder architecture. Having an encoder-decoder architecture enables language models like ChatGPT to process input sequences and generate outputs based on that input. The encoder processes the input sequence and generates a set of hidden states, which are then used by the decoder to generate the output sequence.
+Having both an encoder and a decoder allows ChatGPT to handle a variety of tasks that involve generating text based on input text, such as language translation, summarization, and answering questions. Having an encoder-decoder architecture allows ChatGPT to maintain context and consistency in the generated output, which is important for many NLP tasks.
+It is possible to train a decoder-only language model, but it would be limited in its ability to generate coherent text as it would not have access to the context provided by the encoder.&quot;</em></p>
+<p>However, I have been under the definite impression for quite some time now that GPT-3 (from which ChatGPT was in part derived) is a decoder-only model. And I take with a grain of salt ChatGPT's explanation of its own architecture given that it seems prone to generating incorrect answers sometimes. Also, with the huge fanfare of ChatGPT and the potential for misinformed authors writing about the model, I wonder if anyone knows of a reliable source that can clarify this question.</p>
+<p>Thanks</p>
+","gpt"
+"{
+  ""id"": 118173,
+  ""title"": ""Does opting out of having my content used for improvement mean there are no other forms of data retention of my content by OpenAI?""
+}","Does opting out of having my content used for improvement mean there are no other forms of data retention of my content by OpenAI?","2023-01-31 08:54:49","119916","2","383","<data><gpt><api><privacy>","<p>Regarding the use of OpenAI API, <a href=""https://openai.com/terms/"" rel=""nofollow noreferrer"">Terms of Use at OpenAI</a> mentions:</p>
+<blockquote>
+<p>You can opt out of having Content used for improvement by contacting support@openai.com with your organization ID. Please note that in some cases this may limit the ability of our Services to better address your specific use case.</p>
+</blockquote>
+<p>Does opting out of having my content used for improvement mean there are no other forms of data retention of my content by OpenAI?</p>
+","gpt"
+"{
+  ""id"": 118127,
+  ""title"": ""Is there any differences between using text-davinci-003 with the Azure API vs. with the OpenAI API?""
+}","Is there any differences between using text-davinci-003 with the Azure API vs. with the OpenAI API?","2023-01-28 21:40:20","","0","259","<nlp><language-model><azure-ml><gpt><api>","<p>I wonder whether there are any differences between using text-davinci-003 with the Azure API vs. with the OpenAI API.</p>
+","gpt"
+"{
+  ""id"": 117716,
+  ""title"": ""How to summarize a long text using GPT-3""
+}","How to summarize a long text using GPT-3","2023-01-12 09:15:03","117813","10","9392","<gpt><automatic-summarization>","<p>What is the best way to summarize a long text that exceeds 4096 token limit (like a podcast transcript for example)? As I understand I need to split the text into chunks to summarize, and then concatenate the results and summarize those. Is there already a popular open-source script to do that?</p>
+<p>Do I understand correctly that GPT-3 is the best model to do that? I've seen some articles about extractive summarization using BERT but the results were pretty low quality.</p>
+","gpt"
+"{
+  ""id"": 117650,
+  ""title"": ""Who the article is about""
+}","Who the article is about","2023-01-09 18:09:51","","0","53","<nlp><spacy><gpt>","<p>I have a problem that I need to solve. It involves articles about football. I have to determine who is the main protagonist in the article. I already have a solution that I have implemented. Its good enough. But I need to improve it further by using latest NLP solutions.</p>
+<p>The current solution is, use coreference resolution to replace the pronouns with their actual coreferents. Then the output article/text is then passed to NER model to get the entities extracted. Then I simply count for either PER or ORG. Then take the entity with the maximum counts.</p>
+<p>Any more ideas?</p>
+","gpt"
+"{
+  ""id"": 117491,
+  ""title"": ""In ChatGPT, what is the difference between Reinforcement-Learning-from-Human-Feedback and Data-Re-Label?""
+}","In ChatGPT, what is the difference between Reinforcement-Learning-from-Human-Feedback and Data-Re-Label?","2023-01-04 02:16:19","","1","247","<machine-learning><deep-learning><nlp><gpt>","<p><a href=""https://openai.com/blog/instruction-following/"" rel=""nofollow noreferrer"">Reinforcement-Learning-from-Human-Feedback</a> vs <a href=""https://guotong1988.github.io/research/2021/12/01/relabel-is-all-you-need/"" rel=""nofollow noreferrer"">TrainingData-Label-Again</a>.</p>
+","gpt"
+"{
+  ""id"": 117472,
+  ""title"": ""ChatGPT and my PhD research""
+}","ChatGPT and my PhD research","2023-01-03 14:03:21","","1","259","<python><nlp><gpt>","<p>I am currently a PhD student in the field of NLP and I can see a way how ChatGPT can solve my current research question. My research question is related to reasoning based on text. What can I possibly do to ensure that ChatGPT would not disrupt my research question? What are potential flaws of ChatGPT where we can focus on?</p>
+","gpt"
+"{
+  ""id"": 117391,
+  ""title"": ""Which of these 2 approaches is the best route to learn to build a question answer chatbot?""
+}","Which of these 2 approaches is the best route to learn to build a question answer chatbot?","2022-12-29 16:09:51","","0","45","<nlp><sequence-to-sequence><gpt><chatbot>","<h2>Quick background on what I am trying to accomplish:</h2>
+<p>I have been working on a project in my company that requires about 300 people across the world to follow quite a large set of rules and guidelines. instead of sharing documents that people can reference for these rules, I am looking to build a chatbot. This chatbot will take all my documents as inputs and then can be used by the end users to answer any of their questions related to processes and guidelines</p>
+<h2>What research I have done so far:</h2>
+<p>Broadly, I believe my 2 main routes are</p>
+<ol>
+<li>build a chatbot from scratch. I found a good Udemy course on seq2seq architecture that can allow me to build this chatbot</li>
+<li>Build an application(chatbot) on top of existing algorithms like GPT-3 or BERT</li>
+</ol>
+<h2>What help I need:</h2>
+<ol>
+<li>I am confused which of the above 2 is the best approach. I guess I need more information on the pros and cons of both.</li>
+<li>Is 1) is the right approach, is seq2seq too outdated to learn about it now? Should I find a course that uses another architecture?</li>
+<li>If 2) is the right approach, I am struggling to find a resource that can teach me how to build this chatbot including a simple GUI</li>
+</ol>
+<p>Note: I have experience working with CNN and a little bit with RNN as well. I have extensive experience with Python, none with HTML or Java</p>
+","gpt"
+"{
+  ""id"": 117164,
+  ""title"": ""Empirical indications regarding demanded skills and tasks of data science jobs?""
+}","Empirical indications regarding demanded skills and tasks of data science jobs?","2022-12-19 09:26:20","","1","29","<deep-learning><data-mining><visualization><information-retrieval><gpt>","<p>I am wondering if there are is any information about the current (and prospected) shares in skills required for advertised/existing data science jobs. This includes of course also the concrete tasks required to be done in this area.</p>
+<p>For example I am wondering how many jobs are focused on training deep learning models vs. designing data processing architectures vs. providing concrete answers to variable data-related questions. Or information retrieval vs. supervised learning vs. data mining (extraction) vs. visualization of structured information, etc.</p>
+<p>I think this is relevant because many people are not fully trained in all of these aspects.</p>
+<p>I also think with the potential of a black-swan-like AI revolution based on what we are currently seeing with ChatGPT, such information would be very relevant to make some projections into the future, because some of these tasks may soon be directed to black-box AI APIs rather than humans.</p>
+","gpt"
+"{
+  ""id"": 116313,
+  ""title"": ""Fine Tune GPT-3 without prompt?""
+}","Fine Tune GPT-3 without prompt?","2022-11-19 06:00:16","","2","588","<machine-learning><deep-learning><machine-learning-model><gpt><finetuning>","<p>I was wondering if it's possible to fine tune GPT-3 without using the &quot;prompt&quot; and &quot;completion&quot; method as shown in the documentation. More specifically, I want to fine tune a GPT-3 model to match a <em>specific</em> writing style. My first guess was just leaving the prompt empty while fine tuning, so something like:</p>
+<pre><code>{&quot;prompt&quot;:&quot;&quot;, &quot;completion&quot;:&quot; &lt;fine-tune text&gt;&quot;}
+</code></pre>
+<p>My second guess is to split each entry in the dataset into half, which is something like this:</p>
+<pre><code>{&quot;prompt&quot;:&quot;&lt;first half of fine-tune text&quot;, &quot;completion&quot;:&quot; &lt;second half of fine-tune text&gt;&quot;}
+</code></pre>
+<p>But I don’t know if it’s best practice to keep prompt length the same as the completion length? Or how many tokens to use in each? Or even to standardize it (e.g “Always use 1,500 characters in the prompt and 1,500 in the completion”), or whether to make it random.</p>
+<p>Any advice on how I should aim to train this would really be appreciated, thanks!</p>
+","gpt"
+"{
+  ""id"": 116268,
+  ""title"": ""Does fine-tuning require retraining the entire model?""
+}","Does fine-tuning require retraining the entire model?","2022-11-17 18:50:48","116270","4","2426","<machine-learning><deep-learning><transformer><gpt>","<p>Would it be necessary to retrain the entire model if we were to perform fine-tuning?</p>
+<p>Let's say we somehow got the GPT-3 model from OpenAI (I know GPT-3 is closed source).</p>
+<p>Would anyone with access to a couple of RTX 3080 GPUs be able to fine tune it if they got the GPT-3 model weights?</p>
+<p>Or would it need infrastructure like the big companies?</p>
+","gpt"
+"{
+  ""id"": 116233,
+  ""title"": ""Can I fine tune GPT-3?""
+}","Can I fine tune GPT-3?","2022-11-16 20:11:10","116236","2","1119","<machine-learning><deep-learning><transformer><gpt>","<p>Can anyone fine-tune the GPT-3 model on commodity hardware without GPU?</p>
+<ul>
+<li>What I meant is can we fine tune available GPT-3 equivalent models?</li>
+<li>For example, we have only access to GPT-J.</li>
+<li>Can we fine-tune GPT-J with commodity hardware or lets say with only basic GPU such as 1with one RTX 3080.</li>
+</ul>
+<p>Can we fine-tune these models (not training from scratch)?</p>
+<p>Or will it need high-end infrastructure with GPUs?</p>
+","gpt"
+"{
+  ""id"": 115810,
+  ""title"": ""Can OpenAI's CLIP Model or DeepMind's Flamingo Model Predict Classes Truly Never Before Seen for Zero- or Few-Shot Learning?""
+}","Can OpenAI's CLIP Model or DeepMind's Flamingo Model Predict Classes Truly Never Before Seen for Zero- or Few-Shot Learning?","2022-11-02 19:57:33","","1","258","<nlp><computer-vision><gpt><meta-learning><deepmind>","<p>One type of statement about zero-shot and few-shot learning in the literature I continually come across is that these models can predict new unseen classes at inference time for which they were never trained on. However, such sources typically do not explain exactly what they mean.</p>
+<p>Meta-learning/in-context learning-based zero-shot/few-shot learning models like Flamingo and CLIP rely on 1) a pre-training stage where a massive base vision-language model has been trained on millions to billions of images and text examples, and 2) an inference stage where a prompt with anywhere from 0 to a just a few examples are presented to the model inside a prompt's &quot;support set&quot;, along with an image or image + question &quot;query&quot; (see the diagram from the Flamingo paper below) which asks the model to generate an answer to the query.</p>
+<p>Diagram below is the Flamingo model paper (Alayrac et al., pg. 16):
+<a href=""https://i.sstatic.net/DP71r.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/DP71r.png"" alt=""enter image description here"" /></a></p>
+<p><strong>My Questions</strong></p>
+<ul>
+<li><p>As a result, it is unclear to me whether scholars' statements about zero-/few-shot learning models being able to predict &quot;unseen&quot; classes at inference time refer to the model never having been <em><strong>pre-trained</strong></em> on these unseen classes in the base model, whether they mean the model has never seen the unseen examples in the support set at inference time, or whether they mean both. Does anyone know?</p>
+</li>
+<li><p>Can someone explain exactly how the Flamingo model by Alayrac et al., 2022, or the CLIP model by Radford et al., 2021 (both of which are pre-trained using contrastive loss) would be able to predict a class at inference time which has never before been seen by the model? How would this even be possible if the model does not know the label of an unseen image?</p>
+</li>
+</ul>
+","gpt"
+"{
+  ""id"": 115554,
+  ""title"": ""How Exactly Does In-Context Few-Shot Learning Actually Work in Theory (Under the Hood), Despite only Having a \""Few\"" Support Examples to \""Train On\""?""
+}","How Exactly Does In-Context Few-Shot Learning Actually Work in Theory (Under the Hood), Despite only Having a ""Few"" Support Examples to ""Train On""?","2022-10-24 23:26:44","","7","2448","<nlp><computer-vision><language-model><gpt><deepmind>","<p>Recent models like the GPT-3 Language Model (Brown et al., 2020) and the Flamingo Visual-Language Model (Alayrac et al., 2022) use in-context few-shot learning. The models are able to make highly accurate predictions even when only presented with a &quot;few&quot; support examples. See diagram below (from Brown et al., 2020).</p>
+<p><a href=""https://i.sstatic.net/zgZ8I.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/zgZ8I.png"" alt=""enter image description here"" /></a></p>
+<p>Yet, it is unclear to me how these models theoretically work behind the scenes, and why they perform so well. The explanation appears to be that few-shot learning works because the model looks at the task description, then looks at the support examples (which are successful examples of how the given task can be fulfilled), and then based on the model's understanding of what the assigned task is and its understanding of the examples given of how the task could be successfully fulfilled it is then able to understand what it is supposed to predict based on the prompt.</p>
+<p>Generally speaking, the more support examples the model sees at inference time, the better it will perform (but there is a point at which continuing to add further support examples does not increase performance). However, given that traditional machine learning models need to train on thousands of examples, it would seem unlikely that a model could really fulfill a task just based on a few examples.</p>
+<p><strong>My Questions:</strong></p>
+<ul>
+<li><p>I understand that these models are built on huge pre-trained Language Models or Vision-Language Models having billions of parameters. But is there a commonly understood explanation of how these models are actually able to work (e.g., mathematical intuition) beyond what I have described?</p>
+</li>
+<li><p>Since these specific models (GPT-3 and Flamingo use &quot;in-context learning,&quot; which I understand to be the same as &quot;meta-learning,&quot; is it the case that what is actually happening in these models is that the massive pre-trained language and/or vision models they are built on are able to learn many <strong>tasks</strong>, and that consequently at inference time the model is able to learn from the few-shot prompt it is given what the new task being asked of it is, and <strong>also</strong> is able to learn the image/text query presented to it at inference time because it has been pre-trained on massive amounts of examples it can refer back to?</p>
+</li>
+<li><p>And is there a commonly accepted explanation of why these models actually work so well? Or are these three questions still a matter of debate among ML scholars?</p>
+</li>
+</ul>
+","gpt"
+"{
+  ""id"": 113653,
+  ""title"": ""Which model to use to classify a text to a topic, among a list of topics?""
+}","Which model to use to classify a text to a topic, among a list of topics?","2022-08-18 12:26:55","","0","642","<text-classification><gpt>","<p>I want to find to which topics a text belongs.</p>
+<p>A topic is a question (~ 15 words)<br />
+nb_topics = 250<br />
+nb_texts ~ 15000</p>
+<p>The texts and topics are in French</p>
+<p>How can I do this with BERT or GPT-3? Any guideline?</p>
+","gpt"
+"{
+  ""id"": 113490,
+  ""title"": ""Model for binary classification of links as \""Article\"" or \""Other\""""
+}","Model for binary classification of links as ""Article"" or ""Other""","2022-08-13 20:01:29","","0","25","<classification><text-classification><language-model><gpt>","<p>I'm creating a web crawler which must:</p>
+<ol>
+<li>Fetch a web page.</li>
+<li>Parse all <code>&lt;a&gt;</code> tags with hrefs on the page.</li>
+<li>Classify the tags as either <strong>article</strong> (Meaning the link refers to a news article) or <strong>other</strong> (Refers to anything other than a news article).</li>
+</ol>
+<p>I have created several working versions of this using:</p>
+<ul>
+<li>GPT-3</li>
+<li>Jurassic-1</li>
+<li>BigScience Bloom</li>
+</ul>
+<p>However, I can't help but think that using these large language models might be overkill in terms of model size and certainly of expense. I know I can use smaller language models (GPT-J and Bloom variants). Are there any models besides large language models which might be better suited to this sort of classification task?</p>
+<p>My intuition is that there might be but consider the enormous range of possible links and anchor texts to discern from.</p>
+","gpt"
+"{
+  ""id"": 112833,
+  ""title"": ""Loss on whole sequences in Causal Language Model""
+}","Loss on whole sequences in Causal Language Model","2022-07-20 15:20:14","112837","1","1812","<loss-function><sequence><language-model><gpt><cross-entropy>","<p>I'd like to know, from an implementation point of view, when training a Causal Transformer such as GPT-2, if making prediction on whole sequence at once and computing the loss on the whole sequence is something standard ?</p>
+<p>When going across examples that vulgarize what happen during training, we have examples like this:</p>
+<p><a href=""https://i.sstatic.net/zH5t4.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/zH5t4.png"" alt=""enter image description here"" /></a></p>
+<p>Which suggests that we mask at a certain token in the sequence and make a prediction, then compute the loss for this single token, so the loss would take data of shape <code>(batch_size, num_classes)</code>.</p>
+<p>However if I'm correct, since we're talking about causal models, we could predict all tokens at once because the model can only attend to what's on the left of the sequence (and can't attend on the right, so it can't &quot;cheat&quot;), apply the loss on data that would have the shape <code>(batch_size, sequence_length, num_classes)</code> where <code>sequence_length</code> is computed in a single forward pass. And so speedup the training.</p>
+<p>Am I correct ? If so, do you know famous repos that do this ? And if not, why would it be wrong ?</p>
+<p>Thanks.</p>
+","gpt"
+"{
+  ""id"": 112189,
+  ""title"": ""How does compute required scale with number of model parameters?""
+}","How does compute required scale with number of model parameters?","2022-06-28 06:48:23","","1","275","<deep-learning><transformer><gpu><gpt><scalability>","<p>GPT-3 has 175 billion parameters, required ~<span class=""math-container"">$3.114 * 10^{23}$</span> FLOPS, and took approximately one month to train on ~10k Tesla V100 GPUs. It seems commonly stated that the brain has the equivalent of ~100 trillion parameters. I was wondering what kind of compute would be required for training a transformer of this size. Would it simply be ~<span class=""math-container"">$10^3$</span> times more FLOPs?</p>
+<p>In general, how does compute required scale with respect to model parameters for transformers, neural networks, CNNs, and other popular deep learning models?</p>
+","gpt"
+"{
+  ""id"": 112174,
+  ""title"": ""How can I use my fine-tuned model through openai's API?""
+}","How can I use my fine-tuned model through openai's API?","2022-06-27 15:07:46","","1","744","<gpt>","<p>I have read the docs extensively and cannot find how to specify that I want to use my fine-tuned model and not one of their pretrained models for my completion job.</p>
+","gpt"
+"{
+  ""id"": 110194,
+  ""title"": ""Guide to Natural language Prompt programming for few-shot learning of Pretrained Language Models""
+}","Guide to Natural language Prompt programming for few-shot learning of Pretrained Language Models","2022-04-19 18:43:36","","1","56","<deep-learning><nlp><transformer><text-generation><gpt>","<p>I'm currently working on a project with the goal of producing AI content in the space of a content generation like blog writing, Instagram caption generation etc. Found the in-context few-shot learning capabilities of the GPT-3 quite useful but I'm unable to generate creative content consistently. It becomes boring and repetitive in nature after a few iterations. I came across the concept of knowledge probing of language models and have come to this understanding that writing better prompts can actually solve my problem.</p>
+<p>Can the community guide me to the right set of papers or other articles/blogs that expand on this idea further? so that I can make some progress on this interesting use case. Thanks, regards!.</p>
+","gpt"
+"{
+  ""id"": 107550,
+  ""title"": ""Dataset with Multiple Choice Questions for fine tuning""
+}","Dataset with Multiple Choice Questions for fine tuning","2022-01-28 09:25:21","","0","514","<machine-learning><nlp><dataset><data><gpt>","<p>I hope it's allowed to ask here, but I am looking for a dataset (the format is not that important) that is similar to SQuAD, but it also contains false answers to the questions. I wanna use it to fine tune GPT-3, and all I find is either MC questions based on a text, but with no distractors, or classical quizzes that have no context before each question.</p>
+<p>I have a code that generates distractors, and I can just plug it in there, but I was wondering if there was any pre-made dataset.</p>
+","gpt"
+"{
+  ""id"": 106466,
+  ""title"": ""Conceptually, how to deal with facts and time in GPT-3 and Language Models""
+}","Conceptually, how to deal with facts and time in GPT-3 and Language Models","2021-12-27 18:15:58","","1","18","<language-model><gpt>","<p>When exploring text generation using various large language models, I frequently come across generated text which presents facts which are plain out wrong.  I am not talking about fake news or bias, rather I am talking about dated pieces of information which were once correct, but are no longer correct.  When looking around for pros and cons of language models, I don't really see complaints about this as one of the greatest cons.</p>
+<p>When we finetune models, and with the pretrained models themselves which are frozen in time, how do we account for information that may not be correct in the future?</p>
+<p>The general knowledge learned is wonderful but there is always going to be a drift in knowledge to a point which is less and less relevant.  Take Stack Overflow for example: some questions from the original couple of years still have some truth while others have not aged well and perhaps are currently invalid questions and/or answers.</p>
+","gpt"
+"{
+  ""id"": 104536,
+  ""title"": ""BERT vs GPT architectural, conceptual and implemetational differences""
+}","BERT vs GPT architectural, conceptual and implemetational differences","2021-11-26 21:22:18","","10","8948","<machine-learning><nlp><bert><transformer><gpt>","<p>In the <a href=""https://arxiv.org/pdf/1810.04805.pdf"" rel=""noreferrer"">BERT paper</a>, I learnt that BERT is encoder-only model, that is it involves only transformer encoder blocks.</p>
+<p>In the <a href=""https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf"" rel=""noreferrer"">GPT paper</a>, I learnt that GPT is decoder-only model, that is it involves only transformer decoder blocks.</p>
+<p>I was guessing whats the difference. I know following difference between encoder and decoder blocks: GPT Decoder looks only at previously generated tokens and learns from them and not in right side tokens. BERT Encoder gives attention to tokens on both sides.</p>
+<p>But I have following doubts:</p>
+<p><strong>Q1.</strong> GPT2,3 focuses on new/one/zero short learning. Cant we build new/one/zero short learning model with encoder-only architecture like BERT?</p>
+<p><strong>Q2.</strong> Huggingface <code>Gpt2Model</code> contains <code>forward()</code> method. I guess, feeding single data instance to this method is like doing one shot learning?</p>
+<p><strong>Q3.</strong> I have implemented neural network model which utilizes output from <code>BertModel</code> from hugging face. Can I simply swap <code>BertModel</code> class with <code>GPT2Model</code> with some class and will it. The return value of <a href=""https://huggingface.co/transformers/model_doc/gpt2.html#transformers.GPT2Model.forward"" rel=""noreferrer""><code>Gpt2Model.forward</code></a> does indeed contain <code>last_hidden_state</code> similar to <a href=""https://huggingface.co/transformers/model_doc/bert.html#transformers.BertModel.forward"" rel=""noreferrer""><code>BertModel.forward</code></a>. So, I guess swapping out <code>BertModel</code> with <code>Gpt2Model</code> will indeed work, right?</p>
+<p><strong>Q4.</strong> Apart from being decoder-only and encoder-only, auto-regressive vs non-auto-regressive and whether or not accepting tokens generated so far as input, what high level architectural / conceptual differences GPT and BERT have?</p>
+","gpt"
+"{
+  ""id"": 104273,
+  ""title"": ""Is there a ubiquitous web crawler that can generate a good language-specific dataset for training a transformer?""
+}","Is there a ubiquitous web crawler that can generate a good language-specific dataset for training a transformer?","2021-11-18 19:04:01","","0","65","<nlp><gpt><crawling>","<p>It seems like a lot of noteworthy AI tools are being trained on datasets generated by web crawlers rather than human-edited, human-compiled corpora (Facebook Translate, GPT-3). In general, it sounds more ideal to have an automatic and universal way of generating a dataset.</p>
+<p>Is there any ubiquitous web crawler which does basically the same thing as Common Crawl but has a parameter for “language sought”? In other words, generate a web-crawled dataset in language X?</p>
+<p>(Background: I’d like to create a language dataset in any language, then train a lemmatizer on it, a function that can lemmatize words in that language.)</p>
+","gpt"
+"{
+  ""id"": 104233,
+  ""title"": ""Is there an AI function that can provide the definition of a word or phase with reasonably good accuracy?""
+}","Is there an AI function that can provide the definition of a word or phase with reasonably good accuracy?","2021-11-17 15:47:33","","1","18","<nlp><gpt>","<p>I would like to make use of a software function which can provide the definition of a word or phrase. These words and phrases are in the realm of common knowledge - objects like &quot;DVD player&quot;, or specific places like &quot;Canary Islands&quot;.</p>
+<p>I am pretty sure GPT-3 can do this because it's trained on the internet in general and Wikipedia, and it produces generally fluent language.</p>
+<p>However, I was curious if someone has already written this function and provided it in some software library somewhere already.</p>
+","gpt"
+"{
+  ""id"": 102259,
+  ""title"": ""What exactly are the parameters in GPT-3's 175 billion parameters?""
+}","What exactly are the parameters in GPT-3's 175 billion parameters?","2021-09-20 17:40:06","","5","17103","<nlp><gpt>","<p>What exactly are the parameters in GPT-3's 175 billion parameters? Are these the words in text on which model is trained?</p>
+","gpt"
+"{
+  ""id"": 97630,
+  ""title"": ""What tokenizer does OpenAI's GPT3 API use?""
+}","What tokenizer does OpenAI's GPT3 API use?","2021-07-08 18:07:30","109483","9","9068","<python-3.x><tokenization><gpt>","<p>I'm building an application for the API, but I would like to be able to count the number of tokens my prompt will use, before I submit an API call. Currently I often submit prompts that yield a 'too-many-tokens' error.</p>
+<p>The closest I got to an answer was <a href=""https://datascience.stackexchange.com/a/66399/94705"">this post</a>, which still doesn't say what tokenizer it uses.</p>
+<p>If I knew what tokenizer the API used, then I could count how many tokens are in my prompt before I submit the API call.</p>
+<p>I'm working in Python.</p>
+","gpt"
+"{
+  ""id"": 96549,
+  ""title"": ""How to derive Evidence Lower Bound in the paper \""Zero-Shot Text-to-Image Generation\""?""
+}","How to derive Evidence Lower Bound in the paper ""Zero-Shot Text-to-Image Generation""?","2021-06-12 11:20:56","","1","67","<deep-learning><autoencoder><probability><expectation-maximization><gpt>","<p>Can someone share the derivation of Evidence Lower Bound in this paper ?<br />
+<a href=""https://arxiv.org/pdf/2102.12092.pdf"" rel=""nofollow noreferrer"">Zero-Shot Text-to-Image Generation</a></p>
+<p>The overall procedure can be viewed as maximizing the
+evidence lower bound (ELB) (Kingma &amp; Welling, 2013;
+Rezende et al., 2014) on the joint likelihood of the model
+distribution over images x, captions y, and the tokens z
+for the encoded RGB image. We model this distribution
+using the factorization <span class=""math-container"">${p_\theta,_\psi(x, y, z) = p_\theta(x | y, z)p_\psi(y, z)}$</span>,
+which yields the lower bound:
+<span class=""math-container"">${\ln p_\theta,_\psi(x, y) &gt; E_{z∼q_\phi(z | x)}\ln p_\theta(x | y, z) − \beta D_{KL}(q_\phi(y, z | x), p_\psi(y, z))}$</span></p>
+","gpt"
+"{
+  ""id"": 93161,
+  ""title"": ""Training Objective of language model for GPT3""
+}","Training Objective of language model for GPT3","2021-04-17 00:14:58","93167","0","777","<nlp><language-model><gpt>","<p>On page 34 of OpenAI's <a href=""https://arxiv.org/pdf/2005.14165v2.pdf"" rel=""nofollow noreferrer"">GPT-3</a>, there is a sentence demonstrating the limitation of objective function:</p>
+<blockquote>
+<p>Our current objective weights every token equally and lacks a notion of what is most important to predict and what is less important.</p>
+</blockquote>
+<p>I am not sure if I understand this correctly. In my understanding, the objective function is to maximize the log-likelihood of the token to predict given the current context, i.e., <span class=""math-container"">$\max L \sim \sum_{i} \log P(x_{i} | x_{&lt;i})$</span>. Although we aim to predict every token that appears in the training sentence, the tokens have a certain distribution based on the appearance in human litterature, and therefore we do not actually assign equal weight to every token in loss optimization.</p>
+<p>And what should be an example for a model to get the notion of &quot;what is important and what is not&quot;. What is the importance refer to in here? For example, does it mean that &quot;the&quot; is less important compared to a less common noun, or does it mean that &quot;the current task we are interested in is more important than the scenario we are not interested in ?&quot;</p>
+<p>Any idea how to understand the sentence by OpenAI?</p>
+","gpt"
+"{
+  ""id"": 90740,
+  ""title"": ""How to take the keywords from the given dataset to train GPT-2 based chatbot?""
+}","How to take the keywords from the given dataset to train GPT-2 based chatbot?","2021-03-16 14:56:39","","1","36","<machine-learning><nlp><data-cleaning><gpt><chatbot>","<p>I am working with a dataset that contains Questions on various Events conducted by a college and the corresponding answers for the queries. I am using this dataset to train a GPT-2 355M model to create a chatbot where users can get their queries answered. But i am not getting good results and i feel that's because the questions in the dataset are in the &quot; -Query &quot; format.</p>
+<p>For example, Ques: &quot;Cicada3302 - Do I need to have any prerequisite knowledge to enter this event&quot;</p>
+<p>I am confused as to how can I make the chatbot understand that the first words before the &quot;-&quot; is like a keyword for rest of the question ? I am really new to this, so any help will be appreciated.</p>
+<p>I have used the gpt_2_simple library for this.
+I am attaching the colab link I have written so far, if it might be of any help.</p>
+<p><a href=""https://colab.research.google.com/drive/1CrzwC9WQwF4YsqD66TY8F7ovTSHKsnFv?usp=sharing"" rel=""nofollow noreferrer"">https://colab.research.google.com/drive/1CrzwC9WQwF4YsqD66TY8F7ovTSHKsnFv?usp=sharing</a></p>
+","gpt"
+"{
+  ""id"": 89608,
+  ""title"": ""Best strategy for extracting specific structured data from unstructured sentences""
+}","Best strategy for extracting specific structured data from unstructured sentences","2021-02-19 14:40:10","","2","33","<tensorflow><gpt>","<p>Given a list of sentences like this:</p>
+<ul>
+<li>4 to 5 hours over a period of 16 weeks</li>
+<li>1st session: 2.0-2.5 hours &amp; 2nd session: 1.5-2.0 hours</li>
+<li>Approximately 5-6 visits over the course of 5 months. Visit 1, 3, 5: about 1.5 hours. Visit 2, 4: short</li>
+<li>15 visits over a period of approximately 74 weeks.</li>
+<li>You will come to the organization about 12 times, over a period of a little more than three years. Each visit will take from 3-6 hours.</li>
+</ul>
+<p>What tools/strategy should I use if I want to let the model spit out the following data for the above sentences:</p>
+<div class=""s-table-container"">
+<table class=""s-table"">
+<thead>
+<tr>
+<th>Number of sessions</th>
+<th>Total duration(h)</th>
+<th>Total timespan(w)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unknown</td>
+<td>4-5</td>
+<td>16</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3.5-4.5</td>
+<td>Unknown</td>
+</tr>
+<tr>
+<td>5-6</td>
+<td>4.5</td>
+<td>20</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Unknown</td>
+<td>74</td>
+</tr>
+<tr>
+<td>12</td>
+<td>36-72</td>
+<td>156</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>I'm a ML beginner and wondered if this is achievable with Tensorflow or GPT? For further learning on my own: what is the specific terminology I should google for? Is this NER, text extraction or more like text classification?</p>
+","gpt"
+"{
+  ""id"": 88326,
+  ""title"": ""How to access GPT-3, BERT or alike?""
+}","How to access GPT-3, BERT or alike?","2021-01-22 10:03:52","88327","1","867","<nlp><gpt><pretraining>","<p>I am interested in accessing NLP models mentioned in scientific papers, to replicate some results and experiment.</p>
+<p>But I only see waiting lists <a href=""https://openai.com/blog/openai-api/"" rel=""nofollow noreferrer"">https://openai.com/blog/openai-api/</a> and licenses granted in large commercial deals <a href=""https://www.theverge.com/2020/9/22/21451283/microsoft-openai-gpt-3-exclusive-license-ai-language-research"" rel=""nofollow noreferrer"">https://www.theverge.com/2020/9/22/21451283/microsoft-openai-gpt-3-exclusive-license-ai-language-research</a> .</p>
+<p>How can a researcher not affiliated to a university or (large) tech company obtain access so to replicate experiments of scientific papers ?</p>
+<p>Which alternatives would you suggest to leverage on pre-trained data sets ?</p>
+","gpt"
+"{
+  ""id"": 87637,
+  ""title"": ""What is the difference between GPT blocks and BERT blocks""
+}","What is the difference between GPT blocks and BERT blocks","2021-01-07 15:43:05","87679","3","2977","<bert><transformer><gpt>","<p>Nowadays many applications only use the Encoder and Decoder part of the Transformer respectively. I am having trouble understanding the difference though.</p>
+<p>If GPT uses Decoder only and BERT uses Encoder only does this mean that the only difference between the two is basically in the masking part?</p>
+<p>The cross attention layer in the Decoder is omitted since there is no Encoder within GPT right?</p>
+","gpt"
+"{
+  ""id"": 86566,
+  ""title"": ""What's the right input for gpt-2 in NLP""
+}","What's the right input for gpt-2 in NLP","2020-12-11 17:29:15","","4","9665","<nlp><data-science-model><transformer><gpt>","<p>I'm fine-tuning pre-trained gpt-2 for text summarization. The dataset contains 'text' and 'reference summary'. So my question is how to add special tokens to get the right input format. Currently I'm thinking doing like this:</p>
+<p>example1  &lt;BOS&gt; text  &lt;SEP&gt; reference summary &lt;EOS&gt; ,<br />
+example2 &lt;BOS&gt; text &lt;SEP&gt; reference summary &lt;EOS&gt; ,
+.....</p>
+<p>Is this correct? If so, a follow-up question would be whether the max-token-length(i.e. 1024 for gpt-2) means also the concatenate length of text and reference summary?</p>
+<p>Any comment would be very much appreciated!</p>
+","gpt"
+"{
+  ""id"": 82478,
+  ""title"": ""Evaluating Language Model on specific topic""
+}","Evaluating Language Model on specific topic","2020-10-02 16:56:25","82511","2","86","<machine-learning><nlp><language-model><gpt>","<p>I have finetuned a pretrained Language Model(GPT-2) on a custom dataset of mine. I would like a way of evaluating the ability of my model to generate sentences of a specific predefined topic, given in the form of either a single keyword(e.g. 'Computers') or a bag-of-words(e.g. 'Computers', 'Linux', 'Server'...).</p>
+<p>For example given a LM, how relative are the outputs of the model to the topic specified by the word <em>Computers</em>?</p>
+<p><strong>What I have already tried:</strong> Generating a large enough number of sentences from the LM and taking the average cosine similarity between these sentences and the target topic(or every word in that topic we have more than one) as described <a href=""https://towardsdatascience.com/cutting-edge-semantic-search-and-sentence-similarity-53380328c655"" rel=""nofollow noreferrer"">here</a> . I am not sure if this is a valid way to go and furthermore the cosine similarity between sentences yields poor results in many cases.</p>
+<p>Thanks in advance for any help.</p>
+","gpt"
+"{
+  ""id"": 81595,
+  ""title"": ""Does BERT has any advantage over GPT3?""
+}","Does BERT has any advantage over GPT3?","2020-09-12 04:37:50","","11","11917","<nlp><bert><gpt>","<p>I have read a couple of documents that explain in detail about the greater edge that GPT-3(Generative Pre-trained Transformer-3) has over BERT(Bidirectional Encoder Representation from Transformers). So am curious to know whether BERT scores better than GPT-3 in any particular area of NLP?</p>
+<p>It's quite interesting to note that OpenAI's GPT-3 is not open-sourced whereas tech behemoth Google's BERT is open-sourced. I felt OpenAI's stance and the hefty price tag for GPT-3 api is in stark contrast to its mission statement(OpenAI’s mission is to ensure that artificial general intelligence (AGI)—by which we mean highly autonomous systems that outperform humans at most economically valuable work—benefits all of humanity).</p>
+<p><a href=""https://analyticsindiamag.com/gpt-3-vs-bert-for-nlp-tasks/"" rel=""noreferrer"">https://analyticsindiamag.com/gpt-3-vs-bert-for-nlp-tasks/</a>
+<a href=""https://thenextweb.com/neural/2020/07/23/openais-new-gpt-3-language-explained-in-under-3-minutes-syndication/"" rel=""noreferrer"">https://thenextweb.com/neural/2020/07/23/openais-new-gpt-3-language-explained-in-under-3-minutes-syndication/</a>
+<a href=""https://medium.com/towards-artificial-intelligence/gpt-3-from-openai-is-here-and-its-a-monster-f0ab164ea2f8"" rel=""noreferrer"">https://medium.com/towards-artificial-intelligence/gpt-3-from-openai-is-here-and-its-a-monster-f0ab164ea2f8</a></p>
+","gpt"
+"{
+  ""id"": 81278,
+  ""title"": ""GPT-3 API Documentation?""
+}","GPT-3 API Documentation?","2020-09-05 14:56:52","","2","349","<nlp><gpt>","<p>Has documentation of the GPT-3 API been made public?</p>
+<p>I would be interested in keeping myself up to speed on the API's capability.</p>
+","gpt"
+"{
+  ""id"": 78556,
+  ""title"": ""For NLP, is GPT-3 better than RoBERTa?""
+}","For NLP, is GPT-3 better than RoBERTa?","2020-07-30 17:51:12","78562","0","2626","<nlp><bert><transformer><gpt>","<p>I am learning deep learning and I want to get into NLP. I have done LSTM, and now I am learning about vectorisation and transformers. Can you please tell me, which algorithm is more effective and accurate?</p>
+","gpt"
+"{
+  ""id"": 77541,
+  ""title"": ""How is GPT able to handle large vocabularies?""
+}","How is GPT able to handle large vocabularies?","2020-07-11 03:33:05","77551","10","2652","<deep-learning><nlp><gpt>","<p>From what I understand, GPT and GPT-2 are trained to predict the <span class=""math-container"">$N^{th}$</span> word in a sentence given the previous <span class=""math-container"">$N-1$</span> words. When the vocabulary size is very large (100k+ words) how is it able to generate any meaningful prediction? Shouldn't it become extremely difficult to correctly label the next word given that there are 100k possible labels to choose from? Even a large-scale classification problem like ImageNet has only 1k classes to choose from.</p>
+","gpt"
+"{
+  ""id"": 74717,
+  ""title"": ""Generate text using user-supplied keywords""
+}","Generate text using user-supplied keywords","2020-05-23 17:35:17","","2","135","<deep-learning><nlp><language-model><text-generation><gpt>","<p>I've got a use case where I need to generate sentences based on a set of user supplied keywords. Here is an example of what I need:</p>
+
+<h2>User input:</h2>
+
+<p><strong>End-User:</strong> Data Scientists</p>
+
+<p><strong>Region:</strong> Middle East</p>
+
+<p><strong>Country:</strong> UAE</p>
+
+<p><strong>Solution:</strong> BigPanda</p>
+
+<p><strong>Application:</strong> machine learning</p>
+
+<p><strong>Benefits:</strong> lower costs and runtime</p>
+
+<h2><strong><em>Output (Curly-Brackets are just there to highlight):</em></strong></h2>
+
+<p>Learn how {data scientists} in the {Middle East} such as in the {UAE} are using {BigPanda} to streamline their {machine learning} processes to {lower costs and runtime}.</p>
+
+<hr>
+
+<p>So the model needs to use the keywords given by the user and generate similar sentences. I also have a dataset of about 2000 of such sentences, which may come in handy.</p>
+
+<p>One way I thought this could be possible is by using the GPT-2 model and perhaps finetuning it with the dataset, but I haven't been able to figure out how I would actually go about using it for something like this.</p>
+","gpt"
+"{
+  ""id"": 70222,
+  ""title"": ""Does the transformer decoder reuse previous tokens' intermediate states like GPT2?""
+}","Does the transformer decoder reuse previous tokens' intermediate states like GPT2?","2020-03-25 15:44:14","71654","3","2153","<nlp><transformer><gpt>","<p>I recently read Jay Alammar's blogpost about GPT-2 (<a href=""http://jalammar.github.io/illustrated-gpt2/"" rel=""nofollow noreferrer"">http://jalammar.github.io/illustrated-gpt2/</a>) which I found quite clear appart from one point :
+He explains that the decoder of GPT-2 processes input tokens one at a time, only actively processing the last input token, the past tokens being saved in memory already and ""passively"" reused without reevaluation.</p>
+
+<p>From my understanding of the transformer architecture, I had the impression that the decoder reevaluates every token generated at each generation. Is this then a difference between the decoder from GPT-2 or does the decoder from a ""classical' transformer also work this way ?</p>
+
+<p>Intuitively I would think that it would make more sense the reevaluate everything at each iteration since new dependencies between words can appear that weren't there at the beginning and would then not be taken into account if past processed words are passively reused.</p>
+
+<p>I hope I am making sense, can someone with knowledge about the GPT2 architecture help me clarify this ?</p>
+","gpt"
+"{
+  ""id"": 69044,
+  ""title"": ""How to generate a sentence with exactly N words?""
+}","How to generate a sentence with exactly N words?","2020-03-03 09:30:27","","3","161","<nlp><bert><ai><text-generation><gpt>","<p>Thanks to GPT2 pretrained model now it is possible to generate meaningful sequence of words with or without prefix. However a sentence should end with a proper endings (.,!,?). I am just wondering how to generate a sentence (with proper ending) of length N? </p>
+
+<p>One possible approach is post-processing, that is process many sequences and choose the ones the serve the purpose! However, it could be a really daunting task to use in any pipeline. </p>
+
+<p>Is there any suggestion, perhaps a secondary algorithm, to tune the hyper-parameter such that it produces sentence of desired length with higher probabilities. </p>
+","gpt"
+"{
+  ""id"": 67984,
+  ""title"": ""Pretrained Models for Keyword-Based Text Generation""
+}","Pretrained Models for Keyword-Based Text Generation","2020-02-12 16:12:59","","1","73","<nlp><transformer><text-generation><gpt>","<p>I'm looking for an implementation that allows me to generate text based on a pre-trained model (e.g. GPT-2).</p>
+<p>An example would be <a href=""https://github.com/minimaxir/gpt-2-keyword-generation"" rel=""nofollow noreferrer"">gpt-2-keyword-generation</a> (<a href=""https://minimaxir.com/apps/gpt2-reddit/"" rel=""nofollow noreferrer"">click here for demo</a>). As the author notes, there is</p>
+<blockquote>
+<p>[...] no explicit mathematical/theoetical basis behind the keywords
+aside from the typical debiasing of the text [...]</p>
+</blockquote>
+<p>Hence my question: <strong>Are there more sophisticated ways of keyword-based text generation</strong> or at least any other <strong>alternatives</strong>?</p>
+<p>Thank you</p>
+","gpt"
+"{
+  ""id"": 66394,
+  ""title"": ""How does BERT and GPT-2 encoding deal with token such as <|startoftext|>, <s>""
+}","How does BERT and GPT-2 encoding deal with token such as <|startoftext|>, <s>","2020-01-13 10:07:32","66399","3","5437","<nlp><pytorch><bert><gpt>","<p>As I understand, GPT-2 and BERT are using Byte-Pair Encoding which is a subword encoding. Since lots of start/end token is used such as &lt;|startoftext|> and , as I image the encoder should encode the token as one single piece.</p>
+
+<p>However, when I use pytorch <code>BertTokenizer</code> it seems the encoder also separate token into pieces. Is this correct behaviour?</p>
+
+<pre><code>from pytorch_pretrained_bert import BertTokenizer, cached_path
+tokenizer = BertTokenizer.from_pretrained('bert-base-cased', do_lower_case=False) 
+tokenizer.tokenize('&lt;s&gt; This is a sentence &lt;|endoftext|&gt;')
+</code></pre>
+
+<p>The results are:</p>
+
+<pre><code>['&lt;',
+ 's',
+ '&gt;',
+ 'This',
+ 'is',
+ 'a',
+ 'sentence',
+ '&lt;',
+ '|',
+ 'end',
+ '##oft',
+ '##ex',
+ '##t',
+ '|',
+ '&gt;']
+</code></pre>
+","gpt"
+"{
+  ""id"": 65550,
+  ""title"": ""Fine tune gpt2 via huggingface API for domain specific LM""
+}","Fine tune gpt2 via huggingface API for domain specific LM","2019-12-28 11:10:10","","3","265","<language-model><gpt>","<p>i am using the script in the examples folder to fine-tune the LM for a bot meant to deal with insurance related queries. So if someone were to type ""i am looking to modify my ..."" , the autocomplete suggestions would be "" modify my name "", ""modify my surname"", modify my vehicle number etc </p>
+
+<p>My training data set has plenty of such samples BUT is always prefixed or suffixed by policy details, personal details etc which seems to be throwing off the fine-tuning and in predictions it always includes some random names , numbers /text , like ""i want to modify my father's name into 1235..."" Etc ..i hope u get the idea</p>
+
+<p>One way of dealing with this issue would be to clean up the training dataset using some NER and get rid of specific information (not very impressive) or maybe unfreeze some other layers of the gpt2 model.</p>
+
+<p>Tried exploring the API but it simply allows loading pre trained wirghts and explicitly unfreezes only the last classification layer (?) ..any pointers on resolving this would be extremely helpful.. appreciate any inputs </p>
+","gpt"
+"{
+  ""id"": 47687,
+  ""title"": ""Paragraph Generator using BERT or GPT""
+}","Paragraph Generator using BERT or GPT","2019-03-20 16:22:00","","2","224","<nlp><bert><gpt>","<p>I am trying to generate similar sentences, called paragraph generation. For example, what is the name of the eldest brother of ram? - For these paragraphs can be - who is the oldest brother of ram? , Who is the oldest blood brother of ram? , I want to know the eldest sibling of ram.  etc etc  </p>
+
+<p>BERT and OpenAI GPT are one of the most powerful NLP systems, as per my knowledge, at least for now. However, I heard that BERT is based on MLM so it cant be used for sentence generation, but can be used for word prediction.  </p>
+
+<p>Can OpenAI GPT be used for this purpose? If so, please give some pointer.<br>
+If any other name is in mind which is the State of Art please suggest.</p>
+","gpt"

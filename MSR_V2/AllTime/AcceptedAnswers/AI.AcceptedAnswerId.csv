@@ -1,0 +1,516 @@
+Post ID,CreationDate,CommentCount,AcceptedAnswerId,ParentId,Body,Tags
+"46521","2024-08-15 06:24:30","0","","46516","<p>No need to remove positional encodings from the predicted output.  In most  Transformer architectures, positional encodings are added to token embeddings to provide the model with information about the order of the sequence, as the Transformer encoder/decoder block does not have sequence awareness.  Once position encodings are added to  token embeddings, they become part of the model's learned representation, which the decoder uses to generate the output.</p>
+<p>Both the encoder and decoder learn to interpret and use this positional information as part of the sequence processing. This integrated learning process allows the model to capture both the meaning of the tokens and their positional relationships within the sequence.</p>
+<p>Subtracting positional encodings after the model has made predictions is not recommended. While masking helps the model attend to specific parts of the sequence, it doesn't &quot;undo&quot; the effects of positional encoding.</p>
+<p>There's no need to &quot;take care of this problem&quot; for positional encoding - they are, in fact, essential to the model’s ability to generate outputs.</p>
+<p>To convert predicted embedding from a decoder to its matching token, you typically pass the predicted embedding through a linear layer followed by a softmax. The linear layer maps the embedding back to the vocabulary space, and the softmax gives you the probability distribution over all possible tokens. The token with the highest probability is then selected as the predicted token.</p>
+",""
+"45941","2024-06-10 06:41:06","5","","45866","<p>To complete the pattern based on the given examples, the last statement should follow the same structure. Each example follows a clear pattern where the second person in the first part of the sentence is mirrored as the first person in the second part:</p>
+<ol>
+<li>Asdfogiug likes Zsdfoiusdhf and Zsdfoiusdhf likes Asdfogiug too.</li>
+<li>Bsodifhas likes Zsdfoiusdhf and Zsdfoiusdhf likes Bsodifhas too.</li>
+<li>Clkwjehrq likes Zsdfoiusdhf and Zsdfoiusdhf likes Clkwjehrq too.</li>
+</ol>
+<p>Following this structure:</p>
+<p>Dlwkjerhtw likes Zsdfoiusdhf and Zsdfoiusdhf likes Dlwkjerhtw too.</p>
+<h3>How the Transformer Model Completes the Prompt Correctly</h3>
+<ol>
+<li><p><strong>Understanding Patterns</strong>: Transformers are highly effective at recognizing and replicating patterns in data. From the given examples, the model identifies the pattern of names being swapped between the clauses. It knows that the first part of the sentence structure “Person1 likes Person2” must mirror as “Person2 likes Person1” based on the examples.</p>
+</li>
+<li><p><strong>Role of <a href=""https://huggingface.co/docs/transformers/en/tokenizer_summary"" rel=""nofollow noreferrer"">Tokenization</a></strong>:</p>
+<ul>
+<li><strong>Breaking Down Text</strong>: Tokenization involves breaking down the text into smaller units called tokens. For names or words it has never encountered before, the model uses subword tokenization methods like Byte Pair Encoding (BPE) or WordPiece.</li>
+<li><strong>Handling Unknown Words</strong>: These methods decompose unfamiliar words into smaller, more common subword units. For example, &quot;Dlwkjerhtw&quot; might be tokenized into [&quot;Dlw&quot;, &quot;kje&quot;, &quot;rht&quot;, &quot;w&quot;].</li>
+<li><strong>Maintaining Context</strong>: This allows the model to understand and generate text even with previously unseen names, by focusing on the subwords and their context.</li>
+</ul>
+</li>
+<li><p><strong>Attention Mechanism</strong>:</p>
+<ul>
+<li>The attention mechanism allows the model to weigh different parts of the input sentence when predicting the next token. It helps the model focus on the relevant part of the sentence to determine the appropriate word to generate next.</li>
+<li>When the model processes &quot;Dlwkjerhtw likes Zsdfoiusdhf and Zsdfoiusdhf likes ___________&quot;, it attends to the pattern that the second person in the first clause should appear as the first person in the second clause.</li>
+</ul>
+</li>
+<li><p><strong><a href=""https://machinelearningmastery.com/a-gentle-introduction-to-positional-encoding-in-transformer-models-part-1/"" rel=""nofollow noreferrer"">Positional Encoding</a></strong>: Transformers use positional encodings to understand the order of words in a sentence, ensuring that the mirrored relationship between the names in the two parts of the sentence is maintained. So, in simple words, it knows the position of words/sub-words in given input.</p>
+</li>
+<li><p><strong>Contextual Embeddings</strong>: Each token, including subwords, is converted into an embedding that captures its context. This helps the model understand the relationship between the names and predict the appropriate completion.</p>
+</li>
+</ol>
+<p>By leveraging tokenization, the attention mechanism, positional encoding, and contextual embeddings, the transformer model can correctly predict that &quot;Dlwkjerhtw&quot; should complete the sentence:</p>
+<p>Dlwkjerhtw likes Zsdfoiusdhf and Zsdfoiusdhf likes Dlwkjerhtw too.</p>
+<p>Even though &quot;Dlwkjerhtw&quot; is a name it has never seen before, the model generalizes the pattern from the provided examples and uses tokenization to handle the new name effectively.</p>
+<p><strong>Edit:</strong></p>
+<p>The ability of transformers to handle unknown words, such as &quot;Dlwkjerhtw,&quot; lies in how they create and use embeddings.</p>
+<p><a href=""https://i.sstatic.net/DdVLUF54.png"" rel=""nofollow noreferrer""><img src=""https://i.sstatic.net/DdVLUF54.png"" alt=""Simplified version of Creating Input embeddings for Transformers"" /></a></p>
+<h2>Embeddings in Transformers</h2>
+<p>Transformers use embeddings, which are learnable representations of input tokens. Let's break down the process:</p>
+<ol>
+<li><p>Input Word: &quot;Dlwkjerhtw&quot;</p>
+</li>
+<li><p>Tokenization:</p>
+<ul>
+<li>The model uses a subword tokenization method (e.g., Byte Pair Encoding or WordPiece) to break down the word into <strong>known subwords</strong> from its corpus/dictionary.</li>
+<li>Tokenization Result: [&quot;Dlw&quot;, &quot;kje&quot;, &quot;rht&quot;, &quot;w&quot;]</li>
+</ul>
+</li>
+<li><p>Converting Input to Numbers:</p>
+<ul>
+<li>Each subword is mapped to a token ID based on the model's vocabulary.</li>
+<li>Example Token IDs: [15, 20, 30, 8]</li>
+</ul>
+</li>
+<li><p>Creating Embeddings:</p>
+<ul>
+<li>These token IDs are converted into embedding vectors. Suppose the length of each embedding vector <span class=""math-container"">$d = 512$</span>.</li>
+<li><strong>The embedding layer of the transformer learns to represent each input token in a meaningful way.</strong></li>
+<li>Embeddings Shape: 4 (subwords) x 512 (embedding dimension)</li>
+</ul>
+</li>
+<li><p>Adding Positional Encoding (PoE):</p>
+<ul>
+<li>Positional Encoding is added to the embeddings to provide information about the position of each token in the sentence.</li>
+<li>Positional Encodings Shape: 4 x 512</li>
+</ul>
+</li>
+<li><p>Final Context Embeddings:</p>
+<ul>
+<li>The final context embeddings are obtained by summing the embeddings and the positional encodings.</li>
+<li><span class=""math-container"">$Final Contextual Embeddings = Embeddings + PoE$</span></li>
+</ul>
+</li>
+</ol>
+<p>By combining the subword embeddings and positional encodings, the model captures both the subword information and their positions within the sentence. This allows the transformer to understand and generate text even with previously unseen words, as it can leverage the subword components and their contextual relationships.</p>
+<p>For detailed visuals refer to my post PDF on <a href=""https://www.linkedin.com/posts/kulin-patel_llm-transformers-and-attention-mechanism-activity-7174470859124826112-VEVE?utm_source=share&amp;utm_medium=member_desktop"" rel=""nofollow noreferrer"">LinkedIN</a></p>
+",""
+"45775","2024-05-22 07:50:28","6","","45768","<p>As you have spotted, there is no particular reason to choose a specific character. However, the author of the article is operating under some constraints that I can <em>guess</em> have guided the choices:</p>
+<ul>
+<li><p>The eventual encoding will include mix of complete words with endings, word ending partials, middle of word partials and characters. For consistency, the encoding will need some way to track the difference.</p>
+</li>
+<li><p>The end of word marker is important adaptation of the more general BPE compression technique:</p>
+</li>
+</ul>
+<blockquote>
+<p>This symbol is important as it marks word boundaries, which prevents the algorithm from confusing the end of one word with the start of another.</p>
+</blockquote>
+<ul>
+<li><p>Given the need for a marker, it helps to have a value that doesn't appear in the rest of the data, within any string that needs to be represented. Here <code>_</code> is not necessarily a universal or even good choice in general. But it's fine for the data in the article.</p>
+</li>
+<li><p>It helps if readers can see the marker. That makes using a space a bit awkward, as a space can easily be overlooked. It also rules out more general choices of non-displaying character codes, which are what many systems will use in practice.</p>
+</li>
+</ul>
+<p>Using underscore to represent spaces or joins between words has precedent in a lot of software. It can be seen but doesn't visually interfere with reading the other characters as separate.</p>
+<p>In more complex datasets, where underscore (or whichever character) could appear within the strings, you have a choice of either finding a (perhaps not real) character code or byte sequence that is not in the data, or adding a special parsing rule for the end of tokens. Both of these are added complications that the article can save for another time.</p>
+",""
+"45712","2024-05-15 18:44:32","0","","45579","<p>This article, cited <a href=""https://www.reddit.com/r/MachineLearning/comments/16snohq/comment/k2a4zdn/?utm_source=share&amp;utm_medium=web3x&amp;utm_name=web3xcss&amp;utm_term=1&amp;utm_content=share_button"" rel=""nofollow noreferrer"">on Reddit</a>, provides an answer:</p>
+<p><a href=""https://www.cell.com/trends/cognitive-sciences/fulltext/S1364-6613(23)00203-6"" rel=""nofollow noreferrer"">Frank, Michael C. &quot;Bridging the data gap between children and large language models.&quot; Trends in Cognitive Sciences (2023).</a>:</p>
+<blockquote>
+<p>GPT-3 was trained on 5x10^11 tokens [2] and Chinchilla was trained on 1012 tokens [1]. Many companies keep training set sizes secret, but a recent leak suggested that one industry model was trained on 3.6x10^12 tokens. How do these numbers compare with human language experience? Comprehensive word counts are difficult to collect but sampling and extrapolation can provide reasonable upper and lower bounds for language input (Figure 1).A soft upper bound on a child’s linguistic input – language produced by the people around them – is around 106 words per month [3], [4]. For a five-year-old, that would be 6x10^7 words; for a 20-year-old, 2x10^8 words. We also might assume that a 20-year-old has been reading for 10-15 years, and for much of this time they are reading 2-3 books (105 words each) per week for an extra ~107 words per year. Our rough upper bound for a literate 20-year-old could be as high as 4x10^8 words (or even higher if they read constantly).</p>
+</blockquote>
+<p><a href=""https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them"" rel=""nofollow noreferrer"">Additionally</a>:</p>
+<blockquote>
+<p>1 token ~= ¾ words</p>
+</blockquote>
+<p>So converting tokens to words wouldn't change the order of magnitude.</p>
+",""
+"43855","2024-02-21 08:35:19","0","","43843","<p>I've tried Mistral-7B-Instruct-v0.2, and it worked out of the box for your example, as did Qwen1.5-1.5b. However, Qwen1.5-0.5b had issues, but I think with enough training, you can achieve decent results.</p>
+<p>I believe the size/quality trade-off of starting from 1.5b and lowering it could deteriorate in corner cases, but the only way to find out is through experimentation with validation.</p>
+<p>One note is that you can generate almost an infinite amount of data by removing the JSON structure. 15k seems sufficient if you have just a product JSONs, but for more diversity, you might want more data. The SFT stage in an LLM usually takes from 200k up to a million examples.</p>
+<p>You can also constrain the output using a scheme by restricting the output tokens. See one example of such an approach at <a href=""https://github.com/1rgs/jsonformer"" rel=""nofollow noreferrer"">https://github.com/1rgs/jsonformer</a>.</p>
+",""
+"43182","2023-12-19 07:54:20","0","","43178","<p>ChatGPT is the finetuning of GPT_3.5, which is a decoder-only model. It does not interpret the prompt the same way the encode-decoder model does. It is using autoregressive pre-training, which generates text based on the input.</p>
+<p>You Provide a prompt to ChatGPT. It can be any text like a question, statement, or text.</p>
+<p>Your Prompt is broken into a series of tokens. every token is a word or part of a word.</p>
+<p>Each token is transformed into the contextual embedding which is a vector representation of the token. This holds the contextual meaning of the token with respect to surrounding tokens.</p>
+<p>The main Decoding process then processes the decoder part of the model. The decode only generates one token at a time and uses previously generated tokens as well as the prompt as context. This process is done in an autoregressive manner.</p>
+<p>The final output is a sequence of tokens that need to be converted back to the text.</p>
+<p>This is the complete decoding process. Hope you understood.</p>
+",""
+"43130","2023-12-14 10:26:20","0","","43128","<p>The statement in which you mentioned that &quot;GPT-3 took 405 V100 years to train&quot; refers to the computational resources utilized in training the GPT-3 model. Specifically measured in terms of the equivalent time it would take if the GPT model is trained on a single Nvidia Tesla V100 GPU. To make it more understandable it does not mean that the training process took 405 years, but it indicates the computational intensity or amount of time it would have taken if it was trained on a single Nvidia Tesla V100 GPU.</p>
+<p>Since GPT-3 is a very large model with 175 billion parameters, it requires very high resources in training. According to <a href=""https://medium.com/codex/gpt-4-will-be-500x-smaller-than-people-think-here-is-why-3556816f8ff2#:%7E:text=The%20creation%20of%20GPT%2D3,need%20to%20be%20much(!)"" rel=""nofollow noreferrer"">this article</a> it takes around 1,024 Nvidia V100 GPUs to train the model, and it costs around $4.6M and 34 days to train the GPT-3 model.</p>
+",""
+"42520","2023-10-22 16:45:27","0","","42490","<p>Well, you have to think that LMM are just next-token-predictors, so if you let it read a lot of text from the web/textbooks, probably they will learn that after &quot;Be brief&quot; there is a summarization of the text given before, which means to exclude certain words, to phrase stuff in a certain way and so on</p>
+<p>You might also be interested in <a href=""https://arxiv.org/pdf/2208.01066.pdf#:%7E:text=Transformers%20can%20in%2Dcontext%20learn%20linear%20functions.&amp;text=Specifically%2C%20the%20trained%20model%20achieves,to%20generate%20the%20training%20prompts."" rel=""nofollow noreferrer"">this paper</a></p>
+",""
+"42500","2023-10-20 14:06:34","0","","38294","<p>I read <a href=""https://writings.stephenwolfram.com/2023/02/what-is-chatgpt-doing-and-why-does-it-work/"" rel=""nofollow noreferrer"">Stephen Wolfram's piece explaining GPT</a> which helped me a lot. I think what was most important was the idea that a Markov Model is fundamentally an unhelpful mental model for GPT type systems. While it is true that it works &quot;like autocomplete&quot;, it is an autocomplete that is not based on simple probabilities between the sequences of words at all, but rather a system of hundreds of millions of programmatic neurons that organically adapted to find abstract patterns in text - not just patterns in word or letter frequencies, but patterns in which types of statement follow which other types, etc.</p>
+<p>In order to do this prediction, multiple distinct processing steps seem to have developed organically within the hundreds of millions of neurons used. Wolfram explains that this system for example seems to have derived a theory of natural language syntax empirically from the input data. At later stages, the system is probably doing analysis that we would consider to be &quot;logical&quot; or &quot;conceptual&quot; based on the fact data earlier language processing steps accomplished.</p>
+<p>So, what I was missing was a sense of the size of the model, and the idea that real semantic processing beyond mere word-probabilities was occurring, and how this type of processing could emerge from a system that was trained on mere word-by-word prediction.</p>
+",""
+"41388","2023-07-21 02:36:38","0","","41352","<p>Transformers can be run with a variable dimension <code>N_INPUT</code> as pointed out by <a href=""https://ai.stackexchange.com/questions/41352/why-does-llm-inference-cost-scale-in-both-input-tokens-and-output-tokens#comment61395_41352"">@pcpthm's comment</a>. That means that the answer to <a href=""https://ai.stackexchange.com/questions/37624/why-do-transformers-have-a-fixed-input-length"">&quot;Why do transformers have a fixed input length?&quot;</a> are wrong, and the answers to <a href=""https://ai.stackexchange.com/questions/37267/how-do-transformer-decoders-handle-arbitrary-length-input/37289#37289"">&quot;How do transformers handle arbitrary-length input?&quot;</a> are more correct.</p>
+<p>If the input of dimension <code>N_INPUT * N_VOCAB</code> and <code>N_INPUT</code> is variable then that simply means <code>Q, K, V, Z</code> have one variable dimension (<code>N_INPUT * D_ATTN_HEAD</code>) and input/output of MLP are just <code>N_INPUT * WIDTH</code>.</p>
+<p>For some reason I thought the hidden layers would be fixed size and/or require a fixed size input, but this is not the case since it turns out that <code>N_INPUT</code> is always the first dimension, except in the result of <code>Q * K^T</code> which has dimension <code>N_INPUT * N_INPUT</code>, but is only multiplied on the right by <code>V</code> which has first dimension <code>N_INPUT</code>.</p>
+<p>In the NNs that I'd learned about previously, N_INPUT is the second dimension so even if one were to put in a variable input, all of the hidden layers would still be fixed-size.</p>
+<p>Particularly what I did not realize is that the &quot;context window&quot; is not actually a part of the model (<a href=""https://ai.stackexchange.com/a/37289/68775"">except in the positional encoding</a>). It seems to be purely a training time / inference time restriction.</p>
+",""
+"39898","2023-04-03 14:19:38","3","","39863","<p>As pointed out by others, what you call &quot;learning&quot; at inference, is nothing more than providing more context. The model can indeed memorize in its short-term, but it is only working for the current task at hand. You suggest that we could make a model with an infinite contextual memory, but then it would mix up all tasks together. It would literally be like if you had to recite all the numbers you ever calculated or counted or saw before starting a new calculation.</p>
+<p>Hence, contextualization is only useful for short-term tasks, and it works only thanks to the slow learning phase you have to do the first time around, which is more formally called the &quot;convergence process&quot;.</p>
+<p>So, what you are looking for is in fact to make the convergence process faster, and more precisely a one-shot or zero-shot learning. If you don't just look at LLMs (Large Language Models) and RNNs (Recursive Neural Networks), there are a lot of other AI models that can do one-shot or even zero-shot learning, such as memory models like grippon-berrou neural network. One-shot learning can learn the first time they see an example, and generalize over it. Zero-shot learning can even learn without being presented some examples, by generalizing from others, or by transferring knowledge from another field.</p>
+<p>For example, <a href=""https://github.com/Picsart-AI-Research/Text2Video-Zero"" rel=""nofollow noreferrer"">Text2Video-Zero</a> is a recently published text to video generator, which did NOT learn from any video, but instead reused the weights from Stable Diffusion trained on still images. What this algorithm does is that it can cleverly generalize learning from still images into a coherent sequence of images with the same style, hence mimicking motion, with no additional cost. Of course, it's not completely zero-shot, because it has to be provided with a Stable Diffusion weights model first, but essentially zero-shot learning means that you can reuse one model that was made for one purpose for another purpose, for free (ie, you can directly infer, no need to re-learn anything).</p>
+<p>Technically, One/Zero-shot learning typically requires another kind of architecture, more brain-like (ie, with discrete 0/1 synaptic weights). The long convergence processes are usually required by networks using floating weights (ie, the <a href=""https://towardsdatascience.com/mcculloch-pitts-model-5fdf65ac5dd1"" rel=""nofollow noreferrer"">McCulloch-Pitts neurons</a>). Because floating weights are not at all biologically plausible, they are a mathematical abstraction that synthesizes several biological functions of biological neural networks into fewer, more amenable to programming abstractions.</p>
+<p>Likewise, convolution layers in CNNs (convolutional neural networks) are another abstraction of how biological systems integrate big populations of neurons, but here we can use a much smaller population of artificial neurons, and use more optimized instructions sets to do the same work as the brain does. You have to keep in mind that for a lot of purposes in AI, current computers are much less efficient than the human brain, hence why all these highly synthetic reproductions, more optimized for the machine but very remote from how real biological systems work, are necessary. Here, long convergence (ie, long learning) is an unavoidable artifact from how we model our artificial neurons and synapses, with floating numbers instead of discrete (binary), and with mathematical functions for integration instead of analog biological integration (which is both more fine grained and simpler than numerical functions, see for example the videos by Veritasium about analog computers, biological systems have similar properties and advantages).</p>
+<p>RNNs are a kind of the opposite approach and problem, because they use a more biologically plausible property, recursivity, but the problem is that we have a hard time defining artificial systems that are efficient at learning recursive networks. So here, it's the opposite of what can be observed with CNNs and LLMs: the long convergence is due to current science providing inefficient learning algorithms when recursivity is involved. The last few years saw tremendous progress on this, with very clever algorithms, but it's still very far from how biological systems can neatly manage recursivity.</p>
+<p>All that is to say that, to answer directly your question, why the current LLM and RNN models can't learn in zero/one-shot from the get-go: it's because nobody found a way to mathematically formulate such a model. Maybe someone will be able to in the near future, maybe it will take decades, but for now, it's the slow convergence LLM and RNN models that work, it's the ones that provide you with the hyped tools such as ChatGPT.</p>
+<p>Personally, I think we won't get there until we find how analog biological neural system work, and then we need to develop new computer technologies to mimic those. There is already a lot of work towards these, with biological neurons reprogramming by ARN signalling or mixing them with silicon neurons, but it's still far from the &quot;real deal&quot;. There are at least <a href=""https://nba.uth.tmc.edu/neuroscience/m/s1/chapter08.html"" rel=""nofollow noreferrer"">hundreds of different types of neurons</a>, and there are many other neural cells types with not completely understood functions. We are far from fully understanding biological neural systems, but progress is continuous and steady.</p>
+<p>Disclaimer: I am both an AI researcher and a clinical neuroscientist and I studied some <a href=""https://en.wikipedia.org/wiki/Computational_neuroscience"" rel=""nofollow noreferrer"">computational neuroscience</a>.</p>
+<hr />
+<p>/EDIT: A small update to extend my explanation above for the technically and philosophically inclined ones: learning at its most fundamental level can be defined as the ability of a system to modify its structure to reflect some input signal, and memory being the system itself that can modify its structure according to input signals. In biological systems, there are two types of memory: short-term and long-term. Recent artificial recursive neural network models try to mimic this, with the very famous LSTM model (Long-Short Term Memory), itself a precursor of the GPT models. By convention, in machine learning we call &quot;learning&quot; the tweaking of the weights, ie, the long-term memory. But there is also indeed a short-term memory which has its own weights, but AI researchers don’t call this process learning, although it technically is by all standards, the only difference being the exact method used and the length of time the memory is retained.</p>
+<p>And just like there are models that modify/learn short-term memory at inference but not long-term memory, there are models that tweak their long-term memory at inference, notably bayesian models, as often used for weather forecasting.</p>
+<p>So why LLMs and RNNs learn fast during inference is because they are designed to only learn short-term memory, so that the big lot of weights of long-term memory were learnt beforehand. But future improvements of the tech may very well allow to design networks that also learn long-term memory &quot;online&quot;, in real-time, in a stochastic manner with a guarantee of convergence.</p>
+",""
+"39297","2023-02-25 11:24:32","1","","39293","<p>Yes, the <a href=""https://en.wikipedia.org/wiki/Chinese_room"" rel=""noreferrer"">Chinese Room argument by John Searle</a> essentially demonstrates that at the very least it is hard to <em>locate</em> intelligence in a system based on its inputs and outputs. And the ChatGPT system is built very much as a machine for manipulating symbols according to opaque rules, without any grounding provided for what those symbols mean.</p>
+<p>The large language models are trained without ever getting to see, touch, or get any experience reference for any of their language components, other than yet more written language. It is much like trying to learn the meaning of a word by looking up its dictionary definition and finding that composed of other words that you don't know the meaning of, recursively without any way of resolving it. If you possessed such a dictionary and no knowledge of the words defined, you would still be able to repeat those definitions, and if they were received by someone who did understand some of the words, the result would look like reasoning and &quot;understanding&quot;. But this understanding is not yours, you are simply able to retrieve it on demand from where someone else stored it.</p>
+<p>This is also related to the <a href=""https://en.wikipedia.org/wiki/Symbol_grounding_problem"" rel=""noreferrer"">symbol grounding problem</a> in cognitive science.</p>
+<p>It is possible to argue that pragmatically the &quot;intelligence&quot; shown by the overall system is still real and resides somehow in the rules of how to manipulate the symbols. This argument and other similar ones try to side-step or dismiss some proposed hard problems in AI - for instance, by focusing on behaviour of the whole system and not trying to address the currently impossible task of asking whether any system has subjective experience. This is beyond the scope of this answer (and not really what the question is about), but it is worth noting that The Chinese Room argument has some criticism, and is not the only way to think about issues with AI systems based on language and symbols.</p>
+<p>I would agree with you that the latest language models, and ChatGPT are good example models of the The Chinese Room made real. The <em>room</em> part that is, there is no pretend human in the middle, but actually that's not hugely important - the role of the human in the Chinese room is to demonstrate that from the perspective of an entity inside the room processing a database of rules, nothing need to possess any understanding or subjective experience that is relevant to the text. Now that next-symbol predictors (which all Large Language Models are to date) are demonstrating quite sophisticated, even surprising behaviour, it may lead to some better insights into the role that symbol-to-symbol references can take in more generally intelligent systems.</p>
+",""
+"38262","2022-12-11 14:06:07","9","","38150","<p>Based on <a href=""https://web.archive.org/web/20230228124048/https://help.openai.com/en/articles/6787051-does-chatgpt-remember-what-happened-earlier-in-the-conversation"" rel=""nofollow noreferrer"">an answer by OpenAI</a>, it appears that the illusion of understanding context is created by the model's capacity to accept very long input sequences. The OpenAI FAQ states that approximately 3000 words can be given as input. This together with the fact that <a href=""https://en.wikipedia.org/wiki/GPT-3"" rel=""nofollow noreferrer"">GPT-3 was trained to produce text that continues a given prompt</a> could explain the context feature.</p>
+<p>In practice, each prompt is probably extended with the previous outputs and prompt, as much as the input sequence length allows. So, all of the context is actually in the prompt.</p>
+<p><strong>Edit 18.2.2023</strong></p>
+<p>After spending some time with large language models and reading up the theory, I think my old answer is an understatement of ChatGPT's capabilities.</p>
+<p>It is likely that there are several engineering approaches to improve the context after the maximum content length is exceeded. These include (but are probably not limited to)</p>
+<ol>
+<li>Using language models to summarize the conversation thus far, and using that as context</li>
+<li>Using language models to search for the relevant context from the previous discussion (can be done by embedding questions and answers and doing a distance-based lookup in vector space), and feeding those as context with clever prompting like &quot;If this information improves your answer, update your answer accordingly&quot;.</li>
+</ol>
+",""
+"37456","2022-10-16 21:23:44","0","","37427","<p>There is a big difference between Neurosymbolic AI and transformer AI. Neurosymbolic AI is more rule-based and logical, while transformer AI is more creative and can learn from data.</p>
+<p>Neurosymbolic AI tends to focus on using artificial neural networks to approximate symbolic reasoning, while transformer AI focuses on using transformer networks to learn language representations.</p>
+<p>Neurosymbolic AI utilizes both symbolic and sub-symbolic representations of knowledge, while transformer AI primarily uses a symbolic representation. In addition, Neurosymbolic AI often incorporates techniques from artificial neural networks and machine learning, while transformer AI focuses more on learning from data through self-attention.</p>
+",""
+"37201","2022-09-26 21:00:26","3","","37172","<p>The input audio is splitted into overlapping frames, for instance having size 40ms at a frame-rate of 20ms. For every frame <span class=""math-container"">$t$</span>, some feature vector <span class=""math-container"">$O_t$</span> is observed. An input utterance with three frames would be represented as the sequence <span class=""math-container"">$O_1O_2O_3$</span>.</p>
+<p>Consider a model with no self-loops, a left-right model with three states and no skips either, with states <span class=""math-container"">$S=\{S_1,S_2,S_3\}$</span>. Having no skips means that the transition from <span class=""math-container"">$S_1$</span> to <span class=""math-container"">$S_3$</span> is not allowed, it has probability <span class=""math-container"">$a_{13}=0$</span>. This rigid model would be able to generate or recognize only observations of length <span class=""math-container"">$T=3$</span>, and would necessarily assign the state <span class=""math-container"">$S_i$</span> to the observation <span class=""math-container"">$O_i$</span>. There is no other possible alignment.</p>
+<p>By allowing a self-transition in the central state we give temporal flexibility to the model, so different length utterances can be properly aligned and recognized. An observation of length <span class=""math-container"">$T=5$</span>, for example, would be written <span class=""math-container"">$O_1O_2O_3O_4O_5$</span>, and the model could generate <span class=""math-container"">$O_1$</span> at state <span class=""math-container"">$S_1$</span>; <span class=""math-container"">$O_2$</span>, <span class=""math-container"">$O_3$</span> and <span class=""math-container"">$O_4$</span> at <span class=""math-container"">$S_2$</span>; and <span class=""math-container"">$O_5$</span> at <span class=""math-container"">$S_3$</span>.</p>
+<p>This self-transition models the number of observations in the second state (the duration <span class=""math-container"">$d_2$</span>) with an exponential distribution of average <span class=""math-container"">$$\overline{d_2} = \frac{1}{1-a_{22}},$$</span> where <span class=""math-container"">$a_{22}$</span> is the probability of remaining in <span class=""math-container"">$S_2$</span>. Note the extreme values <span class=""math-container"">$a_{22}=0$</span>, giving expected duration <span class=""math-container"">$1$</span>; and <span class=""math-container"">$\overline{d_2}$</span> growing unbounded as <span class=""math-container"">$a_{22}$</span> approaches <span class=""math-container"">$1$</span>.</p>
+<p>The symbols and formula used here come from the <a href=""https://www.cs.cmu.edu/%7Ecga/behavior/rabiner1.pdf"" rel=""nofollow noreferrer"">tutorial by Rabiner (1989)</a>.</p>
+",""
+"34902","2022-03-20 13:48:04","0","","34898","<h2>Part 1: <em>Identifying</em> and or <em>Scoring</em> Posts</h2>
+<p>There are various levels and types of analysis one might seek, depending on the output desired. At perhaps the simplest level, <strong>text classification</strong> could place the text into binary buckets of <em>pass</em> and <em>fail</em>. This level is similar to basic spam filtering. More complex classification could involve more buckets and or give a numerical rating.</p>
+<p>A perhaps closer term for the task in question is <strong><a href=""https://en.wikipedia.org/wiki/Sentiment_analysis"" rel=""nofollow noreferrer"">sentiment analysis</a></strong>. From Wikipedia:</p>
+<blockquote>
+<p><strong>Sentiment analysis</strong> (also known as <strong>opinion mining</strong> or <strong>emotion AI</strong>) is the use of <a href=""https://en.wikipedia.org/wiki/Natural_language_processing"" rel=""nofollow noreferrer"">natural language processing</a>, <a href=""https://en.wikipedia.org/wiki/Text_analytics"" rel=""nofollow noreferrer"">text analysis</a>, <a href=""https://en.wikipedia.org/wiki/Computational_linguistics"" rel=""nofollow noreferrer"">computational linguistics</a>, and <a href=""https://en.wikipedia.org/wiki/Biometrics"" rel=""nofollow noreferrer"">biometrics</a> to systematically identify, extract, quantify, and study affective states and subjective information.</p>
+</blockquote>
+<p><strong>Natural language processing (NLP)</strong>, itself, can be sub-divided into three broad approaches: <em>symbolic</em>, <em>statistical</em>, and <em>neural</em>. These days, and particularly in the context of AI, the last option is likely given the most attention.</p>
+<p>The main reasons for choosing neural networks over traditional hard-coded logic are <em>flexibility</em>, often <em>less coding</em>, and support for <em>elusive</em>, perhaps <em>heuristic</em> logic that may otherwise be difficult to systemise. Conventional statistical methods may resolve some complexity over manual logic, yet possibly at the expense of inferential depth. With <a href=""https://en.wikipedia.org/wiki/Deep_learning"" rel=""nofollow noreferrer"">deep neural networks</a>, obtaining deeper inference, for better classification and analysis, sometimes can be as simple as training on a network with more parameters, for more neurons.</p>
+<p>Neural-based <a href=""https://en.wikipedia.org/wiki/Language_model"" rel=""nofollow noreferrer"">language models</a> like <a href=""https://en.wikipedia.org/wiki/GPT-3"" rel=""nofollow noreferrer"">GPT-3</a> and <a href=""https://www.eleuther.ai/projects/gpt-neox/"" rel=""nofollow noreferrer"">GPT-NeoX</a> (third-party <a href=""https://textsynth.com/playground.html"" rel=""nofollow noreferrer"">playground</a> available) highlight the functional yet elusive reasoning sometimes expressed by trained neural networks. Their logic is often heuristic and hidden, a phenomenon termed <a href=""https://en.wikipedia.org/wiki/Black_box"" rel=""nofollow noreferrer"">black box</a>. For those new to language models, I recommend learning more (ie. by searching &quot;GPT-3&quot; on <a href=""https://www.youtube.com/results?search_query=gpt-3"" rel=""nofollow noreferrer"">YouTube</a>) and perhaps using a playground, like the one linked above.</p>
+<p>No doubt, the specific details of implementation can vary greatly. One could, for example, run the input through a grammar classifier (neural or otherwise), followed by feeding the resultant parts of speech (plus tense) into a sentiment analysis network. Doing so could hypothetically be cheaper to train, possibly, though not necessarily, at the expense of quality. As neural computing gets cheaper, the trend is simply using a bigger network with more training data, hopefully giving a better result with minimal coding.</p>
+<p>The amount of time required for development depends on available data -- especially tagged data -- and computing. A person with experience in sentiment analysis could possibly design or adapt a network in days. But preparing the training data could be a challenge, particularly for a large network. If you had access to, say, the set of flagged posts for a popular site, the data may already have the desired level of tagging and already be enough for training.</p>
+<p>Indeed, if insufficient data is available, a grammar pre-processor, as described earlier, may help. In general, less data means smaller networks and more coding. With the right skills, off-the-shelf pre-trained language models, like those mentioned earlier, may be able to support or provide text classification, perhaps even for this purpose.</p>
+<h2>Part 2: <em>Finding</em> Trends in Language Usage</h2>
+<p>Whether done manually or though AI, once the posts have been categorised, many options exist for identifying trends in grammar and word usage.</p>
+<p>At its simplest, basic word frequency could be analysed using conventional coding. For example, a sorted word-frequency mapping could be made and compared between each population of tagged posts, with the most frequent words first.</p>
+<p>If context-sensitive properties, such as grammatical <em>mood</em>, <em>tense</em>, or <em>part of speech</em> are of interest, then a grammar pre-processor is likely in order. Such a parser could be <em>neural</em> or <em>conventional</em>. The resulting output could be <em>hierarchical</em>, a simple <em>array</em>, or perhaps a <em>map</em>. Analysis of the results could be simple, like described above for word frequency; or the results could be trained through a neural network to establish more complex inference.</p>
+<p>Since language is generally one-dimensionally arranged, <a href=""https://en.wikipedia.org/wiki/Sequential_pattern_mining"" rel=""nofollow noreferrer"">sequential pattern mining</a> may be applied in search of unknown patterns. Presumably each population of tagged posts would be analysed separately, followed by taking the difference between the result sets. Those patterns of greatest discrepancy might be insightful. This step could be applied to either the raw <a href=""https://en.wikipedia.org/wiki/Lexical_analysis#Token"" rel=""nofollow noreferrer"">tokens</a> (ie. words), or the parsed grammar output.</p>
+<p>Other options include <a href=""https://en.wikipedia.org/wiki/Cluster_analysis"" rel=""nofollow noreferrer"">cluster analysis</a> and <a href=""https://en.wikipedia.org/wiki/Self-organizing_map"" rel=""nofollow noreferrer"">self-organizing map</a>, although special pre-processing, from a broad set of possibilities, may be recommended for these.</p>
+<p>Assuming the set of pattern types is open-ended, the set of programming paths is rather unbound.</p>
+",""
+"32532","2021-11-27 20:13:32","0","","32500","<p>I've found this article that seems to answer my question:
+<a href=""https://hazelcast.com/glossary/machine-learning-inference/"" rel=""nofollow noreferrer"">https://hazelcast.com/glossary/machine-learning-inference/</a></p>
+<p>From this, my understanding is that inference-time describes when a machine learning system is put into use following training; so basically at the time of task application.</p>
+<p>I think this would mean that the paper's authors are stating that the decomposition of sub-characters is occurring whenever the model is actively translating languages in a production environment.</p>
+",""
+"32142","2021-10-22 08:10:27","0","","32141","<p>Check SpaCy, it's a powerful NLP library that provides lot of different language models, including one for <a href=""https://spacy.io/models/pt"" rel=""nofollow noreferrer"">Portuguese</a>.</p>
+<p>To answer the more generic question, translating to another language undermines the whole purpose of text pre-processing. Not only will translating generate errors, even when translating to a common language like English, but most importantly, you're forgetting that every language has its own specific linguistic characteristics, like different grammatical genders, tenses, grammar rules for plurals and adjectives, adverbs and so on. By translating you'll throw all that information in the bin.</p>
+",""
+"30245","2021-08-18 15:48:59","0","","25315","<p>as far as I have found out it stands for a different type of task.</p>
+<p>I have found it here. <a href=""https://colab.research.google.com/github/huggingface/notebooks/blob/master/examples/text_classification.ipynb#scrollTo=kTCFado4IrIc"" rel=""nofollow noreferrer"">https://colab.research.google.com/github/huggingface/notebooks/blob/master/examples/text_classification.ipynb#scrollTo=kTCFado4IrIc</a></p>
+<p>It states that mnli-mm stands for the mismatched version of MNLI
+That means that the mnli-m would mean matched version of MNLI</p>
+<p>On the following link is more about the MNLI: <a href=""https://cims.nyu.edu/%7Esbowman/multinli/"" rel=""nofollow noreferrer"">https://cims.nyu.edu/~sbowman/multinli/</a></p>
+<p>Hope this helps you.</p>
+<p>Cheers.</p>
+",""
+"28647","2021-07-13 06:45:15","9","","28556","<p>There are a handful of tools available for manually comparing pronounciations, though all are limited in some way. Depending on your usecase, you might be interested in:</p>
+<ul>
+<li><a href=""http://wikspeak.sourceforge.net/"" rel=""nofollow noreferrer"">Wikspeak</a>: a tool that transcribes (single) words into IPA and generates a pronounciation. A web demo is available, though it’s a bit sensitive about browser versions.</li>
+<li><a href=""https://github.com/espeak-ng/espeak-ng"" rel=""nofollow noreferrer"">espeak-ng</a>: provides a CLI tool that does text-to-speech or text-to-IPA transcription</li>
+</ul>
+<pre><code># use the —-ipa flag to display the inferred IPA transcription
+espeak-ng -v en-US --ipa &quot;horse”
+# =&gt; hˈɔːɹs
+espeak-ng -v en-US --ipa &quot;hoarse&quot;
+# =&gt; hˈoːɹs
+</code></pre>
+<p>If you want a more automated solution, you could look into python libraries like <a href=""https://pypi.org/project/eng-to-ipa/"" rel=""nofollow noreferrer"">eng-to-ipa</a> to do IPA transcription (including disambiguation when a word can map to multiple IPA transcriptions). You could then try applying edit distance measurements to the IPA transcriptions to estimate the similarity of the pronounciations.</p>
+",""
+"28508","2021-07-03 03:06:24","0","","28495","<p>I think that these terms may be used <em>inconsistently</em> across sources.</p>
+<p>If someone says <em>held-out dataset</em>, I would immediately think of a dataset that is not used for training, but can be used for anything else, validation (hyper-parameter tuning or early stopping) or testing; so, to determine what they are referring to, I would probably take into account the context.</p>
+<p>In your second quote, the <em>development set</em> seems to be used as a synonym for <em>validation dataset</em> (a more common name to refer to the same concept), i.e. the dataset used for early stopping or hyper-parameter optimization (see also <a href=""https://ai.stackexchange.com/q/5658/2444"">this</a>).</p>
+<p>So, my answer to your question in the title would be</p>
+<blockquote>
+<p>Yes, the heldout dataset can be used for validation or testing, but not because it's a special dataset, but because people may use this term to refer to either the validation dataset or the test dataset.</p>
+</blockquote>
+<p>Here's another example of the usage of the term <em>held-out set</em> to refer, in this case, to the validation dataset (section 1.6 of <a href=""http://users.isr.ist.utl.pt/%7Ewurmd/Livros/school/Bishop%20-%20Pattern%20Recognition%20And%20Machine%20Learning%20-%20Springer%20%202006.pdf"" rel=""nofollow noreferrer"">this famous ML book</a>)</p>
+<blockquote>
+<p>The results above suggest a simple way of achieving this, namely by taking the available data and partitioning it into a training set, used to determine the coefficients <span class=""math-container"">$\mathbf{w}$</span>, and a <em>separate</em> validation set, also called a <strong>hold-out set</strong>, used to <em>optimize the model complexity</em></p>
+</blockquote>
+<p>Here's another example that shows that the term may be used inconsistently (emphasis mine, taken from <a href=""https://www.deeplearningbook.org/contents/ml.html"" rel=""nofollow noreferrer"">section 5.3</a> of the famous deep learning book by Goodfellow et al.). In fact, in that same section, they refer to the validation dataset, which is distinct from this <strong>held-out test set</strong> (so, in this case, the held-out set is used to refer only to the test set).</p>
+<blockquote>
+<p>Earlier we discussed how a <strong>held-out test set</strong>, composed of examples coming from the same distribution as the training set, can be used to estimate the generalization error of a learner, after the learning process has completed.</p>
+</blockquote>
+",""
+"26745","2021-03-10 10:45:45","0","","26739","<p><strong>Simplified:</strong> Word Embeddings does not consider context, Language Models does.</p>
+<p>For e.g Word2Vec, GloVe, or fastText, there exists one fixed vector per word.</p>
+<p>Think of the following two sentences:</p>
+<blockquote>
+<p>The fish ate the cat.</p>
+</blockquote>
+<p>and</p>
+<blockquote>
+<p>The cat ate the fish.</p>
+</blockquote>
+<p>If you averaged their word embeddings, they would have the same vector, but, in reality, their meaning (semantic) is very different.</p>
+<p>Then the concept of contextualized word embeddings arose with language models that <em>do</em> consider the context, and give different embeddings depending on the context.</p>
+<p>Both word embeddings (e.g Word2Vec) and language models (e.g BERT) are ways of representing text, where language models capture more information and are considered state-of-the-art for representing natural language in a vectorized format.</p>
+<p><strong>BLEU score</strong> is an algorithm for evaluating the quality of text which has been machine-translated from one natural language to another. Which is not directly related to the difference between traditional word embeddings and contextualized word embeddings (aka language models).</p>
+",""
+"25682","2021-01-10 16:39:52","1","","25676","<p>There are many ways to solve this problem.  One way is to apply stemming or lemmatization to reduce your words. Using NLTK's Porter stemmer for example on healthy, healthier, healthiest, not healthy, more healthy, and zero healthy gives:</p>
+<pre><code>healthi , healthier , healthiest , not healthi , more healthi , zero healthi
+</code></pre>
+<p>This can help make word comparisons easier.</p>
+<p>Sentiment analysis on the phrases will provide positive, neutral, and negative scores.  There are a lot of algorithms for doing this but a common one is Valence Aware Dictionary and sEntiment Reasoner (VADER).  Here is a recent article with code using NLTK and the VADER lexicon:</p>
+<ul>
+<li><a href=""https://predictivehacks.com/how-to-run-sentiment-analysis-in-python-using-vader/"" rel=""nofollow noreferrer"">How To Run Sentiment Analysis In Python Using VADER</a> by George Pipis</li>
+</ul>
+<p>The following article also does sentiment analysis using NLTK and includes stemming and lemmatization.  Instead of VADER they use a Naive Bayes classifier on a labeled data set of tweets: <a href=""https://www.digitalocean.com/community/tutorials/how-to-perform-sentiment-analysis-in-python-3-using-the-natural-language-toolkit-nltk"" rel=""nofollow noreferrer"">How To Perform Sentiment Analysis in Python 3 Using the Natural Language Toolkit (NLTK)</a> by Saumik Daityari.</p>
+",""
+"25225","2020-12-16 20:53:41","3","","25217","<p>I'll use notation from the paper you cited, and any other readers should refer to the paper (widely available) for definitions of notation.  The utility of using <span class=""math-container"">$W^Q$</span> and <span class=""math-container"">$W^K$</span>, rather than <span class=""math-container"">$W$</span>, lies in the fact that they allow us to add fewer parameters to our architecture.  <span class=""math-container"">$W$</span> has dimension <span class=""math-container"">$d_{model} \times d_{model}$</span>, which means that we are adding <span class=""math-container"">$d_{model}^2$</span> parameters to our architecture.  <span class=""math-container"">$W^Q$</span> and <span class=""math-container"">$W^K$</span> each have dimension <span class=""math-container"">$d_{model} \times d_k$</span>, and <span class=""math-container"">$d_k=\frac{d_{model}}{h}$</span>. If we use these two matrices, we only add <span class=""math-container"">$2\frac{d_{model}^2}{h}$</span> parameters to our architecture, even though their multiplication (with the transpose) allows us to have the correct dimensions for matrix multiplication with <span class=""math-container"">$Q$</span> and <span class=""math-container"">$K$</span>.</p>
+<p>We do use <span class=""math-container"">$h$</span> attention heads, which then brings our number of parameters back up, but the multiple heads let the model attend to different pieces of information in our data.</p>
+",""
+"23855","2020-10-01 14:58:00","0","","23723","<p>Thank you very much for your help, all of you.</p>
+<p>I finally find on the Internet key words : &quot;Dialog act classification&quot;.</p>
+<p>I don't know yet how to implement it, but it's a good start !</p>
+",""
+"23684","2020-09-21 17:37:56","2","","23449","<p>I will be starting my PhD in natural language processing in a few days and this is very similar to my proposed topic. It's an open problem that ties NLP and AI into philosophy of science and epistemology and is, I think, extremely interesting. I say all this to drive home the point that this is <em>not</em> a simple problem.</p>
+<p>Two major theoretical concerns come to my mind:</p>
+<ol>
+<li><p>What is a &quot;fact&quot;? Is it a universal truth, if there is such a thing? Or is it a generally accepted theory, and if so how do you measure acceptance? That is, accepted by whom, where, when?</p>
+</li>
+<li><p>Are there any linguistic markers of opinions vs. facts? Only in rare cases, such as when the speaker prefaces their statement with something like &quot;I believe&quot;. In most cases, I think, opinions will be stated linguistically similarly to facts. For example, compare &quot;Cats are felines.&quot; (a &quot;fact&quot;) with &quot;Cats are aliens.&quot; (an opinion some may hold). They have the exact same syntactic structure. The difference here is deeply semantic, and probably relates to the speaker's intention. I'd venture that often people state their opinions with the intention of communicating a &quot;fact&quot;.</p>
+</li>
+</ol>
+<p>Some more practical concerns are:</p>
+<ol>
+<li><p>Information extraction (also called relationship extraction, text mining, etc.), which for the most part assumes that the &quot;facts&quot; given in the labeled datasets are correct, is far from a solved problem. E.g. the <a href=""https://paperswithcode.com/sota/relation-extraction-on-2010-i2b2-va"" rel=""noreferrer"">state of the art model</a> developed for a task released in 2010 has an F1 of only 76! What you propose adds significant uncertainty to these types of tasks.</p>
+</li>
+<li><p>I suspect that even if you were able to compile a dataset of facts and opinions with corresponding labels you would encounter a number of modeling problems. Given the linguistic similarity between the statements of facts and opinions, I'd guess that your model will simply memorize the dataset, making it generalize poorly to your test set. Either that or it would would pick up on random, hidden correlations in the data to solve the problem (neural nets are really good at this), perhaps generalizing to the test set, but failing to apply to any other data.</p>
+</li>
+<li><p>Fact vs. opinion is something that is embedded in a cultural milieu, so a model would, I think, need access to some proxy for what is culturally accepted in order to make this distinction, perhaps a via knowledge base. This may be feasible for limited, highly curated domains (e.g. biomedicine), but there is currently nothing suitable for a general-purpose fact finder.</p>
+</li>
+</ol>
+<p><strong>tldr</strong>: No, it is not enough to simply create a dataset of facts vs. opinions. This problem poses major theoretical concerns related to epistemology, linguistics, and cognitive science. Additionally, there are more mundane (but non-trivial!) modeling issues to consider. @Sceptre is right that it will be impossible to start this without knowledge of AI/ML/NLP, especially a rather deep knowledge of what current AI systems are <em>really</em> capable of.</p>
+",""
+"22881","2020-08-05 21:35:00","0","","22877","<p>I can't anwser your question on how much computing power you might need, but you'll need atleast a smallgrid to run the biggest model just looking at the memory requirments (175B parameters so 700GB of memory). The biggest gpu has 48 GB of vram <br/> I've read that gtp-3 will come in eigth sizes, 125M to 175B parameters. So depending upon which one you run you'll need more or less computing power and memory.<br/> (<a href=""https://lambdalabs.com/blog/demystifying-gpt-3/"" rel=""nofollow noreferrer"">https://lambdalabs.com/blog/demystifying-gpt-3/</a>) <br/>
+For an idea of the size of the smallest, &quot;The smallest GPT-3 model is roughly the size of BERT-Base and RoBERTa-Base.&quot;</p>
+",""
+"20279","2020-04-15 10:58:00","5","","20277","<p>Identifying the primary concepts of a paragraph required <em>understanding</em> of the meaning of the text. In natural language processing, we are still a long way off even recognising and representing the meaning of text, let alone summarising the meaning of multiple sentences into a single statement.</p>
+<p>Note that this is different from simply summarising a text: this can be done without any understanding based on textual features within the text itself, and ways of doing that have been around for a while. But such approaches will generally remove sentences which seem less relevant to the text, thus shortening it. They will not express the content in different words.</p>
+<p>Conceivably people might try this with deep learning, where you train a system with paragraphs and the corresponding concepts, but again such a system would not have any understanding of the meaning, and thus results would be more or less accidental.</p>
+",""
+"16359","2019-11-08 16:40:58","0","","16346","<p><a href=""https://en.wikipedia.org/wiki/Division_by_zero"" rel=""nofollow noreferrer"">Division by zero</a> is <strong>not</strong> mathematically defined. </p>
+
+<p>A usual or standard way of dealing with this issue is to raise an exception. For example, in Python, the exception <code>ZeroDivisionError</code> is raised at <em>runtime</em> if you happen to divide by zero. </p>
+
+<p>If you execute <a href=""https://repl.it/repls/OddHeartyDatalogs"" rel=""nofollow noreferrer"">the following program</a></p>
+
+<pre><code>zero = 0
+numerator = 10
+numerator / zero
+</code></pre>
+
+<p>You will get</p>
+
+<pre><code>Traceback (most recent call last):
+  File ""main.py"", line 3, in &lt;module&gt;
+    numerator / zero
+ZeroDivisionError: division by zero
+</code></pre>
+
+<p>However, if you want to avoid this runtime exception, you can check for division by zero and deal with this issue in a way that is appropriate for your program (without needing to terminate it).</p>
+
+<p>In the paper <a href=""https://www.aclweb.org/anthology/P02-1040.pdf"" rel=""nofollow noreferrer"">BLEU: a Method for Automatic Evaluation of Machine Translation</a> that introduced the BLEU (and brevity penalty) metric, the authors defined the brevity penalty as</p>
+
+<p><span class=""math-container"">\begin{align}
+BP =
+\begin{cases}
+1, &amp; \text{if } c &gt; r\\
+e^{(1- r/c)} &amp; \text{if } c \leq r\\
+\end{cases} \label{1} \tag{1}
+\end{align}</span></p>
+
+<p>This definition does not explicitly take into account the division by zero. </p>
+
+<p>The Python package <a href=""https://www.nltk.org"" rel=""nofollow noreferrer""><code>nltk</code></a> does not raise an exception, but it (apparently, arbitrarily) returns zero when <code>c == 0</code>. Note that the BLEU metric ranges from 0 to 1. For example, if you execute the <a href=""https://repl.it/repls/ShortWelltodoActivecontent"" rel=""nofollow noreferrer"">following program</a></p>
+
+<pre><code>from nltk.translate.bleu_score import brevity_penalty, closest_ref_length
+
+reference1 = list(""hello"") # A human reference translation. 
+references = [reference1] # You could have more than one human reference translation.
+
+# references = [] Without a reference, you will get a ValueError.
+
+candidate = list() # The machine translation.
+c = len(candidate)
+
+r =  closest_ref_length(references, c)
+print(""brevity_penalty ="", brevity_penalty(r, c))
+</code></pre>
+
+<p>You will get</p>
+
+<pre><code>brevity_penalty = 0
+</code></pre>
+
+<p>In the example above, the only human reference (translation) is <code>reference1 = list(""hello"")</code> and the only candidate (the machine translation) is an empty list. However, if <code>references = []</code> (you have no references), then you will get the error <code>ValueError: min() arg is an empty sequence</code>, where <code>references</code> are used to look for the closest reference (the closest human translation) to the  <code>candidate</code> (the machine translation), given that there could be more than one human reference translation, and one needs to be chosen to compute the brevity penalty, with respect to your given candidate. </p>
+
+<p>In fact, in the <a href=""https://www.nltk.org/_modules/nltk/translate/bleu_score.html#brevity_penalty"" rel=""nofollow noreferrer"">documentation of the <code>brevity_penalty</code> function</a>, the following comment is written </p>
+
+<pre><code># If hypothesis is empty, brevity penalty = 0 should result in BLEU = 0.0.
+</code></pre>
+
+<p>where <code>hypothesis</code> is a synonym for <em>candidate</em> (the machine translation) and the length of the candidate is <span class=""math-container"">$c$</span> in the formula \ref{1} (and <code>c</code> in the example above).</p>
+
+<p>To answer your second question more directly, I don't think there's a standard way of dealing with the issue, but I've not fully read the BLEU paper yet.</p>
+",""
+"9986","2019-01-14 13:58:23","0","","9982","<p>This is still a research topic in linguistics. A quick google search brings up a couple of papers that might be useful:</p>
+<ul>
+<li><a href=""https://www.researchgate.net/publication/231608823_Identifying_Metaphor_Hierarchies_in_a_Corpus_Analysis_of_Finance_Articles"" rel=""nofollow noreferrer"">Identifying Metaphor Hierarchies in a Corpus Analysis of Finance Articles</a></li>
+<li><a href=""https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3639214/"" rel=""nofollow noreferrer"">Metaphor Identification in Large Texts Corpora</a></li>
+</ul>
+<p>However, you probably won't get an off-the-shelf tool that recognises metaphors for you.</p>
+<p>To add more details, the problem with metaphors is that you cannot detect them by surface structure alone. Any sentence could (in theory) be a metaphor. This is different from a <a href=""https://www.merriam-webster.com/dictionary/simile"" rel=""nofollow noreferrer"">simile</a>, which can usually be spotted easily through the word <em>like</em>, as in <em>she runs like the wind.</em> Obviously, <em>like</em> on its own is not sufficient, but it's a good starting point to identify possible candidates.</p>
+<p>However, <em>his words cut deeper than a knife</em> is -- on the surface -- a normal sentence. Only the semantic incongruence between <em>words</em> as the subject and <em>cut</em> as the main verb creates a clash. In order to detect this automatically, you need to identify possible semantic features of the verbal roles and look for violations of the expected pattern.</p>
+<p>The verb <em>cut</em> would generally expect an animate object, preferably human, or an instrument with a blade (<em>the knife cuts through the butter</em>) as its actor or subject. But it also can include (water)ways: <em>the canal cuts through the landscape</em>, <em>the road cuts through the field</em>. The more closely you look, the more exceptions/extensions you will find for your initial assumption.</p>
+<p>And every extension/exception will water down the accuracy of your metaphor detection algorithm.</p>
+<p>The second example is similar: <em>Life is a journey</em>. You could perhaps use a thesaurus and see what the <a href=""https://en.wikipedia.org/wiki/Hyponymy_and_hypernymy"" rel=""nofollow noreferrer"">hyperonyms</a> of <em>life</em> are. Then you could do the same with <em>journey</em>, and see if they are compatible. <em>A car is a vehicle</em> is not a metaphor, because <em>vehicle</em> is a hyperonym of <em>car</em>. But <em>journey</em> is not a hyperonym of <em>life</em>, so could be a metaphor. But I would think that this is still very tricky to get right. In this case, the absence of a determiner might be a hint, as it's not <em>a life is a journey</em> -- you might restrict yourself to bare nouns for this type of metaphor. But this is also not a firm rule.</p>
+<p>In short, it is a hard problem, as you need to look at the meaning, rather than just the structure or word choice. And meaning is not easy to deal with in NLP, despite decades of work on it.</p>
+",""
+"7752","2018-08-29 08:56:55","0","","7747","<p>Lorem ipsum generators don't typically use anything considered as AI. Usually they just store large pieces of text and select sections from it randomly - they are very simple. The main goal is to produce ""nonsense"" text that fills space but does not distract from issues of layout and design. The variations of it are usually just for fun, and like the original, are mostly simple generators which select strings of text from a core data source randomly and without using any AI techniques.</p>
+
+<p>It <em>is</em> possible to build more sophisticated random text generators that work using data structures from <a href=""https://en.wikipedia.org/wiki/Natural_language_processing"" rel=""nofollow noreferrer"">Natural Language Processing</a> (NLP). </p>
+
+<p>One popular and easy-to-code data structure is <a href=""https://en.wikipedia.org/wiki/N-gram"" rel=""nofollow noreferrer"">N-grams</a>, which store the frequencies/probabilities of the N<sup>th</sup> word given words 1 to N-1. E.g. a bigram structure can tell you all the possible words to come after ""fish"" e.g. <code>""fish"" =&gt; [""food"" =&gt; 0.2, ""swims"" =&gt; 0.3, ""and"" =&gt; 0.4, ""scale"" =&gt; 0.1]</code> To use that structure to generate text, use a random number generator to select a word based on looking up the N<sup>th</sup> word's frequency, then shift the list of words being considered and repeat. </p>
+
+<p>A more recent text generating NLP model is recurrent neural networks (RNNs), which have a variety of designs. Popular right now are LSTM networks, and these are capable of some quite sophisticated generation, provided they are trained with enough data for long enough. The blog <a href=""http://karpathy.github.io/2015/05/21/rnn-effectiveness/"" rel=""nofollow noreferrer"">The Unreasonable Effectiveness of Recurrent Neural Networks</a> by Andrej Karpathy has quite a few really interesting examples of using RNNs for text generation. In practice this works similarly to n-grams: Use the RNN to suggest probabilities for next word given words so far, choose one randomly, then feed back the generated word into the RNN and repeat.</p>
+",""
+"6572","2018-05-30 10:30:47","0","","1859","<p>Is anybody still using Conceptual Dependency Theory?</p>
+
+<p>Yes.  Many people.  Conceptual dependencies are central to the conveyance of ideas in natural language.</p>
+
+<p>Here are just a few publications in this century building off of Schank's work or travelling in parallel with his direction in related fields.</p>
+
+<ul>
+<li><a href=""https://www.mitpressjournals.org/doi/pdf/10.1162/coli.2010.36.1.36105"" rel=""nofollow noreferrer"">https://www.mitpressjournals.org/doi/pdf/10.1162/coli.2010.36.1.36105</a></li>
+<li><a href=""https://ubir.buffalo.edu/xmlui/bitstream/handle/10477/34469/2001-09.pdf"" rel=""nofollow noreferrer"">https://ubir.buffalo.edu/xmlui/bitstream/handle/10477/34469/2001-09.pdf</a></li>
+<li><a href=""http://leibnizcenter.org/~sileno/articles/ICAART2014.pdf"" rel=""nofollow noreferrer"">http://leibnizcenter.org/~sileno/articles/ICAART2014.pdf</a></li>
+<li><a href=""http://publicservicesalliance.org/wp-content/uploads/2013/05/narrative-its-2008.pdf"" rel=""nofollow noreferrer"">http://publicservicesalliance.org/wp-content/uploads/2013/05/narrative-its-2008.pdf</a></li>
+<li><a href=""https://www.semanticscholar.org/paper/Modelling-the-way-mathematics-is-actually-done-Corneli-Martin/0787aa70bbfb3620e1a5ddf2a2f34df99dc1f6ac"" rel=""nofollow noreferrer"">https://www.semanticscholar.org/paper/Modelling-the-way-mathematics-is-actually-done-Corneli-Martin/0787aa70bbfb3620e1a5ddf2a2f34df99dc1f6ac</a></li>
+<li><a href=""http://sentic.net/senticnet-5.pdf"" rel=""nofollow noreferrer"">http://sentic.net/senticnet-5.pdf</a></li>
+</ul>
+
+<p>I met Roger Schank in Hartford, in 1992, during a lecture series sponsored by the AI labs of United Technologies Research Center and a few other Fortune 500 companies in the region.  His entire lecture was a series of stories in AI research.  I remember every story 26 years later.</p>
+
+<p>The toy NLP implementations you see in the field today pale in comparison with the story based reasoning and memory systems proposed by Dr. Schank as a probable explanation of observations that can be made about human vocal communications.  </p>
+
+<p>It is easy to guess the reason he moved into education.  His natural language and artificial intelligence ideas were about a century early and over the heads of most of the people that were at the lecture alongside me.</p>
+
+<p>If you and I find his story-based reasoning and memory proposals compelling, we are probably a century too early and a bit over the heads of most in the present day NLP field.  Most of those in labs in the 1980s found Schank irritating, and people who fit comfortably into today's technology culture find him irrelevant.</p>
+
+<p>Some of those I interacted with on a project from the University of Michigan in Ann Arbor don't find his work irrelevant though, and their work is in the directions he indicated.  Unfortunately the client NDA restricts me from commenting further about that project.</p>
+
+<p>The reason we should not and ultimately will not abandon the idea that we communicate in stories is because it is correct.  When a person says, ""It makes me want to puke,"" or, ""I love you too,"" the direct parse of those sentences using ""modern"" techniques are not closely related to a correct reconstruction of the idea in the mind of the speaker.  Both sentences reference a conceptual heap of interdependence that we call a story.</p>
+
+<p>If two ""party girls"" are in the ladies room at a Borgore concert and one says, ""Hand me a roll,"" the interpretation of the word, ""roll,"" is conceptually dependent.  If the speaker is in a stall it means one thing.  If at the sink it means another.</p>
+
+<p>There will always be some segment of the research community that understands this.  Those that do not may construct money-saving automatons that will answer your business's phone calls, but they will not give you a heads up on a customer relations pattern that points to a policy issue.</p>
+
+<p>These toy NLP agents, until they develop the capabilities Dr. Schank proposed, will not recognize from phone conversations with clients that a product or service enhancement is an opportunity waiting to be exploited, and they won't tell you a story that will convince you that you would benefit from being the first to capitalize on the opportunity.</p>
+",""
+"5424","2018-02-24 22:44:23","1","","5422","<p>Summarizing text is always going to be 'easier or more efficient' than voice simply because voice requires the additional step of converting to text.  That doesn't tell you anything about accuracy.</p>
+
+<p>From an article published on June 1, 2017, <a href=""https://9to5google.com/2017/06/01/google-speech-recognition-humans/"" rel=""nofollow noreferrer"">Google’s speech recognition is now almost as accurate as humans</a>:
+<em>""According to Mary Meeker’s annual Internet Trends Report, Google’s machine learning-backed voice recognition — as of May 2017 — has achieved a <strong>95% word accuracy rate for the English language</strong>. That current rate also happens to be the threshold for human accuracy.""</em></p>
+
+<p>If you need this kind of accuracy check out <a href=""https://cloud.google.com/speech/"" rel=""nofollow noreferrer"">Google's Cloud Speech API</a>.  There is even a speech to text feature on the web page.</p>
+
+<p>Given a speech-to-text conversion accuracy of 95%, voice will be 5% less accurate than text if everything else is equal but it usually isn't.  People generally write better text, such as in documents or emails, than when they speak unless of course they are giving a formal lecture, or talking in a formal meeting.  If one is analyzing text messages, Tweets, or threads found in typical informal forums, you will find very poor quality in grammar, spelling, vocabulary, and punctuation.  The answer to your question will depend on the source of your text. </p>
+
+<p>In another article, dated November 13, 2017, <a href=""https://transcribeme.com/blog/why-100-accuracy-is-not-available-with-speech-recognition-software"" rel=""nofollow noreferrer"">Why 100% Accuracy Is Not Available With Speech Recognition Software Alone</a>, the author gives some reasons, albeit for transcription software which has a special purpose, why there will always be some errors due to:</p>
+
+<ul>
+<li>Speech Patterns and Accents - Regional variations exist, for example English speakers in Boston sound different than Kentucky.  How does the software handle slurred speech or when a person blends their words?</li>
+<li>Grammar and Punctuation - speech recognition software doesn't know where a period, comma, or semi-colon belongs</li>
+<li>Homonyms and unusual words - ""Speech processing software can only recognize words and phrases that it has specifically been trained to recognize.""</li>
+<li>Ambient Noise, Overlapping Speech, and Number of Speakers</li>
+</ul>
+
+<p>To address your last question about where the technology is going...<br>
+Four days ago a paper by Tom Young, Devamanyu Hazarika, Soujanya Poria, and Erik Cambria entitled <a href=""https://arxiv.org/pdf/1708.02709.pdf"" rel=""nofollow noreferrer"">Recent Trends in Deep Learning Based
+Natural Language Processing</a> was published which gives some of the answers.  </p>
+
+<p>From the 'Conclusion' section:
+<em>With distributed representation, various deep models have
+become the new state-of-the-art methods for NLP problems.
+Supervised learning is the most popular practice in recent
+deep learning research for NLP. In many real-world scenarios,
+however, we have unlabeled data which require advanced
+unsupervised or semi-supervised approaches. In cases where
+there is lack of labeled data for some particular classes or the
+appearance of a new class while testing the model, strategies
+like zero-shot learning should be employed. These learning
+schemes are still in their developing phase but we expect deep
+learning based NLP research to be driven in the direction of
+making better use of unlabeled data. We expect such trend to
+continue with more and better model designs. We expect to
+see more NLP applications that employ reinforcement learning
+methods, e.g., dialogue systems. We also expect to see more
+research on multimodal learning [167] as, in the real world,
+language is often grounded on (or correlated with) other
+signals.</em></p>
+
+<p><em>Finally, we expect to see more deep learning models whose
+internal memory (bottom-up knowledge learned from the data)
+is enriched with an external memory (top-down knowledge
+inherited from a KB). Coupling symbolic and sub-symbolic AI
+will be key for stepping forward in the path from NLP to natural
+language understanding. Relying on machine learning, in
+fact, is good to make a ‘good guess’ based on past experience,
+because sub-symbolic methods encode correlation and their
+decision-making process is probabilistic.</em></p>
+",""
+"4995","2018-01-13 23:48:09","0","","4991","<p>It's not quite clear what you are asking. So I'll answer in separate parts.</p>
+
+<blockquote>
+  <p>Why is the translation different from the official title?</p>
+</blockquote>
+
+<p>It could be simply because machine translation is not perfect, or our human translator took some creative liberties when translating. In this case it seems to be both.</p>
+
+<p>Note that 龍爭虎鬥 properly translated doesn't mean either ""Dragons fight"" or ""Enter the dragon"". Literally translated, it means ""dragon compete tiger fight"". It belongs a family of well-formed idioms called ""<a href=""https://en.wikipedia.org/wiki/Chengyu"" rel=""noreferrer"">Chengyu</a>"", which describes a situation where there is fierce fighting or competition. </p>
+
+<p>So you can see that neither translations fit.</p>
+
+<blockquote>
+  <p>Why does Google Translate give me different translations on the same phrase?</p>
+</blockquote>
+
+<p>Context matters when we read! So translating a phrase in isolation doesn't guarantee that the same phrase has the same meaning/translation in all other parts of the text.</p>
+
+<p>For example, green is a color, but the word ""green"" can also be used as like: ""Alice is green with envy"" or ""Bob has green thumbs"", of which neither instances of the word ""green"" refers to the color. </p>
+
+<p>Considering the technical side of things, Google translate probably uses some kind of RNN in its pipeline. RNN's are influenced by past states, meaning that what it outputs now as a function of what it reads in is dependent on the RNN's past state. Which is similar to the issue addressed above.</p>
+",""
+"2585","2016-12-31 07:49:40","1","","2580","<p>Jarvis was built using the suite of tools that facebook developers are constantly updating. The answer to this question is that there's no simple answer; it has a lot of moving parts.</p>
+<p>Take for example natural language processing. There are a number of sub-topics that are each considered &quot;big&quot; problems, such as part-of-speech recognition, coreference resolution, sentiment analysis, relationship extraction, and many more. Tools have been built to tackle these various topics, but, to my knowledge, none of them really <em>understand</em> language, but rather statistically approximate it.</p>
+<p>In the case of Jarvis, since it is a home-automation system, it's probably built with the user-given commands in mind from the beginning, so it's not trying to understand the whole human language, it's built to do some tricks.</p>
+<p>Just keep in mind on your journey into this space that true AI like what we imagine will have some defining features like hierarchical representations of tasks and goal-orientation. If you really get into it I'd start with reinforcement learning, or try reading through the Society of Minds.</p>
+",""
+"2282","2016-11-06 13:34:27","0","","2281","<p>Yes, it <em>is</em> possible, and has actually been done in the past.</p>
+
+<p>The University of Antwerp created a <a href=""http://bvasiles.github.io/papers/chi16bot.pdf"" rel=""nofollow noreferrer"">bot to answer questions</a> (<a href=""https://www.dropbox.com/s/o9tk8xtauyexn5c/Internship2DaanJanssensFinished.pdf?dl=0"" rel=""nofollow noreferrer"">this is the technical report</a>). It focused on the <a href=""/questions/tagged/git"" class=""post-tag"" title=""show questions tagged &#39;git&#39;"" rel=""tag"">git</a> tag only though (even though it did answer one <a href=""/questions/tagged/mysql"" class=""post-tag"" title=""show questions tagged &#39;mysql&#39;"" rel=""tag"">mysql</a> question).</p>
+
+<p>Its accuracy was pretty good, and the bots in the tests did earn some reputation. So I assume it is possible.</p>
+
+<p>But do note that the last bot in the tests revealed that it was a bot, and thus got banned. So if you reveal that the account you are running the bot on is a bot, there is a high chance that it will get banned.</p>
+",""
+"1345","2016-08-04 21:45:48","0","","198","<p>The following survey article by researchers from IIT Bombay summarizes recent advances in sarcasm detection: <a href=""https://arxiv.org/abs/1602.03426"" rel=""noreferrer"">Arxiv link</a>.</p>
+
+<p>In reference to your question, I do not think it is considered either extraordinarily difficult or open-ended. While it does introduce ambiguity that computers cannot yet handle, Humans are easily able to understand sarcasm, and are thus able to label datasets for sarcasm detection.</p>
+",""
